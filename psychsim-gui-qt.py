@@ -103,16 +103,17 @@ class MyApp(QMainWindow, Ui_MainWindow):
         tester = self.sim_module.GuiTestSim()
         step = 0
         complete = dict(n=step, total=tester.sim_steps)
-
+        sim_data = pd.DataFrame()
         while self.run_thread:
             result = tester.run_sim()
             self.print_debug(debug=result)
-            step_info = self.get_debug_data(debug=result, step=step)
-            model = pandasModel(step_info)
+            sim_data = sim_data.append(self.get_debug_data(debug=result, step=step))
+            model = pandasModel(sim_data)
             #TODO: emit output to print to screen
             progress_callback.emit(step)
             step = step + 1
             if step == tester.sim_steps:
+                model = pandasModel(sim_data)
                 break
 
         return model#"Done."
@@ -264,8 +265,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         sim_info = pd.DataFrame(columns=["step", "agent", "action"])
         step_info = []
 
+        agent_info = dict(step=[step],agent=None, action=None, possible_actions=None, beliefs=None)
         for k, v in debug.items():
-            agent_info = dict(agent=None, action=None, possible_actions=None, beliefs=None)
             agent_info["agent"] = k
             for k1, v1 in v.items():
                 for k2, v2 in v1.items():
@@ -276,14 +277,39 @@ class MyApp(QMainWindow, Ui_MainWindow):
                             if type(v3) == dict:
                                 agent_info["possible_actions"] = v3
             if agent_info["possible_actions"] is not None:
-                agent_info["beliefs"] = agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]
-            step_info.append(agent_info)
+                agent_info["beliefs"] = [agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]]
+
         # TODO: turn ste_info rows into a dataframe here PROPERLY
-        # df = pd.DataFrame.from_dict(step_info[0]) #TODO: FIX THIS
-        # data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
-        data = pd.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv')
-        df = pd.DataFrame.from_dict(data)
-        return df
+        agent_info["action"] = [str(agent_info["action"])]
+        agent_info.pop("possible_actions", None)
+        # agent_info.pop("beliefs", None)
+        agent_df = pd.DataFrame.from_dict(agent_info) #TODO: FIX THIS
+
+        # # data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
+        # data = pd.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv')
+        # df = pd.DataFrame.from_dict(data)
+        return agent_df
+
+
+    def extract_values_fromVectorDistributionSet(self, vds):
+        vds_values = pd.DataFrame()
+        for actor, values in vds.items():
+            clean_header = []
+            actor_values = []
+            if "Actor" in actor:
+                actor_distribution_set = values[f"{actor}0"]
+                for key in actor_distribution_set.keyMap:
+                    # print(actor_distribution_set.marginal(key))
+                    actor_values.append(str(actor_distribution_set.marginal(key)).split()[-1])
+                    if "Actor" in key:
+                        key = key.split(' ')[-1]
+                    clean_header.append(key)
+                data = pd.DataFrame(actor_values).T
+                data.columns = clean_header
+                data["Actor"] = actor
+                # TODO: create the region column
+                vds_values = vds_values.append(data)
+        return vds_values
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
