@@ -7,6 +7,8 @@ import sys
 import re
 import traceback
 import pandas
+import configparser
+
 
 qtCreatorFile = "psychsim-gui-main.ui"
 data_view_file = "data_view.ui"
@@ -69,17 +71,43 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #SET UP BUTTONS
         self.run_sim_button.setEnabled(False)
         self.run_sim_button.clicked.connect(self.run_simulation)
-        self.actionSelect_load_config.triggered.connect(self.load_config)
+        self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.select_sim.clicked.connect(self.set_sim_path)
         self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
         self.sel_def_dir.clicked.connect(self.set_definitions_path)
         self.actionview_data.triggered.connect(self.show_data_window)
         self.load_sim_button.clicked.connect(self.load_sim)
 
-    def load_config(self):
-        pass
+        self.load_config()
+
+    def open_config_loader(self):
         #open file dialog
-        #parse config to get psychsim_dir, def_dir, sim_dir
+        config_path = self.get_file_path(file_type="Config files (*.ini)")
+        self.load_config(config_path)
+
+    def load_config(self, path=None):
+        config = configparser.ConfigParser()
+        try:
+            if path:
+                config.read(path)
+            else:
+                #read the default
+                config.read('config.ini')
+
+            #set the path variables
+            self.psychsim_path = config['PATHS']['psychsim']
+            self.definitions_path = config['PATHS']['definitions']
+            self.sim_path = config['PATHS']['simulation']
+            self.psychsim_dir_path.setText(self.definitions_path)
+            self.def_dir_path.setText(self.definitions_path)
+            self.sim_path_label.setText(str(self.sim_path).split('/')[-1])
+            self.print_sim_output("config loaded", "green")
+        except:
+            self.print_sim_output("no config", "red")
+            tb = traceback.format_exc()
+            self.print_sim_output(tb, "red")
+
+        #set the display
 
     def set_psychsim_path(self):
         psychsim_path = self.get_directory_path()
@@ -95,15 +123,14 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         sim_file_path = self.get_file_path()
         self.sim_path = f"{str(sim_file_path)}"
         self.sim_path_label.setText(str(sim_file_path).split('/')[-1])
-        self.run_sim_button.setEnabled(True)
 
     def get_directory_path(self):
         return str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
 
-    def get_file_path(self):
+    def get_file_path(self, file_type="Python Files (*.py)"):
         options = QtWidgets.QFileDialog.Options()
         # options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self,"Select Sim", "","Python Files (*.py)", options=options)
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self,"Select Sim", "",file_type, options=options)
         if fileName:
             print(fileName)
         return fileName
@@ -154,6 +181,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             self.spec = importlib.util.spec_from_file_location(sim_name, self.sim_path)
             self.sim_module = importlib.util.module_from_spec(self.spec)
             self.sim_loaded_state.setText("LOADED")
+            self.run_sim_button.setEnabled(True)
+            self.print_sim_output(f"sim loaded: {self.sim_path}", "green")
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
