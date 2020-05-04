@@ -285,30 +285,25 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # agent_info.pop("beliefs", None)
         agent_df = pd.DataFrame.from_dict(agent_info) #TODO: FIX THIS
 
-        # # data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
-        # data = pd.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv')
-        # df = pd.DataFrame.from_dict(data)
+        vds_vals = self.extract_values_fromVectorDistributionSet(agent_info['beliefs'][0])
+        agent_df = pd.concat([agent_df, vds_vals], axis=1)
         return agent_df
 
 
     def extract_values_fromVectorDistributionSet(self, vds):
         vds_values = pd.DataFrame()
-        for actor, values in vds.items():
-            clean_header = []
-            actor_values = []
-            if "Actor" in actor:
-                actor_distribution_set = values[f"{actor}0"]
-                for key in actor_distribution_set.keyMap:
-                    # print(actor_distribution_set.marginal(key))
-                    actor_values.append(str(actor_distribution_set.marginal(key)).split()[-1])
-                    if "Actor" in key:
-                        key = key.split(' ')[-1]
-                    clean_header.append(key)
-                data = pd.DataFrame(actor_values).T
-                data.columns = clean_header
-                data["Actor"] = actor
-                # TODO: create the region column
-                vds_values = vds_values.append(data)
+        clean_header = []
+        actor_values = []
+        for key in vds.keyMap:
+            # print(actor_distribution_set.marginal(key))
+            actor_values.append(str(vds.marginal(key)).split()[-1])
+            if "Actor" in key:
+                key = key.split(' ')[-1]
+            clean_header.append(key)
+        data = pd.DataFrame(actor_values).T
+        data.columns = clean_header
+        # TODO: create the region column
+        vds_values = vds_values.append(data)
         return vds_values
 
 if __name__ == "__main__":
