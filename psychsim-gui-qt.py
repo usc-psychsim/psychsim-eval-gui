@@ -284,9 +284,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         agent_info.pop("possible_actions", None)
         # agent_info.pop("beliefs", None)
         agent_df = pd.DataFrame.from_dict(agent_info) #TODO: FIX THIS
-
-        vds_vals = self.extract_values_fromVectorDistributionSet(agent_info['beliefs'][0])
-        agent_df = pd.concat([agent_df, vds_vals], axis=1)
+        if agent_info['beliefs']:
+            vds_vals = self.extract_values_fromVectorDistributionSet(agent_info['beliefs'][0])
+            agent_df = pd.concat([agent_df, vds_vals], axis=1)
         return agent_df
 
 
