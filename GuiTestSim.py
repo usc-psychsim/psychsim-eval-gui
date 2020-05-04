@@ -10,7 +10,6 @@ from new_locations import Locations, Directions
 from victims import Victims
 from SandRMap import getSandRMap, getSandRVictims, getSmallSandRMap, getSmallSandRVictims, checkSRMap
 import pprint
-import pandas as pd
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -116,68 +115,6 @@ class GuiTestSim:
 
         self.world.step(debug=self.result0)
         return self.result0
-            # cmd = input('select action as if you are the agent, or type "r" to step the simulation, type "s" to print belief, press return with no entry to stop: ')
-            # try:
-            #     cmd_int = int(cmd)
-            #     Victims.world.step(list(legalActions)[cmd_int])
-            # except:
-            #     #do nothing
-            #     pass
-            # if cmd == 'r':
-            #     #world.printBeliefs(self.triageAgent.name)
-            #     world.step(debug=result0)
-            # if cmd == 's':
-            #     world.printBeliefs(self.triageAgent.name)
-            #     print('Triage Agent Reward: ', self.triageAgent.reward())
-            # elif cmd == '':
-            #     print('Finishing Simulation')
-
-    def test_function(self):
-        print("THIS IS A TEST FUNCTION")
-
-    def print_debug(self, debug, level=0):
-        reg_node = "".join(['│\t' for i in range(level)]) + "├─"
-        end_node = "".join(['│\t' for i in range(level)]) + "├─"
-        level = level + 1
-        if type(debug) == dict:
-            for k, v in debug.items():
-                print(f"{reg_node} {k}")
-                self.print_debug(v, level)
-        elif type(debug) == VectorDistributionSet:
-            for key in debug.keyMap:
-                print(f"{end_node} {key}: {str(debug.marginal(key)).split()[-1]}")
-        elif type(debug) == ActionSet:
-            for key in debug:
-                print(f"{end_node} {key}: ")
-        else:
-            print(f"{end_node} {debug}")
-
-    def get_debug_data(self, debug, step, level=0):
-        # TODO: make this output some sort of dataframe
-        #THIS ASSUMES THE STRUCTURE WON'T CHANGE
-        sim_info = pd.DataFrame(columns=["step", "agent", "action"])
-        step_info = []
-
-        for k, v in debug.items():
-            agent_info = dict(agent=None, action=None, possible_actions=None, beliefs=None)
-            agent_info["agent"] = k
-            for k1, v1 in v.items():
-                for k2, v2 in v1.items():
-                    if type(v2) == dict:
-                        for k3, v3 in v2.items():
-                            if type(v3) == ActionSet:
-                                agent_info["action"] = v3
-                            if type(v3) == dict:
-                                agent_info["possible_actions"] = v3
-            if agent_info["possible_actions"] is not None:
-                agent_info["beliefs"] = agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]
-            step_info.append(agent_info)
-        #TODO: turn ste_info rows into a dataframe here PROPERLY
-        # df = pd.DataFrame.from_dict(step_info[0]) #TODO: FIX THIS
-        # data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
-        data = pd.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv')
-        df = pd.DataFrame.from_dict(data)
-        return df
 
 
 if __name__ == "__main__":

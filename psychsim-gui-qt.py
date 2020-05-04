@@ -9,11 +9,12 @@ import importlib.util
 import sys
 import re
 import traceback
-import pandas
+import pandas as pd
 import configparser
 import time
 
 from gui_threading import Worker, WorkerSignals
+# import psychsim_helpers as ph
 
 qtCreatorFile = "psychsim-gui-main.ui"
 data_view_file = "data_view.ui"
@@ -68,8 +69,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
         #VARS FOR SIM MODULE
-        self.spec = None
+        self.sim_spec = None
+        self.psysim_spec = None
         self.sim_module = None
+        self.psychsim_module = None
 
         #SET UP VARS
         self.run_thread = False
@@ -103,8 +106,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         while self.run_thread:
             result = tester.run_sim()
-            tester.print_debug(debug=result)
-            step_info = tester.get_debug_data(debug=result, step=step)
+            self.print_debug(debug=result)
+            step_info = self.get_debug_data(debug=result, step=step)
             model = pandasModel(step_info)
             #TODO: emit output to print to screen
             progress_callback.emit(step)
@@ -125,7 +128,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def start_sim_thread(self):
         try:
-            self.spec.loader.exec_module(self.sim_module)
+            self.sim_spec.loader.exec_module(self.sim_module)
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
@@ -202,6 +205,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             print(fileName)
         return fileName
 
+
     def load_sim(self):
         try:
             pathlist = [self.psychsim_path, self.definitions_path, self.sim_path]
@@ -210,9 +214,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
             sys.path.insert(1, self.psychsim_path)
             import psychsim  # this can be imported because of the above line
             sys.path.insert(1, self.definitions_path)  # this needs to be done to get the path of the other repo
+            #Import psychsim
+            self.psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
+            self.psychsim_module = importlib.util.module_from_spec(self.psychsim_spec)
+            self.psychsim_spec.loader.exec_module(self.psychsim_module)
 
-            self.spec = importlib.util.spec_from_file_location(sim_name, self.sim_path)
-            self.sim_module = importlib.util.module_from_spec(self.spec)
+            #import the sim module
+            self.sim_spec = importlib.util.spec_from_file_location(sim_name, self.sim_path)
+            self.sim_module = importlib.util.module_from_spec(self.sim_spec)
             self.sim_loaded_state.setText("LOADED")
             self.run_sim_button.setEnabled(True)
             self.print_sim_output(f"sim loaded: {self.sim_path}", "green")
@@ -229,6 +238,52 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def show_data_window(self):
         self.data_window.show()
+
+
+    def print_debug(self, debug, level=0):
+        reg_node = "".join(['│\t' for i in range(level)]) + "├─"
+        end_node = "".join(['│\t' for i in range(level)]) + "├─"
+        level = level + 1
+        if type(debug) == dict:
+            for k, v in debug.items():
+                print(f"{reg_node} {k}")
+                self.print_debug(v, level)
+        elif type(debug) == self.psychsim_module.VectorDistributionSet:
+            for key in debug.keyMap:
+                print(f"{end_node} {key}: {str(debug.marginal(key)).split()[-1]}")
+        elif type(debug) == self.psychsim_module.ActionSet:
+            for key in debug:
+                print(f"{end_node} {key}: ")
+        else:
+            print(f"{end_node} {debug}")
+
+
+    def get_debug_data(self, debug, step, level=0):
+        # TODO: make this output some sort of dataframe
+        # THIS ASSUMES THE STRUCTURE WON'T CHANGE
+        sim_info = pd.DataFrame(columns=["step", "agent", "action"])
+        step_info = []
+
+        for k, v in debug.items():
+            agent_info = dict(agent=None, action=None, possible_actions=None, beliefs=None)
+            agent_info["agent"] = k
+            for k1, v1 in v.items():
+                for k2, v2 in v1.items():
+                    if type(v2) == dict:
+                        for k3, v3 in v2.items():
+                            if type(v3) == self.psychsim_module.ActionSet:
+                                agent_info["action"] = v3
+                            if type(v3) == dict:
+                                agent_info["possible_actions"] = v3
+            if agent_info["possible_actions"] is not None:
+                agent_info["beliefs"] = agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]
+            step_info.append(agent_info)
+        # TODO: turn ste_info rows into a dataframe here PROPERLY
+        # df = pd.DataFrame.from_dict(step_info[0]) #TODO: FIX THIS
+        # data = {'col_1': [3, 2, 1, 0], 'col_2': ['a', 'b', 'c', 'd']}
+        data = pd.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv')
+        df = pd.DataFrame.from_dict(data)
+        return df
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
