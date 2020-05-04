@@ -1,6 +1,9 @@
-import sys
-from PyQt5 import QtCore, QtGui, QtWidgets,   uic
-from data_view import dataView
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5 import uic
+
+import time
 import os
 import importlib.util
 import sys
@@ -8,7 +11,7 @@ import re
 import traceback
 import pandas
 import configparser
-
+import time
 
 qtCreatorFile = "psychsim-gui-main.ui"
 data_view_file = "data_view.ui"
@@ -16,30 +19,77 @@ data_view_file = "data_view.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 ui_dataView, QtBaseClass2 = uic.loadUiType(data_view_file)
 
-class pandasModel(QtCore.QAbstractTableModel):
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
 
-    def __init__(self, data):
-        QtCore.QAbstractTableModel.__init__(self)
-        self._data = data
+    Supported signals are:
 
-    def rowCount(self, parent=None):
-        return self._data.shape[0]
+    finished
+        No data
 
-    def columnCount(self, parnet=None):
-        return self._data.shape[1]
+    error
+        `tuple` (exctype, value, traceback.format_exc() )
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if index.isValid():
-            if role == QtCore.Qt.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
-        return None
+    result
+        `object` data returned from processing, anything
 
-    def headerData(self, col, orientation, role):
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            return self._data.columns[col]
-        return None
+    progress
+        `int` indicating % progress
 
-class RawDataWindow(QtWidgets.QMainWindow, ui_dataView):
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int)
+
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        self.kwargs['progress_callback'] = self.signals.progress
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+
+
+class RawDataWindow(QMainWindow, ui_dataView):
     #TODO: is this way better? https://www.codementor.io/@deepaksingh04/design-simple-dialog-using-pyqt5-designer-tool-ajskrd09n
     def __init__(self):
         super(RawDataWindow, self).__init__()
@@ -49,36 +99,118 @@ class RawDataWindow(QtWidgets.QMainWindow, ui_dataView):
         self.raw_data_table.setModel(model)
 
 
-class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
+class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
-        QtWidgets.QMainWindow.__init__(self)
+        QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
-
         #SET UP OTHER WINDOWS
         self.data_window = RawDataWindow()
+
+        #SET UP THREADING
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
         #VARS FOR SIM MODULE
         self.spec = None
         self.sim_module = None
 
         #SET UP VARS
-        self.sim_running = False
+        self.run_thread = False
+        self.run_sim = False
         self.psychsim_path = ""
         self.definitions_path = ""
         self.sim_path = ""
 
         #SET UP BUTTONS
         self.run_sim_button.setEnabled(False)
-        self.run_sim_button.clicked.connect(self.run_simulation)
+        # self.run_sim_button.clicked.connect(self.start_sim_thread)
+        # self.run_sim_button.clicked.connect(self.oh_no)
+        # self.run_sim_button.clicked.connect(self.stop_sim_thread)
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.select_sim.clicked.connect(self.set_sim_path)
         self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
         self.sel_def_dir.clicked.connect(self.set_definitions_path)
-        self.actionview_data.triggered.connect(self.show_data_window)
+        # self.actionview_data.triggered.connect(self.show_data_window)
         self.load_sim_button.clicked.connect(self.load_sim)
 
         self.load_config()
+
+#------------------------
+        self.counter = 0
+
+        self.run_thread = False
+
+        self.b.pressed.connect(self.oh_no)
+        self.b2.pressed.connect(self.stop_thread)
+        self.show()
+
+        self.timer = QTimer()
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.recurring_timer)
+        self.timer.start()
+
+    def progress_fn(self, n):
+        self.print_sim_output("%d%% done" % n, "black")
+
+    def execute_this_fn(self, progress_callback):
+        tester = self.sim_module.GuiTestSim()
+        step = 0
+        complete = dict(n=step, total=tester.sim_steps)
+
+        #THEIR STUFF----------------
+        # for n in range(0, 5):
+        #     time.sleep(1)
+        #     progress_callback.emit(n * 100 / 4)
+        #
+        time_sleep = 0
+        while self.run_thread:
+            result = tester.run_sim()
+            tester.print_debug(debug=result)
+            step_info = tester.get_debug_data(debug=result, step=step)
+            #TODO: emit model
+            #TODO: emit output to print to screen
+            time.sleep(1)
+            progress_callback.emit(time_sleep)
+            time_sleep = time_sleep + 1
+            step = step + 1
+            if step == tester.sim_steps:
+                break
+
+        return "Done."
+
+    def print_output(self, s):
+        self.print_sim_output(s, "black")
+
+    def thread_complete(self):
+        self.print_sim_output("THREAD COMPLETE!", "black")
+
+    def stop_thread(self):
+        self.run_thread = False
+
+    def oh_no(self):
+        try:
+            self.spec.loader.exec_module(self.sim_module)
+        except:
+            tb = traceback.format_exc()
+            self.print_sim_output(tb, "red")
+
+        #THEIR STUFF---------------------------
+        # Pass the function to execute
+        self.run_thread = True
+        worker = Worker(self.execute_this_fn)  # Any other args, kwargs are passed to the run function
+        worker.signals.result.connect(self.print_output)
+        worker.signals.finished.connect(self.thread_complete)
+        worker.signals.progress.connect(self.progress_fn)
+        # Execute
+        self.threadpool.start(worker)
+
+
+    def recurring_timer(self):
+        self.counter += 1
+        self.l.setText("Counter: %d" % self.counter)
+
+#--------------------------------
 
     def open_config_loader(self):
         #open file dialog
@@ -125,49 +257,15 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.sim_path_label.setText(str(sim_file_path).split('/')[-1])
 
     def get_directory_path(self):
-        return str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        return str(QFileDialog.getExistingDirectory(self, "Select Directory"))
 
     def get_file_path(self, file_type="Python Files (*.py)"):
-        options = QtWidgets.QFileDialog.Options()
-        # options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self,"Select Sim", "",file_type, options=options)
+        options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "",file_type, options=options)
         if fileName:
             print(fileName)
         return fileName
-
-    def run_simulation(self):
-        #RUN SIM CODE FROM DASH GUI
-        if self.sim_running:
-            self.run_sim_button.setText("STOP")
-            self.sim_running = False
-            self.print_sim_output("SIM RUNNING", "black")
-        else:
-            self.run_sim_button.setText("RUN")
-            self.sim_running = True
-            self.print_sim_output("SIM STOPPED", "black")
-
-        step = 0
-        try:
-            self.spec.loader.exec_module(self.sim_module)
-            tester = self.sim_module.GuiTestSim()
-            #TODO: multi thread this ? figure out how to stop the sim
-            while step <= tester.sim_steps:
-                self.print_sim_output(f"running sim {step}/{tester.sim_steps}", "black")
-                result = tester.run_sim()
-                tester.print_debug(debug=result)
-                step_info = tester.get_debug_data(debug=result, step=step)
-                # self.print_sim_output(step_info, "black") #TODO: fix this output
-                # TODO: concatenate to new dataframe with new step column
-                step = step + 1
-
-                model = pandasModel(step_info)
-                self.data_window.set_pandas_model(model)
-            # self.data_window.raw_data_table.view.resize(800, 600)
-        except:
-            tb = traceback.format_exc()
-            self.print_sim_output(tb, "red")
-
-
 
     def load_sim(self):
         try:
@@ -191,15 +289,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     def print_sim_output(self, msg, color):
-        self.simulation_output.setTextColor(QtGui.QColor(color))
+        self.simulation_output.setTextColor(QColor(color))
         self.simulation_output.append(msg)
 
     def show_data_window(self):
         self.data_window.show()
-
-
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = MyApp()
     window.show()
     sys.exit(app.exec_())

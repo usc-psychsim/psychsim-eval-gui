@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QTextBrowser" name="simulation_output"/>
+    </item>
     <item row="3" column="0">
      <widget class="QFrame" name="frame">
       <property name="frameShape">
@@ -23,7 +26,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QPushButton" name="run_sim_button">
          <property name="text">
@@ -31,11 +34,15 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="stop_sim_button">
+         <property name="text">
+          <string>STOP</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QTextBrowser" name="simulation_output"/>
     </item>
     <item row="1" column="0">
      <widget class="QFrame" name="frame_2">
@@ -99,6 +106,39 @@
         <widget class="QLabel" name="sim_loaded_state">
          <property name="text">
           <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QFrame" name="frame_3">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="1" column="1">
+        <widget class="QPushButton" name="b2">
+         <property name="text">
+          <string>STOP</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="b">
+         <property name="text">
+          <string>DANGER</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="l">
+         <property name="text">
+          <string>START</string>
          </property>
         </widget>
        </item>
