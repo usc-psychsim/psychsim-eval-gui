@@ -13,81 +13,37 @@ import pandas
 import configparser
 import time
 
+from gui_threading import Worker, WorkerSignals
+
 qtCreatorFile = "psychsim-gui-main.ui"
 data_view_file = "data_view.ui"
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 ui_dataView, QtBaseClass2 = uic.loadUiType(data_view_file)
 
-class WorkerSignals(QObject):
-    '''
-    Defines the signals available from a running worker thread.
 
-    Supported signals are:
+class pandasModel(QAbstractTableModel):
 
-    finished
-        No data
+    def __init__(self, data):
+        QAbstractTableModel.__init__(self)
+        self._data = data
 
-    error
-        `tuple` (exctype, value, traceback.format_exc() )
+    def rowCount(self, parent=None):
+        return self._data.shape[0]
 
-    result
-        `object` data returned from processing, anything
+    def columnCount(self, parnet=None):
+        return self._data.shape[1]
 
-    progress
-        `int` indicating % progress
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid():
+            if role == Qt.DisplayRole:
+                return str(self._data.iloc[index.row(), index.column()])
+        return None
 
-    '''
-    finished = pyqtSignal()
-    error = pyqtSignal(tuple)
-    result = pyqtSignal(object)
-    progress = pyqtSignal(int)
-
-
-class Worker(QRunnable):
-    '''
-    Worker thread
-
-    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
-
-    :param callback: The function callback to run on this worker thread. Supplied args and
-                     kwargs will be passed through to the runner.
-    :type callback: function
-    :param args: Arguments to pass to the callback function
-    :param kwargs: Keywords to pass to the callback function
-
-    '''
-
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-
-        # Store constructor arguments (re-used for processing)
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals = WorkerSignals()
-
-        # Add the callback to our kwargs
-        self.kwargs['progress_callback'] = self.signals.progress
-
-    @pyqtSlot()
-    def run(self):
-        '''
-        Initialise the runner function with passed args, kwargs.
-        '''
-
-        # Retrieve args/kwargs here; and fire processing using them
-        try:
-            result = self.fn(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)  # Return the result of the processing
-        finally:
-            self.signals.finished.emit()  # Done
-
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._data.columns[col]
+        return None
 
 class RawDataWindow(QMainWindow, ui_dataView):
     #TODO: is this way better? https://www.codementor.io/@deepaksingh04/design-simple-dialog-using-pyqt5-designer-tool-ajskrd09n
@@ -125,62 +81,41 @@ class MyApp(QMainWindow, Ui_MainWindow):
         #SET UP BUTTONS
         self.run_sim_button.setEnabled(False)
         # self.run_sim_button.clicked.connect(self.start_sim_thread)
-        # self.run_sim_button.clicked.connect(self.oh_no)
-        # self.run_sim_button.clicked.connect(self.stop_sim_thread)
+        self.run_sim_button.pressed.connect(self.start_sim_thread)
+        self.stop_sim_button.pressed.connect(self.stop_thread)
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.select_sim.clicked.connect(self.set_sim_path)
         self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
         self.sel_def_dir.clicked.connect(self.set_definitions_path)
-        # self.actionview_data.triggered.connect(self.show_data_window)
+        self.actionview_data.triggered.connect(self.show_data_window)
         self.load_sim_button.clicked.connect(self.load_sim)
 
         self.load_config()
 
-#------------------------
-        self.counter = 0
-
-        self.run_thread = False
-
-        self.b.pressed.connect(self.oh_no)
-        self.b2.pressed.connect(self.stop_thread)
-        self.show()
-
-        self.timer = QTimer()
-        self.timer.setInterval(1000)
-        self.timer.timeout.connect(self.recurring_timer)
-        self.timer.start()
 
     def progress_fn(self, n):
         self.print_sim_output("%d%% done" % n, "black")
 
-    def execute_this_fn(self, progress_callback):
+    def simulation_thread(self, progress_callback):
         tester = self.sim_module.GuiTestSim()
         step = 0
         complete = dict(n=step, total=tester.sim_steps)
 
-        #THEIR STUFF----------------
-        # for n in range(0, 5):
-        #     time.sleep(1)
-        #     progress_callback.emit(n * 100 / 4)
-        #
-        time_sleep = 0
         while self.run_thread:
             result = tester.run_sim()
             tester.print_debug(debug=result)
             step_info = tester.get_debug_data(debug=result, step=step)
-            #TODO: emit model
+            model = pandasModel(step_info)
             #TODO: emit output to print to screen
-            time.sleep(1)
-            progress_callback.emit(time_sleep)
-            time_sleep = time_sleep + 1
+            progress_callback.emit(step)
             step = step + 1
             if step == tester.sim_steps:
                 break
 
-        return "Done."
+        return model#"Done."
 
     def print_output(self, s):
-        self.print_sim_output(s, "black")
+        self.data_window.set_pandas_model(s)
 
     def thread_complete(self):
         self.print_sim_output("THREAD COMPLETE!", "black")
@@ -188,7 +123,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def stop_thread(self):
         self.run_thread = False
 
-    def oh_no(self):
+    def start_sim_thread(self):
         try:
             self.spec.loader.exec_module(self.sim_module)
         except:
@@ -198,7 +133,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         #THEIR STUFF---------------------------
         # Pass the function to execute
         self.run_thread = True
-        worker = Worker(self.execute_this_fn)  # Any other args, kwargs are passed to the run function
+        worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
         worker.signals.result.connect(self.print_output)
         worker.signals.finished.connect(self.thread_complete)
         worker.signals.progress.connect(self.progress_fn)
@@ -294,6 +229,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def show_data_window(self):
         self.data_window.show()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MyApp()
