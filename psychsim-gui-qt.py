@@ -12,15 +12,20 @@ import traceback
 import pandas as pd
 import configparser
 import time
+from datetime import datetime
+from functools import partial
+
 
 from gui_threading import Worker, WorkerSignals
 # import psychsim_helpers as ph
 
 qtCreatorFile = "psychsim-gui-main.ui"
 data_view_file = "data_view.ui"
+loaded_data_view_file = "loaded_data_view.ui"
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 ui_dataView, QtBaseClass2 = uic.loadUiType(data_view_file)
+ui_loadedDataView, QtBaseClass2 = uic.loadUiType(loaded_data_view_file)
 
 
 class pandasModel(QAbstractTableModel):
@@ -46,6 +51,29 @@ class pandasModel(QAbstractTableModel):
             return self._data.columns[col]
         return None
 
+class LoadedDataWindow(QMainWindow, ui_loadedDataView):
+    def __init__(self):
+        super(LoadedDataWindow, self).__init__()
+        self.setupUi(self)
+        # self.model = QStandardItemModel()
+        # self.loaded_data_table.setModel(self.model)
+
+        # self.loaded_data_table.setRowCount(1)
+        self.loaded_data_table.setColumnCount(4)
+        self.loaded_data_table.setHorizontalHeaderLabels(['date', 'name', 'steps', 'data'])
+
+    def add_row_to_table(self, row):
+        rowPosition = self.loaded_data_table.rowCount()
+        self.loaded_data_table.insertRow(rowPosition)
+        index = 0 #todo: figure out a better way to do this
+        for item in row:
+            if type(item) == str:
+                self.loaded_data_table.setItem(rowPosition, index, QTableWidgetItem(item))
+            elif type(item) == QPushButton:
+                self.loaded_data_table.setCellWidget(rowPosition, index, item)
+            index = index + 1
+
+
 class RawDataWindow(QMainWindow, ui_dataView):
     #TODO: is this way better? https://www.codementor.io/@deepaksingh04/design-simple-dialog-using-pyqt5-designer-tool-ajskrd09n
     def __init__(self):
@@ -63,6 +91,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         #SET UP OTHER WINDOWS
         self.data_window = RawDataWindow()
+        self.loaded_data_window = LoadedDataWindow()
 
         #SET UP THREADING
         self.threadpool = QThreadPool()
@@ -90,7 +119,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.select_sim.clicked.connect(self.set_sim_path)
         self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
         self.sel_def_dir.clicked.connect(self.set_definitions_path)
-        self.actionview_data.triggered.connect(self.show_data_window)
+        # self.actionview_data.triggered.connect(self.show_data_window)
+        self.actionview_data.triggered.connect(self.show_loaded_data_window)
         self.load_sim_button.clicked.connect(self.load_sim)
 
         self.load_config()
@@ -113,13 +143,25 @@ class MyApp(QMainWindow, Ui_MainWindow):
             progress_callback.emit(step)
             step = step + 1
             if step == tester.sim_steps:
-                model = pandasModel(sim_data)
                 break
 
-        return model#"Done."
+        return sim_data#"Done."
 
-    def print_output(self, s):
-        self.data_window.set_pandas_model(s)
+    def print_output(self, data):
+        #todo: rename this function
+
+        # create an cell widget
+        btn = QPushButton(self.loaded_data_window.loaded_data_table)
+        btn.setText('view')
+        btn.clicked.connect(partial(self.show_data_window, data))
+        # datetime object containing current date and time
+        now = datetime.now()
+        dt_string = now.strftime("%Y%m%d_%H%M%S")
+        print("date and time =", dt_string)
+        self.loaded_data_window.add_row_to_table([dt_string, re.split(r'[.,/]', self.sim_path)[-2], 's', btn])
+
+    def test_print_out(self, tst):
+        print(tst)
 
     def thread_complete(self):
         self.print_sim_output("THREAD COMPLETE!", "black")
@@ -237,8 +279,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.simulation_output.setTextColor(QColor(color))
         self.simulation_output.append(msg)
 
-    def show_data_window(self):
+    def show_data_window(self, data):
+        #this should really accept a key to access the dict of data saved at the top level
+        #then set the model based on this
+        model = pandasModel(data)
+        self.data_window.set_pandas_model(model)
+        self.data_window.setWindowTitle(f"key data")
         self.data_window.show()
+
+    def show_loaded_data_window(self):
+        self.loaded_data_window.show()
 
 
     def print_debug(self, debug, level=0):
