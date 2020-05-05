@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
 
-import time
 import os
 import importlib.util
 import sys
@@ -11,7 +10,6 @@ import re
 import traceback
 import pandas as pd
 import configparser
-import time
 from datetime import datetime
 from functools import partial
 
@@ -50,6 +48,7 @@ class pandasModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._data.columns[col]
         return None
+
 
 class LoadedDataWindow(QMainWindow, ui_loadedDataView):
     def __init__(self):
@@ -126,9 +125,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         self.load_config()
 
-
-    def progress_fn(self, n):
-        self.print_sim_output("%d%% done" % n, "black")
+    def progress_fn(self, step, max_step):
+        self.print_sim_output(f"{step}/{max_step} steps completed", "black")
 
     def simulation_thread(self, progress_callback):
         tester = self.sim_module.GuiTestSim()
@@ -141,14 +139,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
             sim_data = sim_data.append(self.get_debug_data(debug=result, step=step))
             model = pandasModel(sim_data)
             #TODO: emit output to print to screen
-            progress_callback.emit(step)
             step = step + 1
+            progress_callback.emit(step, tester.sim_steps)
             if step == tester.sim_steps:
                 break
 
-        return sim_data#"Done."
+        return dict(data=sim_data, step=step)#"Done."
 
-    def print_output(self, data):
+    def print_output(self, output):
+        data = output['data']
+        step = output['step']
         #todo: rename this function
         #save the data in the class dict
         now = datetime.now()
@@ -161,7 +161,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         btn.clicked.connect(partial(self.show_data_window, dt_string))
 
         #set the loaded data window row
-        self.loaded_data_window.add_row_to_table([dt_string, re.split(r'[.,/]', self.sim_path)[-2], 's', btn])
+        self.loaded_data_window.add_row_to_table([dt_string, re.split(r'[.,/]', self.sim_path)[-2], str(step), btn])
 
     def test_print_out(self, tst):
         print(tst)
@@ -188,11 +188,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         worker.signals.progress.connect(self.progress_fn)
         # Execute
         self.threadpool.start(worker)
-
-
-    def recurring_timer(self):
-        self.counter += 1
-        self.l.setText("Counter: %d" % self.counter)
 
 #--------------------------------
 
