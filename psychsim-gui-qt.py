@@ -229,8 +229,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def set_psychsim_path(self):
         psychsim_path = self.get_directory_path()
-        self.definitions_path = f"{str(psychsim_path)}"
-        self.psychsim_dir_path.setText(self.definitions_path)
+        self.psychsim_path = f"{str(psychsim_path)}"
+        self.psychsim_dir_path.setText(self.psychsim_path)
 
     def set_definitions_path(self):
         definitions_path = self.get_directory_path()
