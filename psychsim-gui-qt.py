@@ -115,14 +115,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         #SET UP BUTTONS
         self.run_sim_button.setEnabled(False)
-        # self.run_sim_button.clicked.connect(self.start_sim_thread)
         self.run_sim_button.pressed.connect(self.start_sim_thread)
         self.stop_sim_button.pressed.connect(self.stop_thread)
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.select_sim.clicked.connect(self.set_sim_path)
         self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
         self.sel_def_dir.clicked.connect(self.set_definitions_path)
-        # self.actionview_data.triggered.connect(self.show_data_window)
         self.actionview_data.triggered.connect(self.show_loaded_data_window)
         self.load_sim_button.clicked.connect(self.load_sim)
 
@@ -216,12 +214,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.psychsim_path = config['PATHS']['psychsim']
             self.definitions_path = config['PATHS']['definitions']
             self.sim_path = config['PATHS']['simulation']
-            self.psychsim_dir_path.setText(self.definitions_path)
+            self.psychsim_dir_path.setText(self.psychsim_path)
             self.def_dir_path.setText(self.definitions_path)
             self.sim_path_label.setText(str(self.sim_path).split('/')[-1])
             self.print_sim_output("config loaded", "green")
         except:
-            self.print_sim_output("no config", "red")
+            self.print_sim_output("INVALID CONFIG", "red")
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
 
