@@ -110,6 +110,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.definitions_path = ""
         self.sim_path = ""
 
+        #SET UP DICT FOR DATA
+        self.sim_data_dict = dict()
+
         #SET UP BUTTONS
         self.run_sim_button.setEnabled(False)
         # self.run_sim_button.clicked.connect(self.start_sim_thread)
@@ -149,15 +152,17 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def print_output(self, data):
         #todo: rename this function
-
-        # create an cell widget
-        btn = QPushButton(self.loaded_data_window.loaded_data_table)
-        btn.setText('view')
-        btn.clicked.connect(partial(self.show_data_window, data))
-        # datetime object containing current date and time
+        #save the data in the class dict
         now = datetime.now()
         dt_string = now.strftime("%Y%m%d_%H%M%S")
-        print("date and time =", dt_string)
+        self.sim_data_dict[dt_string] = data
+
+        # create the button to access the data
+        btn = QPushButton(self.loaded_data_window.loaded_data_table)
+        btn.setText('view')
+        btn.clicked.connect(partial(self.show_data_window, dt_string))
+
+        #set the loaded data window row
         self.loaded_data_window.add_row_to_table([dt_string, re.split(r'[.,/]', self.sim_path)[-2], 's', btn])
 
     def test_print_out(self, tst):
@@ -279,12 +284,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.simulation_output.setTextColor(QColor(color))
         self.simulation_output.append(msg)
 
-    def show_data_window(self, data):
+    def show_data_window(self, key):
         #this should really accept a key to access the dict of data saved at the top level
         #then set the model based on this
-        model = pandasModel(data)
+        #todo: add some exception handling
+        model = pandasModel(self.sim_data_dict[key])
         self.data_window.set_pandas_model(model)
-        self.data_window.setWindowTitle(f"key data")
+        self.data_window.setWindowTitle(f"{key} data")
         self.data_window.show()
 
     def show_loaded_data_window(self):
