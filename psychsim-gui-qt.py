@@ -15,15 +15,20 @@ from functools import partial
 
 
 from gui_threading import Worker, WorkerSignals
+from query_functions import PsychSimQuery
 # import psychsim_helpers as ph
 
 qtCreatorFile = "psychsim-gui-main.ui"
 data_view_file = "data_view.ui"
 loaded_data_view_file = "loaded_data_view.ui"
+query_data_file = "query_data.ui"
+sample_data_file = "sample_data.ui"
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
-ui_dataView, QtBaseClass2 = uic.loadUiType(data_view_file)
-ui_loadedDataView, QtBaseClass2 = uic.loadUiType(loaded_data_view_file)
+ui_dataView, QtBaseClass = uic.loadUiType(data_view_file)
+ui_loadedDataView, QtBaseClass = uic.loadUiType(loaded_data_view_file)
+ui_queryDataView, QtBaseClass = uic.loadUiType(query_data_file)
+ui_sampleDataView, QtBaseClass = uic.loadUiType(sample_data_file)
 
 
 class pandasModel(QAbstractTableModel):
@@ -83,6 +88,29 @@ class RawDataWindow(QMainWindow, ui_dataView):
         self.raw_data_table.setModel(model)
 
 
+class SampleDataWindow(QMainWindow, ui_sampleDataView):
+    def __init__(self):
+        super(SampleDataWindow, self).__init__()
+        self.setupUi(self)
+
+    def sample_data(self):
+        pass
+
+    def update_sample_table(self):
+        pass
+
+
+class QueryDataWindow(QMainWindow, ui_queryDataView):
+    def __init__(self):
+        super(QueryDataWindow, self).__init__()
+        self.setupUi(self)
+
+    def set_query_dropdowns(self):
+        pass
+
+    def execute_query(self):
+        pass
+
 class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
@@ -91,6 +119,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         #SET UP OTHER WINDOWS
         self.data_window = RawDataWindow()
         self.loaded_data_window = LoadedDataWindow()
+        self.query_data_window = QueryDataWindow()
+        self.sample_data_window = SampleDataWindow()
 
         #SET UP THREADING
         self.threadpool = QThreadPool()
@@ -121,6 +151,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
         self.sel_def_dir.clicked.connect(self.set_definitions_path)
         self.actionview_data.triggered.connect(self.show_loaded_data_window)
+        self.actionquery_data.triggered.connect(self.show_query_data_window)
+        self.actioncreate_samples.triggered.connect(self.show_sample_data_window)
         self.load_sim_button.clicked.connect(self.load_sim)
 
         self.load_config()
@@ -288,6 +320,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def show_loaded_data_window(self):
         self.loaded_data_window.show()
+
+    def show_query_data_window(self):
+        self.query_data_window.show()
+
+    def show_sample_data_window(self):
+        self.sample_data_window.show()
 
 
     def print_debug(self, debug, level=0):

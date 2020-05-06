@@ -53,27 +53,6 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="2" column="1">
-        <widget class="QLabel" name="sim_path_label">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="psychsim_dir_path">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="sel_psychsim_dir">
-         <property name="text">
-          <string>Select Psychsim Dir</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QPushButton" name="sel_def_dir">
          <property name="text">
@@ -81,17 +60,10 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QPushButton" name="select_sim">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="sel_psychsim_dir">
          <property name="text">
-          <string>Select Sim</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="def_dir_path">
-         <property name="text">
-          <string>...</string>
+          <string>Select Psychsim Dir</string>
          </property>
         </widget>
        </item>
@@ -106,6 +78,34 @@
         <widget class="QLabel" name="sim_loaded_state">
          <property name="text">
           <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="psychsim_dir_path">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="def_dir_path">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="sim_path_label">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QPushButton" name="select_sim">
+         <property name="text">
+          <string>Select Sim</string>
          </property>
         </widget>
        </item>
@@ -136,7 +136,6 @@
     <addaction name="actionview_data"/>
     <addaction name="actionquery_data"/>
     <addaction name="actioncreate_samples"/>
-    <addaction name="actionview_samples"/>
    </widget>
    <widget class="QMenu" name="menuplots">
     <property name="title">
