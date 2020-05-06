@@ -104,12 +104,28 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
     def __init__(self):
         super(QueryDataWindow, self).__init__()
         self.setupUi(self)
+        self.psychsim_query = PsychSimQuery()
+        self.set_function_dropdown()
 
-    def set_query_dropdowns(self):
-        pass
+    def set_data_dropdown(self, keys):
+        all_items = [self.data_combo.itemText(i) for i in range(self.data_combo.count())]
+        new_items = [item for item in keys if item not in all_items]
+        self.data_combo.addItems(new_items)
+
+    def set_function_dropdown(self):
+        query_methods = [method_name for method_name in dir(self.psychsim_query)
+                         if callable(getattr(self.psychsim_query, method_name))
+                         and '__' not in method_name]
+        self.function_combo.addItems(query_methods)
+
+    def set_agent_dropdown(self):
+        query_methods = [method_name for method_name in dir(self.psychsim_query)
+                         if callable(getattr(self.psychsim_query, method_name))
+                         and '__' not in method_name]
+        self.function_combo.addItems(query_methods)
 
     def execute_query(self):
-        pass
+        print(self.data_combo.currentText)
 
 class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -191,6 +207,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         btn = QPushButton(self.loaded_data_window.loaded_data_table)
         btn.setText('view')
         btn.clicked.connect(partial(self.show_data_window, dt_string))
+
+        # add a value to the data dropdown for querying (and sampling
+        self.query_data_window.set_data_dropdown(self.sim_data_dict.keys())
 
         #set the loaded data window row
         self.loaded_data_window.add_row_to_table([dt_string, re.split(r'[.,/]', self.sim_path)[-2], str(step), btn])
