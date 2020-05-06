@@ -320,7 +320,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         try:
             pathlist = [self.psychsim_path, self.definitions_path, self.sim_path]
             sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-            os.environ["PYTHONPATH"] += os.pathsep + os.pathsep.join(pathlist)
             sys.path.insert(1, self.psychsim_path)
             import psychsim  # this can be imported because of the above line
             sys.path.insert(1, self.definitions_path)  # this needs to be done to get the path of the other repo
