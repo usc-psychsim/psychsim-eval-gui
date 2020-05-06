@@ -65,7 +65,7 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
 
         # self.loaded_data_table.setRowCount(1)
         self.loaded_data_table.setColumnCount(4)
-        self.loaded_data_table.setHorizontalHeaderLabels(['date', 'name', 'steps', 'data'])
+        self.loaded_data_table.setHorizontalHeaderLabels(['id', 'name', 'steps', 'data'])
 
     def add_row_to_table(self, row):
         rowPosition = self.loaded_data_table.rowCount()
@@ -410,6 +410,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         if agent_info['beliefs']:
             vds_vals = self.extract_values_fromVectorDistributionSet(agent_info['beliefs'][0])
             agent_df = pd.concat([agent_df, vds_vals], axis=1)
+        agent_df = agent_df.drop('beliefs', axis=1)
         return agent_df
 
 
