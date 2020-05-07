@@ -13,8 +13,9 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         # self.loaded_data_table.setModel(self.model)
 
         # self.loaded_data_table.setRowCount(1)
-        self.loaded_data_table.setColumnCount(4)
-        self.loaded_data_table.setHorizontalHeaderLabels(['id', 'name', 'steps', 'data'])
+        columns = ['id', 'name', 'steps', 'data', 'save']
+        self.loaded_data_table.setColumnCount(len(columns))
+        self.loaded_data_table.setHorizontalHeaderLabels(columns)
 
     def add_row_to_table(self, row):
         rowPosition = self.loaded_data_table.rowCount()

@@ -2,7 +2,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
-
 import os
 import importlib.util
 import sys
@@ -12,7 +11,6 @@ import pandas as pd
 import configparser
 from datetime import datetime
 from functools import partial
-
 
 from gui_threading import Worker, WorkerSignals
 from PandasModel import PandasModel
@@ -28,7 +26,6 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
 #TODO: split generic gui stuff to other files
 #TODO: try to get rid of class variables and use passed variables where possible (for readability)
-
 
 class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -113,12 +110,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
         btn.setText('view')
         btn.clicked.connect(partial(self.show_data_window, dt_string))
 
+        btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
+        btn2.setText('save')
+        btn2.clicked.connect(partial(self.save_data_window, dt_string))
+
         # add a value to the data dropdown for querying (and sampling
         self.query_data_window.set_data_dropdown(self.sim_data_dict)
 
         #set the loaded data window row
         # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-        self.loaded_data_window.add_row_to_table([dt_string, self.sim_name, str(step), btn])
+        self.loaded_data_window.add_row_to_table([dt_string, self.sim_name, str(step), btn, btn2])
 
     def test_print_out(self, tst):
         print(tst)
@@ -227,6 +228,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.print_sim_output(tb, "red")
             #TODO: push the error up to the text area
             self.sim_loaded_state.setText("ERROR")
+
+    def save_data_window(self, data_id):
+        data = self.sim_data_dict[data_id]
+        output_directory = 'sim_output'
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+        csv_file = f"{data_id}.csv"
+        data.to_csv(os.path.join(output_directory, csv_file))
+
 
 
     def print_sim_output(self, msg, color):
