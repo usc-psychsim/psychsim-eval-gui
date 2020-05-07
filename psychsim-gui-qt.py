@@ -172,6 +172,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.psychsim_path = ""
         self.definitions_path = ""
         self.sim_path = ""
+        self.sim_name = ""
 
         #SET UP DICT FOR DATA
         self.sim_data_dict = dict()
@@ -195,7 +196,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.print_sim_output(f"{step}/{max_step} steps completed", "black")
 
     def simulation_thread(self, progress_callback):
-        tester = self.sim_module.GuiTestSim()
+        tester = getattr(self.sim_module, self.sim_name)()
+        # tester2 = self.sim_module.GuiTestSim()
         step = 0
         complete = dict(n=step, total=tester.sim_steps)
         sim_data = pd.DataFrame()
@@ -230,7 +232,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.query_data_window.set_data_dropdown(self.sim_data_dict)
 
         #set the loaded data window row
-        self.loaded_data_window.add_row_to_table([dt_string, re.split(r'[.,/]', self.sim_path)[-2], str(step), btn])
+        # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
+        self.loaded_data_window.add_row_to_table([dt_string, self.sim_name, str(step), btn])
 
     def test_print_out(self, tst):
         print(tst)
@@ -319,7 +322,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def load_sim(self):
         try:
             pathlist = [self.psychsim_path, self.definitions_path, self.sim_path]
-            sim_name = re.split(r'[.,/]', self.sim_path)[-2]
+            self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
             sys.path.insert(1, self.psychsim_path)
             import psychsim  # this can be imported because of the above line
             sys.path.insert(1, self.definitions_path)  # this needs to be done to get the path of the other repo
@@ -329,7 +332,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.psychsim_spec.loader.exec_module(self.psychsim_module)
 
             #import the sim module
-            self.sim_spec = importlib.util.spec_from_file_location(sim_name, self.sim_path)
+            self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
             self.sim_module = importlib.util.module_from_spec(self.sim_spec)
             self.sim_loaded_state.setText("LOADED")
             self.run_sim_button.setEnabled(True)
