@@ -15,20 +15,15 @@ from functools import partial
 
 
 from gui_threading import Worker, WorkerSignals
-from query_functions import PsychSimQuery
 # import psychsim_helpers as ph
 
-qtCreatorFile = "psychsim-gui-main.ui"
-data_view_file = "data_view.ui"
-loaded_data_view_file = "loaded_data_view.ui"
-query_data_file = "query_data.ui"
-sample_data_file = "sample_data.ui"
+from QueryDataWindow import QueryDataWindow
+from LoadedDataWindow import LoadedDataWindow
+from DataViewWindow import RawDataWindow
+from SampleDataWindow import SampleDataWindow
 
+qtCreatorFile = "psychsim-gui-main.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
-ui_dataView, QtBaseClass = uic.loadUiType(data_view_file)
-ui_loadedDataView, QtBaseClass = uic.loadUiType(loaded_data_view_file)
-ui_queryDataView, QtBaseClass = uic.loadUiType(query_data_file)
-ui_sampleDataView, QtBaseClass = uic.loadUiType(sample_data_file)
 
 #TODO: split this file into individual window python files, and separate generic gui stuff to other files
 #TODO: try to get rid of class variables and use passed variables where possible (for readability)
@@ -55,96 +50,6 @@ class pandasModel(QAbstractTableModel):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._data.columns[col]
         return None
-
-
-class LoadedDataWindow(QMainWindow, ui_loadedDataView):
-    def __init__(self):
-        super(LoadedDataWindow, self).__init__()
-        self.setupUi(self)
-        # self.model = QStandardItemModel()
-        # self.loaded_data_table.setModel(self.model)
-
-        # self.loaded_data_table.setRowCount(1)
-        self.loaded_data_table.setColumnCount(4)
-        self.loaded_data_table.setHorizontalHeaderLabels(['id', 'name', 'steps', 'data'])
-
-    def add_row_to_table(self, row):
-        rowPosition = self.loaded_data_table.rowCount()
-        self.loaded_data_table.insertRow(rowPosition)
-        index = 0 #todo: figure out a better way to do this
-        for item in row:
-            if type(item) == str:
-                self.loaded_data_table.setItem(rowPosition, index, QTableWidgetItem(item))
-            elif type(item) == QPushButton:
-                self.loaded_data_table.setCellWidget(rowPosition, index, item)
-            index = index + 1
-
-
-class RawDataWindow(QMainWindow, ui_dataView):
-    #TODO: is this way better? https://www.codementor.io/@deepaksingh04/design-simple-dialog-using-pyqt5-designer-tool-ajskrd09n
-    def __init__(self):
-        super(RawDataWindow, self).__init__()
-        self.setupUi(self)
-
-    def set_pandas_model(self, model):
-        self.raw_data_table.setModel(model)
-
-
-class SampleDataWindow(QMainWindow, ui_sampleDataView):
-    def __init__(self):
-        super(SampleDataWindow, self).__init__()
-        self.setupUi(self)
-
-    def sample_data(self):
-        pass
-
-    def update_sample_table(self):
-        pass
-
-
-class QueryDataWindow(QMainWindow, ui_queryDataView):
-    def __init__(self):
-        super(QueryDataWindow, self).__init__()
-        self.setupUi(self)
-        self.psychsim_query = PsychSimQuery()
-        self.set_function_dropdown()
-
-        self.execute_query_button.clicked.connect(self.execute_query)
-        self.data_combo.activated.connect(self.set_agent_dropdown)
-        self.data_combo.activated.connect(self.set_action_dropdown)
-        self.data = None
-
-    def set_data_dropdown(self, data):
-        self.data = data #TODO: FIX SO THERE ISN"T 2 COPIES OF THE DATA IN THE GUI (IN THE MAIN AND HERE)
-        #TODO: make this a main set_dropdown function and refactor out the others
-        all_items = [self.data_combo.itemText(i) for i in range(self.data_combo.count())]
-        new_items = [item for item in data.keys() if item not in all_items]
-        self.data_combo.addItems(new_items)
-
-    def set_function_dropdown(self):
-        query_methods = [method_name for method_name in dir(self.psychsim_query)
-                         if callable(getattr(self.psychsim_query, method_name))
-                         and '__' not in method_name]
-        self.function_combo.addItems(query_methods)
-
-    def set_agent_dropdown(self):
-        #todo: refactor this and other dropdown generation functions
-        #TODO: figure out how to set this based on the data set (i.e. remove old ones and add new ones)
-        agents = self.data[self.data_combo.currentText()]['agent'].unique()
-        all_items = [self.agent_combo.itemText(i) for i in range(self.agent_combo.count())]
-        new_items = [item for item in agents if item not in all_items]
-        self.agent_combo.addItems(new_items)
-
-    def set_action_dropdown(self):
-        actions = self.data[self.data_combo.currentText()]['action'].unique()
-        all_items = [self.action_combo.itemText(i) for i in range(self.action_combo.count())]
-        new_items = [item for item in actions if item not in all_items]
-        self.action_combo.addItems(new_items)
-
-    def execute_query(self):
-        query_function = self.function_combo.currentText()
-        result = getattr(self.psychsim_query, query_function)()
-        print(result)
 
 class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
