@@ -4,6 +4,11 @@ Created on Wed Feb 19 14:35:40 2020
 
 @author: mostafh
 """
+import sys
+print(sys.path)
+sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic")
+sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions")
+
 from psychsim.world import World, WORLD
 from psychsim.pwl import stateKey, Distribution, actionKey, VectorDistributionSet, ActionSet
 from new_locations import Locations, Directions
@@ -37,7 +42,7 @@ class GuiTestSim:
         k = self.world.defineState(WORLD, 'seconds', int)
         self.world.setFeature(k, 0)
 
-        self.agents = ['TriageAg1', 'TriageAg2']
+        self.agents= ['TriageAg1', 'TriageAg2']
         #TODO: fix this to make it use the above variable (and check that it is uses the belle_fewacts setup)
         self.triageAgent = self.world.addAgent('TriageAg1')
         self.triageAgent2 = self.world.addAgent('TriageAg2')
@@ -67,11 +72,11 @@ class GuiTestSim:
         Locations.makePlayerLocation(self.triageAgent2, "BH1")
 
         ## These must come before setting triager's beliefs
-        self.world.setOrder([{self.triageAgent.name}])
+        self.world.setOrder([{self.triageAgent.name}, {self.triageAgent2.name}])
 
         ## Set players horizons
-        self.triageAgent.setAttribute('horizon', 4)
-        self.triageAgent2.setAttribute('horizon', 4)
+        self.triageAgent.setAttribute('horizon', 2)
+        self.triageAgent2.setAttribute('horizon', 2)
 
         ## Set uncertain beliefs
         if not Victims.FULL_OBS:
@@ -92,11 +97,11 @@ class GuiTestSim:
         # Or You should also be able to use a dictionary like {'agent': {'other_agent': {}}} to then
         # retrieve the decision-making information within the agent's beliefs about the other_agent human
         # (but not the human's actual decision-making in this example).
-        self.result0 = {'TriageAg1': {}}
-        self.result1 = {'ATOMIC': {'TriageAg1': {}}}  # Chris: doesn't seem to work probably because ATOMIC
+        # self.result0 = {'TriageAg1': {}}
+        # self.result1 = {'ATOMIC': {'TriageAg1': {}}}  # Chris: doesn't seem to work probably because ATOMIC
         # has no beliefs so far
         cmd = 'blank'
-        self.sim_steps = 5
+        self.sim_steps = 30
 
     def run_sim(self):
         legalActions = self.triageAgent.getActions()
@@ -110,13 +115,19 @@ class GuiTestSim:
         print()
         # world.printBeliefs(self.triageAgent.name)
         print('Triage Agent Reward: ', self.triageAgent.reward())
-        self.result0 = {'TriageAg1': {}}
-        self.result1 = {'ATOMIC': {'TriageAg1': {}}}
+        result0 = {'TriageAg1': {}}
+        result1 = {'TriageAg2': {}, 'TriageAg1': {}}
+        result2= {'TriageAg2': {}}
+        resultA = {'ATOMIC': {}}
+        resultA1 = {'ATOMIC': {'TriageAg1': {}}}
 
-        self.world.step(debug=self.result0)
-        return self.result0
+        #GET ALL RESULTS OF ALL AGENTS
+        result = {agent: {} for agent in self.agents}
+
+        self.world.step(debug=result)
+        return result
 
 
 if __name__ == "__main__":
     sim = GuiTestSim()
-    # sim.run_sim()
+    sim.run_sim()

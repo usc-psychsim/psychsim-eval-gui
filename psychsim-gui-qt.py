@@ -31,6 +31,7 @@ ui_queryDataView, QtBaseClass = uic.loadUiType(query_data_file)
 ui_sampleDataView, QtBaseClass = uic.loadUiType(sample_data_file)
 
 #TODO: split this file into individual window python files, and separate generic gui stuff to other files
+#TODO: try to get rid of class variables and use passed variables where possible (for readability)
 
 class pandasModel(QAbstractTableModel):
 
@@ -391,8 +392,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         sim_info = pd.DataFrame(columns=["step", "agent", "action"])
         step_info = []
 
-        agent_info = dict(step=[step],agent=None, action=None, possible_actions=None, beliefs=None)
         for k, v in debug.items():
+            agent_info = dict(step=[step],agent=None, action=None, possible_actions=None, beliefs=None)
             agent_info["agent"] = k
             for k1, v1 in v.items():
                 for k2, v2 in v1.items():
@@ -404,17 +405,22 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                 agent_info["possible_actions"] = v3
             if agent_info["possible_actions"] is not None:
                 agent_info["beliefs"] = [agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]]
+            step_info.append(agent_info)
 
         # TODO: turn ste_info rows into a dataframe here PROPERLY
-        agent_info["action"] = [str(agent_info["action"])]
-        agent_info.pop("possible_actions", None)
-        # agent_info.pop("beliefs", None)
-        agent_df = pd.DataFrame.from_dict(agent_info) #TODO: FIX THIS
-        if agent_info['beliefs']:
-            vds_vals = self.extract_values_fromVectorDistributionSet(agent_info['beliefs'][0])
-            agent_df = pd.concat([agent_df, vds_vals], axis=1)
-        agent_df = agent_df.drop('beliefs', axis=1)
-        return agent_df
+        step_dataframes = []
+        for info in step_info:
+            info["action"] = [str(info["action"])]
+            info.pop("possible_actions", None)
+            # agent_info.pop("beliefs", None)
+            agent_df = pd.DataFrame.from_dict(info) #TODO: FIX THIS
+            if info['beliefs']:
+                vds_vals = self.extract_values_fromVectorDistributionSet(info['beliefs'][0])
+                agent_df = pd.concat([agent_df, vds_vals], axis=1)
+            agent_df = agent_df.drop('beliefs', axis=1)
+            step_dataframes.append(agent_df)
+        output_df = pd.concat(step_dataframes)
+        return output_df
 
 
     def extract_values_fromVectorDistributionSet(self, vds):
