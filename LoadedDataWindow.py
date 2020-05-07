@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
+import pandas as pd
+from functools import partial
+import re
 
 loaded_data_view_file = "loaded_data_view.ui"
 ui_loadedDataView, QtBaseClass = uic.loadUiType(loaded_data_view_file)
@@ -16,6 +19,15 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         columns = ['id', 'name', 'steps', 'data', 'save']
         self.loaded_data_table.setColumnCount(len(columns))
         self.loaded_data_table.setHorizontalHeaderLabels(columns)
+
+    def load_data_from_file(self):
+        options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.csv)", options=options)
+        data = pd.read_csv(fileName)
+        data_id = re.split(r'[.,/]', fileName)[-2]
+        return data, data_id
+
 
     def add_row_to_table(self, row):
         rowPosition = self.loaded_data_table.rowCount()

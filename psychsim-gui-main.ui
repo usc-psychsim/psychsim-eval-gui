@@ -136,6 +136,7 @@
     <addaction name="actionview_data"/>
     <addaction name="actionquery_data"/>
     <addaction name="actioncreate_samples"/>
+    <addaction name="actionload_data_from_file"/>
    </widget>
    <widget class="QMenu" name="menuplots">
     <property name="title">
@@ -176,6 +177,11 @@
   <action name="actionview_samples">
    <property name="text">
     <string>view samples</string>
+   </property>
+  </action>
+  <action name="actionload_data_from_file">
+   <property name="text">
+    <string>load data from file</string>
    </property>
   </action>
  </widget>

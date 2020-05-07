@@ -71,6 +71,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.actionquery_data.triggered.connect(self.show_query_data_window)
         self.actioncreate_samples.triggered.connect(self.show_sample_data_window)
         self.load_sim_button.clicked.connect(self.load_sim)
+        self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
 
         self.load_config()
 
@@ -261,6 +262,25 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def show_sample_data_window(self):
         self.sample_data_window.show()
 
+    def load_data_from_file(self):
+        data, data_id = self.loaded_data_window.load_data_from_file()
+        self.sim_data_dict[data_id] = data
+
+        # TODO: refactor this as it is copied from the main window code
+        btn = QPushButton(self.loaded_data_window.loaded_data_table)
+        btn.setText('view')
+        btn.clicked.connect(partial(self.show_data_window, data_id)) #TODO: figure out how to connect this back to the main window
+
+        btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
+        btn2.setText('save')
+        btn2.clicked.connect(partial(self.save_data_window, data_id))
+
+        # add a value to the data dropdown for querying (and sampling
+        self.query_data_window.set_data_dropdown(self.sim_data_dict)
+
+        #set the loaded data window row
+        # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
+        self.loaded_data_window.add_row_to_table([data_id, self.sim_name, str("x"), btn, btn2])
 
     def print_debug(self, debug, level=0):
         reg_node = "".join(['│\t' for i in range(level)]) + "├─"
