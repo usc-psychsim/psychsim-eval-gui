@@ -29,6 +29,7 @@ def print_methods(obj):
 
 class GuiTestSim:
     def __init__(self):
+        self.sim_steps = 20
         # MDP or POMDP
         Victims.FULL_OBS = True
 
@@ -72,11 +73,12 @@ class GuiTestSim:
         Locations.makePlayerLocation(self.triageAgent2, "BH1")
 
         ## These must come before setting triager's beliefs
-        self.world.setOrder([{self.triageAgent.name}, {self.triageAgent2.name}])
+        # self.world.setOrder([{self.triageAgent.name}, {self.triageAgent2.name}])
+        self.world.setOrder([{self.triageAgent.name}])
 
         ## Set players horizons
-        self.triageAgent.setAttribute('horizon', 2)
-        self.triageAgent2.setAttribute('horizon', 2)
+        self.triageAgent.setAttribute('horizon', 4)
+        self.triageAgent2.setAttribute('horizon', 4)
 
         ## Set uncertain beliefs
         if not Victims.FULL_OBS:
@@ -101,7 +103,6 @@ class GuiTestSim:
         # self.result1 = {'ATOMIC': {'TriageAg1': {}}}  # Chris: doesn't seem to work probably because ATOMIC
         # has no beliefs so far
         cmd = 'blank'
-        self.sim_steps = 30
 
     def run_sim(self):
         legalActions = self.triageAgent.getActions()
@@ -116,16 +117,17 @@ class GuiTestSim:
         # world.printBeliefs(self.triageAgent.name)
         print('Triage Agent Reward: ', self.triageAgent.reward())
         result0 = {'TriageAg1': {}}
-        result1 = {'TriageAg2': {}, 'TriageAg1': {}}
-        result2= {'TriageAg2': {}}
-        resultA = {'ATOMIC': {}}
-        resultA1 = {'ATOMIC': {'TriageAg1': {}}}
+        # result1 = {'TriageAg2': {}, 'TriageAg1': {}}
+        # result2= {'TriageAg2': {}}
+        # resultA = {'ATOMIC': {}}
+        # resultA1 = {'ATOMIC': {'TriageAg1': {}}}
 
         #GET ALL RESULTS OF ALL AGENTS
-        result = {agent: {} for agent in self.agents}
+        # result = {agent: {} for agent in self.agents}
 
-        self.world.step(debug=result)
-        return result
+        self.world.step(debug=result0)
+        #TODO: see what is in things like triageAgent.reward - see what the legal actionsa re after the move, what the state is etc
+        return result0
 
 
 if __name__ == "__main__":
