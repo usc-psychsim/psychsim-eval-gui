@@ -15,6 +15,7 @@ from functools import partial
 
 
 from gui_threading import Worker, WorkerSignals
+from PandasModel import PandasModel
 # import psychsim_helpers as ph
 
 from QueryDataWindow import QueryDataWindow
@@ -25,31 +26,9 @@ from SampleDataWindow import SampleDataWindow
 qtCreatorFile = "psychsim-gui-main.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
-#TODO: split this file into individual window python files, and separate generic gui stuff to other files
+#TODO: split generic gui stuff to other files
 #TODO: try to get rid of class variables and use passed variables where possible (for readability)
 
-class pandasModel(QAbstractTableModel):
-
-    def __init__(self, data):
-        QAbstractTableModel.__init__(self)
-        self._data = data
-
-    def rowCount(self, parent=None):
-        return self._data.shape[0]
-
-    def columnCount(self, parnet=None):
-        return self._data.shape[1]
-
-    def data(self, index, role=Qt.DisplayRole):
-        if index.isValid():
-            if role == Qt.DisplayRole:
-                return str(self._data.iloc[index.row(), index.column()])
-        return None
-
-    def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._data.columns[col]
-        return None
 
 class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -111,7 +90,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             result = tester.run_sim()
             self.print_debug(debug=result)
             sim_data = sim_data.append(self.get_debug_data(debug=result, step=step))
-            model = pandasModel(sim_data)
+            model = PandasModel(sim_data)
             #TODO: emit output to print to screen
             step = step + 1
             progress_callback.emit(step, tester.sim_steps)
@@ -258,7 +237,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         #this should really accept a key to access the dict of data saved at the top level
         #then set the model based on this
         #todo: add some exception handling
-        model = pandasModel(self.sim_data_dict[key])
+        model = PandasModel(self.sim_data_dict[key])
         self.data_window.set_pandas_model(model)
         self.data_window.setWindowTitle(f"{key} data")
         self.data_window.show()
