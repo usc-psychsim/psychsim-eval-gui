@@ -56,3 +56,29 @@ class PsychSimQuery:
         """
         print("diff_checker")
         pass
+
+#-------own--------------
+
+    def get_agents(self):
+        """
+        get list of agents in the data
+        :return:
+        """
+        pass
+
+    def get_actions(self, agent):
+        """
+        return a list of actions taken, and their corresponding steps
+        :param agent:
+        :return:
+        """
+        pass
+
+    def get_beliefs(self, agent):
+        """
+        return a dataframe of beliefs for the agent at each step
+        :param agent:
+        :return:
+        """
+        pass
+
