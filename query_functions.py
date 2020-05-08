@@ -1,7 +1,8 @@
 """
 Query function definitions used by psychsim gui
 """
-
+import pandas as pd
+import numpy as np
 
 class PsychSimQuery:
     def __init__(self):
@@ -59,14 +60,26 @@ class PsychSimQuery:
 
 #-------own--------------
 
-    def get_agents(self):
+    def get_agents(self, *args, **kwargs):
         """
         get list of agents in the data
         :return:
         """
-        pass
+        agent_list = dict()
+        for key, value in kwargs.items():
+            if key == "data":
+                for sim_data in value.values():
+                    for step_data in sim_data.values():
+                        for agent_data in step_data.values():
+                            if type(agent_data) == dict:
+                                for agent in list(agent_data.keys()):
+                                    agent_list[agent] = agent
 
-    def get_actions(self, agent):
+        return agent_list
+
+
+
+    def get_actions(self, *args, **kwargs):
         """
         return a list of actions taken, and their corresponding steps
         :param agent:
@@ -74,7 +87,7 @@ class PsychSimQuery:
         """
         pass
 
-    def get_beliefs(self, agent):
+    def get_beliefs(self, *args, **kwargs):
         """
         return a dataframe of beliefs for the agent at each step
         :param agent:

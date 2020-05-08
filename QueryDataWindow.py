@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 from PyQt5 import uic
 import sys
+import inspect
 
 from query_functions import PsychSimQuery
 
@@ -15,8 +17,10 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         self.set_function_dropdown()
 
         self.execute_query_button.clicked.connect(self.execute_query)
+        self.function_combo.activated.connect(self.set_dropdowns_for_function)
         self.data_combo.activated.connect(self.set_agent_dropdown)
         self.data_combo.activated.connect(self.set_action_dropdown)
+        self.data_combo.activated.connect(self.set_cycle_dropdown)
         self.data = None
 
     def set_data_dropdown(self, data):
@@ -34,6 +38,12 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
                          and '__' not in method_name]
         self.function_combo.addItems(query_methods)
 
+    def set_dropdowns_for_function(self):
+        #TODO: make this set the dropdowns based on the arguments in the function (then have to make sure that when clicking execute it only gets the appropriate ones also...
+        arglist = inspect.getfullargspec(getattr(self.psychsim_query, self.function_combo.currentText()))
+        print(arglist)
+
+
     def set_agent_dropdown(self):
         #todo: refactor this and other dropdown generation functions
         #TODO: figure out how to set this based on the data set (i.e. remove old ones and add new ones)
@@ -50,11 +60,22 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         # new_items = [item for item in actions if item not in all_items]
         # self.action_combo.addItems(new_items)
 
+    def set_cycle_dropdown(self):
+        #TODO: add ability to set range here (if needed?)
+        self.cycle_combo.clear()
+        steps = self.data.keys()
+        self.cycle_combo.addItems(steps)
+
     def execute_query(self):
         query_function = self.function_combo.currentText()
-        result = getattr(self.psychsim_query, query_function)()
-        print(result)
+        result = getattr(self.psychsim_query, query_function)(data=self.data)
+        self.print_query_output(f"agents in {self.data_combo.currentText()}:")
+        for agent in result:
+            self.print_query_output(f"{agent}")
 
+    def print_query_output(self, msg, color="black"):
+        self.query_output.setTextColor(QColor(color))
+        self.query_output.append(msg)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
