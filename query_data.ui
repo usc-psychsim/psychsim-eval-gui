@@ -46,56 +46,19 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="5">
-        <widget class="QComboBox" name="state_combo"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QComboBox" name="function_combo"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="agent_combo"/>
-       </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>cycle</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>action</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="2">
         <widget class="QComboBox" name="action_combo"/>
        </item>
        <item row="1" column="4">
         <widget class="QComboBox" name="horizon_combo"/>
        </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>agent</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>function</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="3">
         <widget class="QComboBox" name="cycle_combo"/>
        </item>
-       <item row="0" column="4">
-        <widget class="QLabel" name="label_5">
+       <item row="0" column="2">
+        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>horizon</string>
+          <string>action</string>
          </property>
         </widget>
        </item>
@@ -106,10 +69,54 @@
          </property>
         </widget>
        </item>
+       <item row="1" column="5">
+        <widget class="QComboBox" name="state_combo"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>agent</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>horizon</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="agent_combo"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>function</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="6">
         <widget class="QPushButton" name="execute_query_button">
          <property name="text">
           <string>Execute</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QComboBox" name="function_combo"/>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>cycle</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QToolButton" name="function_button">
+         <property name="text">
+          <string>function</string>
          </property>
         </widget>
        </item>
