@@ -90,16 +90,18 @@ class PsychSimQuery:
         try:
             data = kwargs['data']
             data_id = kwargs['data_id']
+            agent_id = kwargs['agent']
             for sim_id, sim_data in data.items():
                 if sim_id == data_id:
                     for step, step_data in sim_data.items():
-                        for agent_data in step_data['step_data'].values():
-                            for d in agent_data['__decision__'].values():
-                                if type(d) == dict:
-                                    for k, v in d.items():
-                                        if k == 'action':
-                                            actions_dict['action'].append(str(v))
-                                            actions_dict['step'].append(step)
+                        for agent, agent_data in step_data['step_data'].items():
+                            if agent == agent_id:
+                                for d in agent_data['__decision__'].values():
+                                    if type(d) == dict:
+                                        for k, v in d.items():
+                                            if k == 'action':
+                                                actions_dict['action'].append(str(v))
+                                                actions_dict['step'].append(step)
         except:
             tb = traceback.format_exc()
             print(tb)
