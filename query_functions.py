@@ -115,5 +115,67 @@ class PsychSimQuery:
         :param agent:
         :return:
         """
-        pass
+        try:
+            data = kwargs['data']
+            data_id = kwargs['data_id']
+            agent_id = kwargs['agent']
+            output_data = pd.DataFrame()
+            for step, step_data in data[data_id].items():
+                output_data = output_data.append(self.__get_debug_data(debug=step_data['step_data'], step=step))
+            return output_data
+        except:
+            tb = traceback.format_exc()
+            print(tb)
 
+    def __get_debug_data(self, debug, step, level=0):
+        # TODO: make this output some sort of dataframe
+        # THIS ASSUMES THE STRUCTURE WON'T CHANGE
+        sim_info = pd.DataFrame(columns=["step", "agent", "action"])
+        step_info = []
+
+        for k, v in debug.items():
+            agent_info = dict(step=[step],agent=None, action=None, possible_actions=None, beliefs=None)
+            agent_info["agent"] = k
+            for k1, v1 in v.items():
+                for k2, v2 in v1.items():
+                    if type(v2) == dict:
+                        for k3, v3 in v2.items():
+                            # if type(v3) == self.psychsim_module.ActionSet:
+                            if v3.__class__.__name__ == "ActionSet":
+                                agent_info["action"] = v3
+                            if type(v3) == dict:
+                                agent_info["possible_actions"] = v3
+            if agent_info["possible_actions"] is not None:
+                agent_info["beliefs"] = [agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]]
+            step_info.append(agent_info)
+
+        # TODO: turn ste_info rows into a dataframe here PROPERLY
+        step_dataframes = []
+        for info in step_info:
+            info["action"] = [str(info["action"])]
+            info.pop("possible_actions", None)
+            # agent_info.pop("beliefs", None)
+            agent_df = pd.DataFrame.from_dict(info) #TODO: FIX THIS
+            if info['beliefs']:
+                vds_vals = self.__extract_values_fromVectorDistributionSet(info['beliefs'][0])
+                agent_df = pd.concat([agent_df, vds_vals], axis=1)
+            agent_df = agent_df.drop('beliefs', axis=1)
+            step_dataframes.append(agent_df)
+        output_df = pd.concat(step_dataframes)
+        return output_df
+
+    def __extract_values_fromVectorDistributionSet(self, vds):
+        vds_values = pd.DataFrame()
+        clean_header = []
+        actor_values = []
+        for key in vds.keyMap:
+            # print(actor_distribution_set.marginal(key))
+            actor_values.append(str(vds.marginal(key)).split()[-1])
+            if "Actor" in key:
+                key = key.split(' ')[-1]
+            clean_header.append(key)
+        data = pd.DataFrame(actor_values).T
+        data.columns = clean_header
+        # TODO: create the region column
+        vds_values = vds_values.append(data)
+        return vds_values

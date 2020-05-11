@@ -357,6 +357,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def get_debug_data(self, debug, step, level=0):
         # TODO: make this output some sort of dataframe
+        #TODO: remove this from here (moved to query_functions)
         # THIS ASSUMES THE STRUCTURE WON'T CHANGE
         sim_info = pd.DataFrame(columns=["step", "agent", "action"])
         step_info = []
@@ -393,6 +394,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
 
     def extract_values_fromVectorDistributionSet(self, vds):
+        #TODO: remove this from here (moved to query_functions)
         vds_values = pd.DataFrame()
         clean_header = []
         actor_values = []
