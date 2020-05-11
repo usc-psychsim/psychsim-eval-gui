@@ -9,6 +9,7 @@ print(sys.path)
 sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic")
 sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions")
 
+from psychsim.agent import ValueFunction
 from psychsim.world import World, WORLD
 from psychsim.pwl import stateKey, Distribution, actionKey, VectorDistributionSet, ActionSet
 from new_locations import Locations, Directions
@@ -29,7 +30,7 @@ def print_methods(obj):
 
 class GuiTestSim:
     def __init__(self):
-        self.sim_steps = 20
+        self.sim_steps = 50
         # MDP or POMDP
         Victims.FULL_OBS = True
 
@@ -77,7 +78,9 @@ class GuiTestSim:
         self.world.setOrder([{self.triageAgent.name}])
 
         ## Set players horizons
-        self.triageAgent.setAttribute('horizon', 4)
+        self.horizon = 4
+        self.triageAgent.setAttribute('horizon', self.horizon)
+        self.triageAgent.setAttribute('selection', 'random')
         self.triageAgent2.setAttribute('horizon', 4)
 
         ## Set uncertain beliefs
@@ -107,6 +110,7 @@ class GuiTestSim:
     def run_sim(self):
         legalActions = self.triageAgent.getActions()
         agent_state = self.triageAgent.getState('loc')
+        agent_belief = self.triageAgent.getBelief()
         print("Player state: ", agent_state)
         print("reward: ", self.triageAgent.reward())
         #  print(self.triageAgent.getAttribute('R',model='TriageAg10'))
@@ -125,11 +129,23 @@ class GuiTestSim:
         #GET ALL RESULTS OF ALL AGENTS
         # result = {agent: {} for agent in self.agents}
 
+        # valuefn = ValueFunction()#THIS DOESNT WORK - how do you do this????
+        # valuefn.set("TriageAg1", self.triageAgent.world.state, "TriageAg1-move-E", self.horizon, 0)#THIS DOESNT WORK - how do you do this????
+        # predicted_actions = self.triageAgent.predict(self.world.state,"TriageAg1",legalActions,horizon=0)#THIS DOESNT WORK - how do you do this????
+
         self.world.step(debug=result0)
         #TODO: see what is in things like triageAgent.reward - see what the legal actionsa re after the move, what the state is etc
+        legalActions_after = self.triageAgent.getActions()
+        agent_state_after = self.triageAgent.getState('loc')
+        reward_after = self.triageAgent.reward()
+        other_after = self.triageAgent.getAttribute('R',model='TriageAg10')
+
+        # world.printBeliefs(self.triageAgent.name)
+        print('Triage Agent Reward: ', self.triageAgent.reward())
         return result0
 
 
 if __name__ == "__main__":
     sim = GuiTestSim()
-    sim.run_sim()
+    for step in range(10):
+        sim.run_sim()
