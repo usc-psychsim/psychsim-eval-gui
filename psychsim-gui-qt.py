@@ -130,8 +130,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def print_output_beliefs(self, output):
         """this prints the beliefs only - not the whole data - not used"""
-        data = output['data']
-        step = output['total_steps']
+        data = pd.DataFrame()
+        for step, step_data in output.items():
+            data = data.append(self.get_debug_data(debug=step_data['step_data'], step=step))
+        step = '99'
         #todo: rename this function
         #save the data in the class dict
         now = datetime.now()
@@ -175,6 +177,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.run_thread = True
         worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
         worker.signals.result.connect(self.print_output)
+        # worker.signals.result.connect(self.print_output_beliefs)
         worker.signals.finished.connect(self.thread_complete)
         worker.signals.progress.connect(self.progress_fn)
         # Execute

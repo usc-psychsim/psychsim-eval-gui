@@ -3,8 +3,13 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 import sys
 import inspect
+import pandas as pd
 
 from query_functions import PsychSimQuery
+from DataViewWindow import RawDataWindow
+
+
+from PandasModel import PandasModel
 
 query_data_file = "query_data.ui"
 ui_queryDataView, QtBaseClass = uic.loadUiType(query_data_file)
@@ -22,6 +27,9 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         self.data_combo.activated.connect(self.set_action_dropdown)
         self.data_combo.activated.connect(self.set_cycle_dropdown)
         self.data = None
+
+
+        self.data_window = RawDataWindow()
 
     def set_data_dropdown(self, data):
         self.data = data #TODO: FIX SO THERE ISN"T 2 COPIES OF THE DATA IN THE GUI (IN THE MAIN AND HERE)
@@ -70,8 +78,16 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         query_function = self.function_combo.currentText()
         result = getattr(self.psychsim_query, query_function)(data=self.data)
         self.print_query_output(f"agents in {self.data_combo.currentText()}:")
-        for agent in result:
-            self.print_query_output(f"{agent}")
+        if type(result) == dict:
+            for agent in result:
+                self.print_query_output(f"{agent}")
+        elif type(result) == pd.DataFrame:
+            key = f"{self.data_combo.currentText()} actions"
+            model = PandasModel(result)
+            self.data_window.set_pandas_model(model)
+            self.data_window.setWindowTitle(f"{key} data")
+            self.data_window.show()
+            self.print_query_output(str(result))
 
     def print_query_output(self, msg, color="black"):
         self.query_output.setTextColor(QColor(color))

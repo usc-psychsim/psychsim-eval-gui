@@ -3,6 +3,7 @@ Query function definitions used by psychsim gui
 """
 import pandas as pd
 import numpy as np
+import traceback
 
 class PsychSimQuery:
     def __init__(self):
@@ -85,7 +86,24 @@ class PsychSimQuery:
         :param agent:
         :return:
         """
-        pass
+        actions_dict = dict(step=[], action=[])
+        try:
+            data = kwargs['data']
+            for sim_data in data.values():
+                for step, step_data in sim_data.items():
+                    for agent_data in step_data['step_data'].values():
+                        for d in agent_data['__decision__'].values():
+                            if type(d) == dict:
+                                for k, v in d.items():
+                                    if k == 'action':
+                                        actions_dict['action'].append(str(v))
+                                        actions_dict['step'].append(step)
+        except:
+            tb = traceback.format_exc()
+            print(tb)
+
+        output_data = pd.DataFrame.from_dict(actions_dict)
+        return output_data
 
     def get_beliefs(self, *args, **kwargs):
         """
