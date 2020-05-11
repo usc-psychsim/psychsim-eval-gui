@@ -76,7 +76,7 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
 
     def execute_query(self):
         query_function = self.function_combo.currentText()
-        result = getattr(self.psychsim_query, query_function)(data=self.data)
+        result = getattr(self.psychsim_query, query_function)(data=self.data, data_id=self.data_combo.currentText())
         self.print_query_output(f"agents in {self.data_combo.currentText()}:")
         if type(result) == dict:
             for agent in result:
