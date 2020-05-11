@@ -20,6 +20,7 @@ from QueryDataWindow import QueryDataWindow
 from LoadedDataWindow import LoadedDataWindow
 from DataViewWindow import RawDataWindow
 from SampleDataWindow import SampleDataWindow
+from renameDataDialog import RenameDataDialog
 
 qtCreatorFile = "psychsim-gui-main.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
@@ -57,7 +58,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sim_name = ""
 
         #SET UP DICT FOR DATA
-        self.sim_data_dict_beliefs = dict()
         self.sim_data_dict = dict() #this one is for the debug output
 
         #SET UP BUTTONS
@@ -101,19 +101,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
             #Get the beliefs (not needed here?)
             self.print_debug(debug=result)
-            sim_data = sim_data.append(self.get_debug_data(debug=result, step=step))
-            model = PandasModel(sim_data)
 
-            #increment steps and progress callback
-            #TODO: emit output to print to screen
             step = step + 1
             progress_callback.emit(step, tester.sim_steps)
             if step == tester.sim_steps:
                 break
         return output
-        # return dict(data=sim_data, total_steps=step)#"Done."
 
-    def print_output(self, output):
+    def handle_output(self, output):
         """
         update the query_data_window dropwdown to select data
         :param output:
@@ -128,33 +123,33 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.save_run_input.setEnabled(True)
         self.save_run_input.setText(dt_string)
 
-    def print_output_beliefs(self, output):
-        """this prints the beliefs only - not the whole data - not used"""
-        data = pd.DataFrame()
-        for step, step_data in output.items():
-            data = data.append(self.get_debug_data(debug=step_data['step_data'], step=step))
-        step = '99'
-        #todo: rename this function
-        #save the data in the class dict
-        now = datetime.now()
-        dt_string = now.strftime("%Y%m%d_%H%M%S")
-        self.sim_data_dict_beliefs[dt_string] = data
+        self.update_data_table()
 
-        # create the button to access the data
-        btn = QPushButton(self.loaded_data_window.loaded_data_table)
-        btn.setText('view')
-        btn.clicked.connect(partial(self.show_data_window, dt_string))
+    def update_data_table(self):
+        self.loaded_data_window.clear_table()#TODO: find better way to do this so it isn't loaded a new each time
+        for data_id, data in self.sim_data_dict.items():
+            #save the data in the class dict
+            now = datetime.now()
+            date_string = now.strftime("%d/%m/%Y %H:%M:%S")
+            # self.sim_data_dict_beliefs[dt_string] = data
 
-        btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
-        btn2.setText('save')
-        btn2.clicked.connect(partial(self.save_data_window, dt_string))
+            # create the button to rename the data
+            btn = QPushButton(self.loaded_data_window.loaded_data_table)
+            btn.setText('RENAME')
+            btn.clicked.connect(partial(self.rename_data, data_id))
 
-        # add a value to the data dropdown for querying (and sampling
-        self.query_data_window.set_data_dropdown(self.sim_data_dict_beliefs)
+            # create the button to save the data to csv
+            btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
+            btn2.setText('save')
+            btn2.clicked.connect(partial(self.save_data_window, data_id))
 
-        #set the loaded data window row
-        # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-        self.loaded_data_window.add_row_to_table([dt_string, self.sim_name, str(step), btn, btn2])
+            # # add a value to the data dropdown for querying (and sampling
+            # self.query_data_window.set_data_dropdown(self.sim_data_dict_beliefs)
+
+            #set the loaded data window row
+            # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
+            # columns = ['date', 'data_id', 'sim_file', '', '']
+            self.loaded_data_window.add_row_to_table([date_string, data_id, self.sim_name, btn, btn2])
 
     def test_print_out(self, tst):
         print(tst)
@@ -176,14 +171,22 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # Pass the function to execute
         self.run_thread = True
         worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
-        worker.signals.result.connect(self.print_output)
-        # worker.signals.result.connect(self.print_output_beliefs)
+        worker.signals.result.connect(self.handle_output)
         worker.signals.finished.connect(self.thread_complete)
         worker.signals.progress.connect(self.progress_fn)
         # Execute
         self.threadpool.start(worker)
 
 #--------------------------------
+
+    def rename_data(self, old_key):
+        #show the rename dialog and get the new name
+        new_key, accepted = RenameDataDialog.get_new_name(old_name=old_key)
+        if accepted:
+            self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
+            self.update_data_table()
+            self.query_data_window.set_data_dropdown(self.sim_data_dict)
+
 
     def open_config_loader(self):
         #open file dialog
@@ -317,7 +320,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
         self.loaded_data_window.add_row_to_table([data_id, self.sim_name, str("x"), btn, btn2])
 
-    def rename_data_id(self):
+    def rename_data_id(self, old_key=None):
+        #TODO: refactor this with other rename function
         old_key = self.previous_run_id.text()
         if self.save_run_input.text():
             new_key = self.save_run_input.text()
@@ -326,6 +330,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             else:
                 try:
                     self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
+                    self.update_data_table()
                 except KeyError as e:
                     self.print_sim_output(f"{old_key} has been renamed to {new_key}", "red")
                 self.previous_run_id.setText(new_key)
@@ -354,61 +359,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         else:
             print(f"{end_node} {debug}")
 
-
-    def get_debug_data(self, debug, step, level=0):
-        # TODO: make this output some sort of dataframe
-        #TODO: remove this from here (moved to query_functions)
-        # THIS ASSUMES THE STRUCTURE WON'T CHANGE
-        sim_info = pd.DataFrame(columns=["step", "agent", "action"])
-        step_info = []
-
-        for k, v in debug.items():
-            agent_info = dict(step=[step],agent=None, action=None, possible_actions=None, beliefs=None)
-            agent_info["agent"] = k
-            for k1, v1 in v.items():
-                for k2, v2 in v1.items():
-                    if type(v2) == dict:
-                        for k3, v3 in v2.items():
-                            if type(v3) == self.psychsim_module.ActionSet:
-                                agent_info["action"] = v3
-                            if type(v3) == dict:
-                                agent_info["possible_actions"] = v3
-            if agent_info["possible_actions"] is not None:
-                agent_info["beliefs"] = [agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]]
-            step_info.append(agent_info)
-
-        # TODO: turn ste_info rows into a dataframe here PROPERLY
-        step_dataframes = []
-        for info in step_info:
-            info["action"] = [str(info["action"])]
-            info.pop("possible_actions", None)
-            # agent_info.pop("beliefs", None)
-            agent_df = pd.DataFrame.from_dict(info) #TODO: FIX THIS
-            if info['beliefs']:
-                vds_vals = self.extract_values_fromVectorDistributionSet(info['beliefs'][0])
-                agent_df = pd.concat([agent_df, vds_vals], axis=1)
-            agent_df = agent_df.drop('beliefs', axis=1)
-            step_dataframes.append(agent_df)
-        output_df = pd.concat(step_dataframes)
-        return output_df
-
-
-    def extract_values_fromVectorDistributionSet(self, vds):
-        #TODO: remove this from here (moved to query_functions)
-        vds_values = pd.DataFrame()
-        clean_header = []
-        actor_values = []
-        for key in vds.keyMap:
-            # print(actor_distribution_set.marginal(key))
-            actor_values.append(str(vds.marginal(key)).split()[-1])
-            if "Actor" in key:
-                key = key.split(' ')[-1]
-            clean_header.append(key)
-        data = pd.DataFrame(actor_values).T
-        data.columns = clean_header
-        # TODO: create the region column
-        vds_values = vds_values.append(data)
-        return vds_values
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

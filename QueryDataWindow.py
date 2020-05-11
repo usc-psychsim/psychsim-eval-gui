@@ -23,7 +23,6 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         self.set_function_dropdown()
 
         self.execute_query_button.clicked.connect(self.execute_query)
-        self.function_combo.activated.connect(self.set_dropdowns_for_function)
         self.data_combo.activated.connect(self.set_agent_dropdown)
         self.data_combo.activated.connect(self.set_action_dropdown)
         self.data_combo.activated.connect(self.set_cycle_dropdown)
@@ -48,8 +47,6 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
                          and '__' not in method_name]
-        self.function_combo.addItems(query_methods)
-
 
         toolmenu = QMenu(self)
         alignmentGroup = QActionGroup(self)

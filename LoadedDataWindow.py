@@ -16,7 +16,7 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         # self.loaded_data_table.setModel(self.model)
 
         # self.loaded_data_table.setRowCount(1)
-        columns = ['id', 'name', 'steps', 'data', 'save']
+        columns = ['date', 'data_id', 'sim_file', '', '']
         self.loaded_data_table.setColumnCount(len(columns))
         self.loaded_data_table.setHorizontalHeaderLabels(columns)
 
@@ -39,6 +39,9 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
             elif type(item) == QPushButton:
                 self.loaded_data_table.setCellWidget(rowPosition, index, item)
             index = index + 1
+
+    def clear_table(self):
+        self.loaded_data_table.setRowCount(0)
 
 
 if __name__ == "__main__":
