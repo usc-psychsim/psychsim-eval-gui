@@ -22,16 +22,21 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         self.psychsim_query = PsychSimQuery()
         self.set_function_dropdown()
 
+        #set windows
+        self.data_window = RawDataWindow()
+
+        #set buttons
         self.execute_query_button.clicked.connect(self.execute_query)
+        self.diff_query_button.clicked.connect(self.diff_query)
         self.data_combo.activated.connect(self.set_agent_dropdown)
         self.data_combo.activated.connect(self.set_action_dropdown)
         self.data_combo.activated.connect(self.set_cycle_dropdown)
+        self.main_tab.currentChanged.connect(self.update_query_lists)
         self.data = None
 
         self.current_query_function = ""
 
 
-        self.data_window = RawDataWindow()
 
     def set_data_dropdown(self, data):
         self.data = data #TODO: FIX SO THERE ISN"T 2 COPIES OF THE DATA IN THE GUI (IN THE MAIN AND HERE)
@@ -47,24 +52,15 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
                          and '__' not in method_name]
+        self.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate)
 
-        toolmenu = QMenu(self)
-        alignmentGroup = QActionGroup(self)
-        actions = query_methods
-        for act in actions:
-            a = alignmentGroup.addAction(act)
-            a.setCheckable(True)
-            # a.triggered.connect(lambda: self.btnstate(act))
-            toolmenu.addAction(a)
-        alignmentGroup.triggered.connect(lambda: self.btnstate(alignmentGroup))
-        self.function_button.setMenu(toolmenu)
-        self.function_button.setPopupMode(QToolButton.InstantPopup)
 
-    def btnstate(self, b):
-        selection = b.checkedAction().text()
-        self.current_query_function = selection
-        print(b.checkedAction().text())
-        self.function_button.setText(b.checkedAction().text())
+    def btnstate(self, action, button):
+        selection = action.checkedAction().text()
+        if button == self.function_button:
+            self.current_query_function = selection
+        print(action.checkedAction().text())
+        button.setText(action.checkedAction().text())
         #TODO: make this conditional functionality smarter
         if selection == "get_actions":
             self.set_agent_dropdown()
@@ -111,12 +107,71 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
                 key = f"{self.data_combo.currentText()} actions"
                 model = PandasModel(result)
                 self.data_window.set_pandas_model(model)
+                self.data_window.query_name_save_input.setText("")
                 self.data_window.setWindowTitle(f"{key} data")
+                self.data_window.set_query_info(funct=query_function, data_id=data_id, agent=agent)
                 self.data_window.show()
                 self.print_query_output(str(result))
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+    def update_query_lists(self):
+        query_list = [method_name for method_name in self.data_window.saved_queries.keys()]
+        self.update_toolbutton_list(list=query_list, button=self.view_query_list, action_function=self.show_query)
+        self.update_toolbutton_list(list=query_list, button=self.query_diff_1, action_function=self.set_toolbutton_text)
+        self.update_toolbutton_list(list=query_list, button=self.query_diff_2, action_function=self.set_toolbutton_text)
+
+    def update_toolbutton_list(self, button, list, action_function):
+        toolmenu = QMenu(self)
+        alignmentGroup = QActionGroup(self)
+        actions = list
+        for act in actions:
+            a = alignmentGroup.addAction(act)
+            a.setCheckable(True)
+            toolmenu.addAction(a)
+        alignmentGroup.triggered.connect(lambda: action_function(alignmentGroup, button))
+        button.setMenu(toolmenu)
+        button.setPopupMode(QToolButton.InstantPopup)
+
+    def show_query(self, action, button):
+    #TODO: refactor this with btnstate and diff_query (maybe think of a better way to do this..)
+        selection = action.checkedAction().text()
+        print(action.checkedAction().text())
+        button.setText(action.checkedAction().text())
+
+        current_query = self.data_window.saved_queries[selection] #TODO: maybe this isn't in the right place (the dict)model=self.model, and possibly make the whole query a separate class
+
+        #TODO: this code is copied (refactor)
+        self.data_window.set_pandas_model(current_query['model'])
+        self.data_window.setWindowTitle(f"{selection} data")
+
+        #TODO: <BUG> if we rename the data - we don't get the new name...
+        self.data_window.set_query_info(query_name=selection, funct=current_query['funct'], data_id=current_query['data_id'], agent=current_query['agent']) #TODO: maybe better to pass the key to the dict/
+        self.data_window.show()
+
+    def set_toolbutton_text(self, action, button):
+        #TODO: make sure these are the same types of queries (same function)
+        selection = action.checkedAction().text()
+        print(action.checkedAction().text())
+        button.setText(action.checkedAction().text())
+
+    def diff_query(self):
+        #get the two queries
+        q1 = self.data_window.saved_queries[self.query_diff_1.text()]
+        q2 = self.data_window.saved_queries[self.query_diff_1.text()]
+
+        #check that they are the same type
+        if q1['funct'] == q2['funct']:
+            #diff the results
+            pass
+        else:
+            self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
+            self.print_query_output(f"query 1 = {q1['query_name']}, query2 = {q2['query_name']}", 'red')
+
+
+
+
 
     def print_query_output(self, msg, color="black"):
         self.query_output.setTextColor(QColor(color))

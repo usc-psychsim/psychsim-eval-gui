@@ -269,7 +269,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.sim_loaded_state.setText("ERROR")
 
     def save_data_window(self, data_id):
-        data = self.sim_data_dict_beliefs[data_id]
+        data = self.sim_data_dict[data_id]
         output_directory = 'sim_output'
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
