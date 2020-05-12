@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 from functools import partial
 import re
+import pickle
 
 loaded_data_view_file = "loaded_data_view.ui"
 ui_loadedDataView, QtBaseClass = uic.loadUiType(loaded_data_view_file)
@@ -23,10 +24,10 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
     def load_data_from_file(self):
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.csv)", options=options)
-        data = pd.read_csv(fileName)
-        data_id = re.split(r'[.,/]', fileName)[-2]
-        return data, data_id
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.pickle)", options=options)
+        with open(fileName, 'rb') as f:
+            return pickle.load(f)
+
 
 
     def add_row_to_table(self, row):

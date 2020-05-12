@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
 import os
+import pickle
 import importlib.util
 import sys
 import re
@@ -21,6 +22,7 @@ from LoadedDataWindow import LoadedDataWindow
 from DataViewWindow import RawDataWindow
 from SampleDataWindow import SampleDataWindow
 from renameDataDialog import RenameDataDialog
+from PlotWindow import PlotWindow
 
 qtCreatorFile = "psychsim-gui-main.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
@@ -38,6 +40,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.loaded_data_window = LoadedDataWindow()
         self.query_data_window = QueryDataWindow()
         self.sample_data_window = SampleDataWindow()
+        self.plot_window = PlotWindow()
 
         #SET UP THREADING
         self.threadpool = QThreadPool()
@@ -76,7 +79,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.load_sim_button.clicked.connect(self.load_sim)
         self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
         self.rename_run_button.clicked.connect(self.rename_data_id)
-
+        self.actioncreate_plot.triggered.connect(self.show_plot_window)
         self.load_config()
 
     def progress_fn(self, step, max_step):
@@ -269,12 +272,20 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.sim_loaded_state.setText("ERROR")
 
     def save_data_window(self, data_id):
+        #get row information
+
+        #set the output dict
+        data=".."
+        sim_file=".."
         data = self.sim_data_dict[data_id]
+        pickle_output = dict(data=data, data_id=data_id, sim_file=sim_file)
+
         output_directory = 'sim_output'
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
-        csv_file = f"{data_id}.csv"
-        data.to_csv(os.path.join(output_directory, csv_file))
+        output_path = os.path.join(output_directory, f"{data_id}.pickle")
+        with open(output_path, 'wb') as f:
+            pickle.dump(pickle_output, f)
 
 
 
@@ -300,25 +311,32 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def show_sample_data_window(self):
         self.sample_data_window.show()
 
+    def show_plot_window(self):
+        self.plot_window.show()
+
     def load_data_from_file(self):
-        data, data_id = self.loaded_data_window.load_data_from_file()
-        self.sim_data_dict_beliefs[data_id] = data
+        #TODO: this should update the query data lists etc.
+        options = QFileDialog.Options()
+        # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.pickle)", options=options)
+        with open(fileName, 'rb') as f:
+            data = pickle.load(f)
 
-        # TODO: refactor this as it is copied from the main window code
-        btn = QPushButton(self.loaded_data_window.loaded_data_table)
-        btn.setText('view')
-        btn.clicked.connect(partial(self.show_data_window, data_id)) #TODO: figure out how to connect this back to the main window
+            # data = self.loaded_data_window.load_data_from_file()
+            data_id = data['data_id']
+            self.sim_data_dict[data_id] = data
 
-        btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
-        btn2.setText('save')
-        btn2.clicked.connect(partial(self.save_data_window, data_id))
+            # create the button to rename the data
+            btn = QPushButton(self.loaded_data_window.loaded_data_table)
+            btn.setText('RENAME')
+            btn.clicked.connect(partial(self.rename_data, data_id))
 
-        # add a value to the data dropdown for querying (and sampling
-        self.query_data_window.set_data_dropdown(self.sim_data_dict_beliefs)
+            # create the button to save the data to csv
+            btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
+            btn2.setText('save')
+            btn2.clicked.connect(partial(self.save_data_window, data_id))
 
-        #set the loaded data window row
-        # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-        self.loaded_data_window.add_row_to_table([data_id, self.sim_name, str("x"), btn, btn2])
+            self.loaded_data_window.add_row_to_table(["...", data_id, data['sim_file'], btn, btn2])
 
     def rename_data_id(self, old_key=None):
         #TODO: refactor this with other rename function
