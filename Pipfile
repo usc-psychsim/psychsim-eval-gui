@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 pyqt5 = "*"
 pandas = "*"
+pyqtwebengine = "*"
+plotly = "*"
 
 [dev-packages]
 
