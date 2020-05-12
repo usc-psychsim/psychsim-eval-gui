@@ -158,19 +158,20 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
 
     def diff_query(self):
         #get the two queries
-        q1 = self.data_window.saved_queries[self.query_diff_1.text()]
-        q2 = self.data_window.saved_queries[self.query_diff_1.text()]
+        try:
+            q1 = self.data_window.saved_queries[self.query_diff_1.text()]
+            q2 = self.data_window.saved_queries[self.query_diff_2.text()]
 
-        #check that they are the same type
-        if q1['funct'] == q2['funct']:
-            #diff the results
-            pass
-        else:
-            self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
-            self.print_query_output(f"query 1 = {q1['query_name']}, query2 = {q2['query_name']}", 'red')
-
-
-
+            #check that they are the same type
+            if q1['funct'] == q2['funct']:
+                #diff the results
+                self.print_query_output(f"DIFFING: {q1['query_name']} and {q2['query_name']}", 'green')
+            else:
+                self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
+                self.print_query_output(f"{q1['query_name']} = {q1['funct']}, {q2['query_name']} = {q2['funct']}", 'red')
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
 
     def print_query_output(self, msg, color="black"):

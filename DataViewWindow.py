@@ -32,7 +32,8 @@ class RawDataWindow(QMainWindow, ui_dataView):
         new_name = self.query_name_save_input.text()
         if new_name is not None:
             self.query_name_label.setText(new_name)
-            self.saved_queries[new_name] = dict(model=self.model,
+            self.saved_queries[new_name] = dict(query_name=new_name,
+                                                model=self.model,
                                                 funct=self.function_label.text(),
                                                 data_id=self.data_id_label.text(),
                                                 agent=self.agents_label.text(),
