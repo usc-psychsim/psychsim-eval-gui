@@ -77,7 +77,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.run_sim_button.pressed.connect(self.start_sim_thread)
         self.stop_sim_button.pressed.connect(self.stop_thread)
 
-        self.rename_run_button.clicked.connect(self.rename_data_id)
+        self.rename_run_button.clicked.connect(self.rename_data_from_input)
+        self.save_run_input.returnPressed.connect(self.rename_data_from_input)
 
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.actionview_data.triggered.connect(self.show_loaded_data_window)
@@ -150,7 +151,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # create the button to rename the data
             btn = QPushButton(self.loaded_data_window.loaded_data_table)
             btn.setText('RENAME')
-            btn.clicked.connect(partial(self.rename_data, data_id))
+            btn.clicked.connect(partial(self.show_rename_dialog, data_id))
 
             # create the button to save the data to csv
             btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
@@ -185,15 +186,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         worker.signals.progress.connect(self.progress_fn)
         # Execute
         self.threadpool.start(worker)
-
-
-    def rename_data(self, old_key):
-        # show the rename dialog and get the new name
-        new_key, accepted = RenameDataDialog.get_new_name(old_name=old_key)
-        if accepted:
-            self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
-            self.update_data_table()
-            self.query_data_window.set_data_dropdown(self.sim_data_dict)
 
     def open_config_loader(self):
         # open file dialog
@@ -310,7 +302,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # create the button to rename the data
             btn = QPushButton(self.loaded_data_window.loaded_data_table)
             btn.setText('RENAME')
-            btn.clicked.connect(partial(self.rename_data, data_id))
+            btn.clicked.connect(partial(self.show_rename_dialog, data_id))
 
             # create the button to save the data to csv
             btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
@@ -319,23 +311,28 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
             self.loaded_data_window.add_row_to_table(["...", data_id, data['sim_file'], btn, btn2])
 
-    def rename_data_id(self, old_key=None):
-        # TODO: refactor this with other rename function
+    def show_rename_dialog(self, old_key):
+        # show the rename dialog and get the new name
+        new_key, accepted = RenameDataDialog.get_new_name(old_name=old_key)
+        if accepted:
+            self.rename_data_id(new_key, old_key)
+
+    def rename_data_id(self, new_key, old_key):
+        self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
+        self.sim_data_dict[new_key].id = new_key
+        self.update_data_table()
+        #TODO: fix this for when it's all one screen
+        self.query_data_window.set_data_dropdown(self.sim_data_dict)
+
+    def rename_data_from_input(self, old_key=None):
         old_key = self.previous_run_id.text()
         if self.save_run_input.text():
             new_key = self.save_run_input.text()
             if new_key in self.sim_data_dict.keys():
                 self.print_sim_output(f"{new_key} ALREADY EXISTS", "red")
             else:
-                try:
-                    self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
-                    self.update_data_table()
-                except KeyError as e:
-                    self.print_sim_output(f"{old_key} has been renamed to {new_key}", "red")
+                self.rename_data_id(new_key, old_key)
                 self.previous_run_id.setText(new_key)
-                # update the dropdown menu
-                # TODO: maybe move this code to when the window gets shown? (though that wouldn't update it if the window remains open...)
-                self.query_data_window.set_data_dropdown(self.sim_data_dict)
                 self.print_sim_output(f"{old_key} renamed to {new_key}", "green")
         else:
             self.print_sim_output("NO NEW NAME ENTERED", "red")
