@@ -284,28 +284,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.plot_window.show()
 
     def load_data_from_file(self):
-        # TODO: this should update the query data lists etc.
         options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self, "Select Sim", "", "psychsim csv (*.pickle)", options=options)
-        with open(fileName, 'rb') as f:
-            data = pickle.load(f)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Select data file", "", "psychsim data (*.pickle)", options=options)
+        if fileName:
+            #load the psychsim libs
+            self.load_sim()
+            with open(fileName, 'rb') as f:
+                data = pickle.load(f)
 
-            # data = self.loaded_data_window.load_data_from_file()
-            data_id = data['data_id']
-            self.sim_data_dict[data_id] = data
-
-            # create the button to rename the data
-            btn = QPushButton(self.loaded_data_window.loaded_data_table)
-            btn.setText('RENAME')
-            btn.clicked.connect(partial(self.show_rename_dialog, data_id))
-
-            # create the button to save the data to csv
-            btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
-            btn2.setText('save')
-            btn2.clicked.connect(partial(self.save_data_window, data_id))
-
-            self.loaded_data_window.add_row_to_table(["...", data_id, data['sim_file'], btn, btn2])
+                self.sim_data_dict[data.id] = data
+                self.update_data_table()
 
     def show_rename_dialog(self, old_key):
         # show the rename dialog and get the new name

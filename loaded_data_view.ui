@@ -36,13 +36,6 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menufile">
-    <property name="title">
-     <string>file</string>
-    </property>
-    <addaction name="actionload_data"/>
-   </widget>
-   <addaction name="menufile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionload_data">
