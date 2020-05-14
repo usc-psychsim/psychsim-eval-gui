@@ -4,12 +4,12 @@ Created on Wed Feb 19 14:35:40 2020
 
 @author: mostafh
 """
-import sys
-print(sys.path)
-psychsim_path = "/home/chris/Documents/GLASGOW_MARSELLA/atomic"
-definitions_path = "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions"
-sys.path.insert(1, psychsim_path)
-sys.path.insert(1, definitions_path)
+# import sys
+# print(sys.path)
+# psychsim_path = "/home/chris/Documents/GLASGOW_MARSELLA/atomic"
+# definitions_path = "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions"
+# sys.path.insert(1, psychsim_path)
+# sys.path.insert(1, definitions_path)
 
 from psychsim.agent import ValueFunction
 from psychsim.world import World, WORLD
