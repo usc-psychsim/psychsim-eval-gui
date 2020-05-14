@@ -16,6 +16,7 @@ from functools import partial
 from gui_threading import Worker, WorkerSignals
 from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
+from query_functions import PsychSimQuery
 
 from QueryDataWindow import QueryDataWindow
 from LoadedDataWindow import LoadedDataWindow
@@ -38,10 +39,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
 
+        # LOAD CONFIG
+        self.load_config()
+
         # SET UP OTHER WINDOWS
         self.data_window = RawDataWindow()
         self.loaded_data_window = LoadedDataWindow()
-        self.query_data_window = QueryDataWindow()
+        self.query_data_window = QueryDataWindow()#TODO: remove this
         self.sample_data_window = SampleDataWindow()
         self.plot_window = PlotWindow()
 
@@ -64,7 +68,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sim_name = ""
         self.sim_data_dict = dict()
 
-        # SET UP BUTTONS
+        # SET UP MAIN WINDOW BUTTONS
         self.run_sim_button.setEnabled(False)
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
@@ -82,13 +86,27 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.actionview_data.triggered.connect(self.show_loaded_data_window)
-        self.actionquery_data.triggered.connect(self.show_query_data_window)
+        self.actionquery_data.triggered.connect(self.show_query_data_window)#TODO: remove this
+        self.actionmain.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.actionquery_data_page.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actioncreate_samples.triggered.connect(self.show_sample_data_window)
         self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
         self.actioncreate_plot.triggered.connect(self.show_plot_window)
 
-        # LOAD CONFIG
-        self.load_config()
+        # SET UP QUERY WINDOW --------------
+        self.psychsim_query = PsychSimQuery()
+        self.set_function_dropdown()
+
+        # self.execute_query_button.clicked.connect(self.execute_query)
+        # self.diff_query_button.clicked.connect(self.diff_query)
+        # self.data_combo.activated.connect(self.set_agent_dropdown)
+        # self.data_combo.activated.connect(self.set_action_dropdown)
+        # self.data_combo.activated.connect(self.set_cycle_dropdown)
+        # self.main_tab.currentChanged.connect(self.update_query_lists)
+        # self.rename_query_button.clicked.connect(self.rename_query)
+        # self.view_query_button.clicked.connect(self.view_query)
+
+
 
     def simulation_thread(self, progress_callback):
         #initialise the sim class
@@ -139,8 +157,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                                         sim_file=self.sim_name,
                                                         steps=len(output),
                                                         run_date=run_date)
-        #TODO: fix this for all in same screen
-        self.query_data_window.set_data_dropdown(self.sim_data_dict)
+        self.set_data_dropdown()
 
         self.update_data_table()
 
@@ -305,8 +322,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
         self.sim_data_dict[new_key].id = new_key
         self.update_data_table()
-        #TODO: fix this for when it's all one screen
-        self.query_data_window.set_data_dropdown(self.sim_data_dict)
+        self.set_data_dropdown()
 
     def rename_data_from_input(self, old_key=None):
         old_key = self.previous_run_id.text()
@@ -338,6 +354,26 @@ class MyApp(QMainWindow, Ui_MainWindow):
         else:
             print(f"{end_node} {debug}")
 
+    # QUERY FUNCTIONS-------------------------------------------
+    def set_data_dropdown(self):
+        self.data_combo.clear()
+        new_items = [item for item in self.sim_data_dict.keys()]
+        self.data_combo.addItems(new_items)
+
+    def set_function_dropdown(self):
+        query_methods = [method_name for method_name in dir(self.psychsim_query)
+                         if callable(getattr(self.psychsim_query, method_name))
+                         and '__' not in method_name]
+        pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate, parent=self)
+
+    def btnstate(self, action, button):
+        selection = action.checkedAction().text()
+        if button == self.function_button:
+            self.current_query_function = selection
+        button.setText(action.checkedAction().text())
+        #TODO: make this conditional functionality smarter
+        if selection == "get_actions":
+            self.set_agent_dropdown()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
