@@ -235,15 +235,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def load_sim(self):
         try:
-            pathlist = [self.psychsim_path, self.definitions_path, self.sim_path]
             self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
             sys.path.insert(1, self.psychsim_path)
-            import psychsim  # this can be imported because of the above line
-            sys.path.insert(1, self.definitions_path)  # this needs to be done to get the path of the other repo
-            # Import psychsim
-            self.psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
-            self.psychsim_module = importlib.util.module_from_spec(self.psychsim_spec)
-            self.psychsim_spec.loader.exec_module(self.psychsim_module)
+            sys.path.insert(1, self.definitions_path)
+
+            # import psychsim
+            psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
+            self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
+            psychsim_spec.loader.exec_module(self.psychsim_module)
+            self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
 
             # import the sim module
             self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
@@ -254,7 +254,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
-            # TODO: push the error up to the text area
             self.sim_loaded_state.setText("ERROR")
 
     def save_data_window(self, data_id):
