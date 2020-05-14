@@ -17,7 +17,7 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         # self.loaded_data_table.setModel(self.model)
 
         # self.loaded_data_table.setRowCount(1)
-        columns = ['date', 'data_id', 'sim_file', '', '']
+        columns = ['date', 'data_id', 'sim_file', 'steps', '', '']
         self.loaded_data_table.setColumnCount(len(columns))
         self.loaded_data_table.setHorizontalHeaderLabels(columns)
 
@@ -35,10 +35,10 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         self.loaded_data_table.insertRow(rowPosition)
         index = 0 #todo: figure out a better way to do this
         for item in row:
-            if type(item) == str:
-                self.loaded_data_table.setItem(rowPosition, index, QTableWidgetItem(item))
-            elif type(item) == QPushButton:
+            if type(item) == QPushButton:
                 self.loaded_data_table.setCellWidget(rowPosition, index, item)
+            else:
+                self.loaded_data_table.setItem(rowPosition, index, QTableWidgetItem(item))
             index = index + 1
 
     def clear_table(self):
