@@ -15,7 +15,7 @@ from functools import partial
 
 from gui_threading import Worker, WorkerSignals
 from PandasModel import PandasModel
-# import psychsim_helpers as ph
+import psychsim_gui_helpers as pgh
 
 from QueryDataWindow import QueryDataWindow
 from LoadedDataWindow import LoadedDataWindow
@@ -27,59 +27,66 @@ from PlotWindow import PlotWindow
 qtCreatorFile = "psychsim-gui-main.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
-#TODO: split generic gui stuff to other files
-#TODO: try to get rid of class variables and use passed variables where possible (for readability)
+
+# TODO: split generic gui stuff to other files
+# TODO: try to get rid of class variables and use passed variables where possible (for readability)
+
 
 class MyApp(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
-        #SET UP OTHER WINDOWS
+
+        # SET UP OTHER WINDOWS
         self.data_window = RawDataWindow()
         self.loaded_data_window = LoadedDataWindow()
         self.query_data_window = QueryDataWindow()
         self.sample_data_window = SampleDataWindow()
         self.plot_window = PlotWindow()
 
-        #SET UP THREADING
+        # SET UP THREADING
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-        #VARS FOR SIM MODULE
+        # VARS FOR SIM MODULE AND PSYCHSIM
         self.sim_spec = None
         self.psysim_spec = None
         self.sim_module = None
         self.psychsim_module = None
 
-        #SET UP VARS
+        # SET UP MAIN WINDOW VARS
         self.run_thread = False
         self.run_sim = False
         self.psychsim_path = ""
         self.definitions_path = ""
         self.sim_path = ""
         self.sim_name = ""
+        self.sim_data_dict = dict()
 
-        #SET UP DICT FOR DATA
-        self.sim_data_dict = dict() #this one is for the debug output
-
-        #SET UP BUTTONS
+        # SET UP BUTTONS
         self.run_sim_button.setEnabled(False)
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
-        self.run_sim_button.pressed.connect(self.start_sim_thread)
-        self.stop_sim_button.pressed.connect(self.stop_thread)
-        self.actionSelect_load_config.triggered.connect(self.open_config_loader)
-        self.select_sim.clicked.connect(self.set_sim_path)
+
         self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
         self.sel_def_dir.clicked.connect(self.set_definitions_path)
+        self.select_sim.clicked.connect(self.set_sim_path)
+        self.load_sim_button.clicked.connect(self.load_sim)
+
+        self.run_sim_button.pressed.connect(self.start_sim_thread)
+        self.stop_sim_button.pressed.connect(self.stop_thread)
+
+        self.rename_run_button.clicked.connect(self.rename_data_id)
+
+        self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.actionview_data.triggered.connect(self.show_loaded_data_window)
         self.actionquery_data.triggered.connect(self.show_query_data_window)
         self.actioncreate_samples.triggered.connect(self.show_sample_data_window)
-        self.load_sim_button.clicked.connect(self.load_sim)
         self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
-        self.rename_run_button.clicked.connect(self.rename_data_id)
         self.actioncreate_plot.triggered.connect(self.show_plot_window)
+
+        # LOAD CONFIG
         self.load_config()
 
     def progress_fn(self, step, max_step):
@@ -94,15 +101,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
         output = dict()
         while self.run_thread:
             step_data = dict()
-            #get the result of the step
+            # get the result of the step
             result = tester.run_sim()
 
-            #append the raw output
+            # append the raw output
             step_data['step_data'] = result
             step_data['step'] = step
             output[step] = step_data
 
-            #Get the beliefs (not needed here?)
+            # Get the beliefs (not needed here?)
             self.print_debug(debug=result)
 
             step = step + 1
@@ -129,9 +136,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.update_data_table()
 
     def update_data_table(self):
-        self.loaded_data_window.clear_table()#TODO: find better way to do this so it isn't loaded a new each time
+        self.loaded_data_window.clear_table()  # TODO: find better way to do this so it isn't loaded a new each time
         for data_id, data in self.sim_data_dict.items():
-            #save the data in the class dict
+            # save the data in the class dict
             now = datetime.now()
             date_string = now.strftime("%d/%m/%Y %H:%M:%S")
             # self.sim_data_dict_beliefs[dt_string] = data
@@ -149,7 +156,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             # # add a value to the data dropdown for querying (and sampling
             # self.query_data_window.set_data_dropdown(self.sim_data_dict_beliefs)
 
-            #set the loaded data window row
+            # set the loaded data window row
             # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
             # columns = ['date', 'data_id', 'sim_file', '', '']
             self.loaded_data_window.add_row_to_table([date_string, data_id, self.sim_name, btn, btn2])
@@ -170,7 +177,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
 
-        #THEIR STUFF---------------------------
+        # THEIR STUFF---------------------------
         # Pass the function to execute
         self.run_thread = True
         worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
@@ -180,19 +187,18 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # Execute
         self.threadpool.start(worker)
 
-#--------------------------------
+    # --------------------------------
 
     def rename_data(self, old_key):
-        #show the rename dialog and get the new name
+        # show the rename dialog and get the new name
         new_key, accepted = RenameDataDialog.get_new_name(old_name=old_key)
         if accepted:
             self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
             self.update_data_table()
             self.query_data_window.set_data_dropdown(self.sim_data_dict)
 
-
     def open_config_loader(self):
-        #open file dialog
+        # open file dialog
         config_path = self.get_file_path(file_type="Config files (*.ini)")
         self.load_config(config_path)
 
@@ -202,10 +208,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
             if path:
                 config.read(path)
             else:
-                #read the default
+                # read the default
                 config.read('config.ini')
 
-            #set the path variables
+            # set the path variables
             self.psychsim_path = config['PATHS']['psychsim']
             self.definitions_path = config['PATHS']['definitions']
             self.sim_path = config['PATHS']['simulation']
@@ -218,34 +224,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
 
-        #set the display
-
     def set_psychsim_path(self):
-        psychsim_path = self.get_directory_path()
-        self.psychsim_path = f"{str(psychsim_path)}"
-        self.psychsim_dir_path.setText(self.psychsim_path)
+        self.psychsim_path = pgh.get_directory(self.psychsim_dir_path, "Select Psychsim Directory")
 
     def set_definitions_path(self):
-        definitions_path = self.get_directory_path()
-        self.definitions_path = f"{str(definitions_path)}"
-        self.def_dir_path.setText(self.definitions_path)
+        self.definitions_path = pgh.get_directory(self.def_dir_path, "Select Definitions Directory")
 
     def set_sim_path(self):
-        sim_file_path = self.get_file_path()
-        self.sim_path = f"{str(sim_file_path)}"
-        self.sim_path_label.setText(str(sim_file_path).split('/')[-1])
-
-    def get_directory_path(self):
-        return str(QFileDialog.getExistingDirectory(self, "Select Directory"))
-
-    def get_file_path(self, file_type="Python Files (*.py)"):
-        options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "",file_type, options=options)
-        if fileName:
-            print(fileName)
-        return fileName
-
+        self.sim_path = pgh.get_file_path(path_label=self.sim_path_label)
 
     def load_sim(self):
         try:
@@ -254,12 +240,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
             sys.path.insert(1, self.psychsim_path)
             import psychsim  # this can be imported because of the above line
             sys.path.insert(1, self.definitions_path)  # this needs to be done to get the path of the other repo
-            #Import psychsim
+            # Import psychsim
             self.psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
             self.psychsim_module = importlib.util.module_from_spec(self.psychsim_spec)
             self.psychsim_spec.loader.exec_module(self.psychsim_module)
 
-            #import the sim module
+            # import the sim module
             self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
             self.sim_module = importlib.util.module_from_spec(self.sim_spec)
             self.sim_loaded_state.setText("LOADED")
@@ -268,15 +254,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
-            #TODO: push the error up to the text area
+            # TODO: push the error up to the text area
             self.sim_loaded_state.setText("ERROR")
 
     def save_data_window(self, data_id):
-        #get row information
+        # get row information
 
-        #set the output dict
-        data=".."
-        sim_file=".."
+        # set the output dict
+        data = ".."
+        sim_file = ".."
         data = self.sim_data_dict[data_id]
         pickle_output = dict(data=data, data_id=data_id, sim_file=sim_file)
 
@@ -287,16 +273,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
         with open(output_path, 'wb') as f:
             pickle.dump(pickle_output, f)
 
-
-
     def print_sim_output(self, msg, color):
         self.simulation_output.setTextColor(QColor(color))
         self.simulation_output.append(msg)
 
     def show_data_window(self, key):
-        #this should really accept a key to access the dict of data saved at the top level
-        #then set the model based on this
-        #todo: add some exception handling
+        # this should really accept a key to access the dict of data saved at the top level
+        # then set the model based on this
+        # todo: add some exception handling
         model = PandasModel(self.sim_data_dict_beliefs[key])
         self.data_window.set_pandas_model(model)
         self.data_window.setWindowTitle(f"{key} data")
@@ -315,10 +299,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.plot_window.show()
 
     def load_data_from_file(self):
-        #TODO: this should update the query data lists etc.
+        # TODO: this should update the query data lists etc.
         options = QFileDialog.Options()
         # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.pickle)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Select Sim", "", "psychsim csv (*.pickle)", options=options)
         with open(fileName, 'rb') as f:
             data = pickle.load(f)
 
@@ -339,7 +323,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.loaded_data_window.add_row_to_table(["...", data_id, data['sim_file'], btn, btn2])
 
     def rename_data_id(self, old_key=None):
-        #TODO: refactor this with other rename function
+        # TODO: refactor this with other rename function
         old_key = self.previous_run_id.text()
         if self.save_run_input.text():
             new_key = self.save_run_input.text()
@@ -352,13 +336,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 except KeyError as e:
                     self.print_sim_output(f"{old_key} has been renamed to {new_key}", "red")
                 self.previous_run_id.setText(new_key)
-                #update the dropdown menu
-                #TODO: maybe move this code to when the window gets shown? (though that wouldn't update it if the window remains open...)
+                # update the dropdown menu
+                # TODO: maybe move this code to when the window gets shown? (though that wouldn't update it if the window remains open...)
                 self.query_data_window.set_data_dropdown(self.sim_data_dict)
                 self.print_sim_output(f"{old_key} renamed to {new_key}", "green")
         else:
             self.print_sim_output("NO NEW NAME ENTERED", "red")
-
 
     def print_debug(self, debug, level=0):
         reg_node = "".join(['│\t' for i in range(level)]) + "├─"
