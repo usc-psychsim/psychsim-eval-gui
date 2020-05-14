@@ -1,5 +1,7 @@
 *.pyc
 *~
+*.pickle
+*.csv
 build
 dist
 *.egg-info

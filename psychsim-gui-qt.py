@@ -247,20 +247,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.sim_loaded_state.setText("ERROR")
 
     def save_data_window(self, data_id):
-        # get row information
-
-        # set the output dict
-        data = ".."
-        sim_file = ".."
-        data = self.sim_data_dict[data_id]
-        pickle_output = dict(data=data, data_id=data_id, sim_file=sim_file)
-
+        now = datetime.now()
+        dt_string = now.strftime("%Y%m%d_%H%M%S")
         output_directory = 'sim_output'
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
-        output_path = os.path.join(output_directory, f"{data_id}.pickle")
+        output_path = os.path.join(output_directory, f"{data_id}_{dt_string}.pickle")
         with open(output_path, 'wb') as f:
-            pickle.dump(pickle_output, f)
+            pickle.dump(self.sim_data_dict[data_id], f)
+        self.print_sim_output(f"{data_id} saved to: {output_path}", "black")
+        self.update_data_table()
 
     def print_sim_output(self, msg, color):
         self.simulation_output.setTextColor(QColor(color))
