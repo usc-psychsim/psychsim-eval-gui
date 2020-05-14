@@ -1,6 +1,8 @@
 """
 Query function definitions used by psychsim gui
 """
+#TODO: make the doc strings appear in the dialog?
+
 import pandas as pd
 import numpy as np
 import traceback
