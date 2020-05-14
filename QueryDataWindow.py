@@ -8,7 +8,8 @@ import traceback
 
 from query_functions import PsychSimQuery
 from DataViewWindow import RawDataWindow
-
+from renameDataDialog import RenameDataDialog
+from viewQueryDialog import ViewQueryDialog
 
 from PandasModel import PandasModel
 
@@ -32,6 +33,9 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
         self.data_combo.activated.connect(self.set_action_dropdown)
         self.data_combo.activated.connect(self.set_cycle_dropdown)
         self.main_tab.currentChanged.connect(self.update_query_lists)
+        self.rename_query_button.clicked.connect(self.rename_query)
+        self.view_query_button.clicked.connect(self.view_query)
+
         self.data = None
 
         self.current_query_function = ""
@@ -110,7 +114,7 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
                 self.data_window.query_name_save_input.setText("")
                 self.data_window.setWindowTitle(f"{key} data")
                 self.data_window.set_query_info(funct=query_function, data_id=data_id, agent=agent)
-                self.data_window.show()
+                # self.data_window.show()
                 self.print_query_output(str(result))
         except:
             tb = traceback.format_exc()
@@ -177,6 +181,29 @@ class QueryDataWindow(QMainWindow, ui_queryDataView):
     def print_query_output(self, msg, color="black"):
         self.query_output.setTextColor(QColor(color))
         self.query_output.append(msg)
+
+    def rename_query(self):
+        #TODO: make this so it can only be selected if there are actual queries
+        old_key = self.view_query_list.text()
+        #show the rename dialog and get the new name
+        new_key, accepted = RenameDataDialog.get_new_name(old_name=old_key)
+        if accepted:
+            #TODO: implement rename code
+            pass
+            # self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
+            # self.update_data_table()
+            # self.query_data_window.set_data_dropdown(self.sim_data_dict)
+
+    def view_query(self):
+        model=None #THIS MODEL SHOULD COME FROM THE QUERY DICTIONARY
+        accepted = ViewQueryDialog.set_model(model=model)
+        if accepted:
+            #TODO: implement rename code
+            pass
+            # self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
+            # self.update_data_table()
+            # self.query_data_window.set_data_dropdown(self.sim_data_dict)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
