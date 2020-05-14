@@ -89,28 +89,25 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # LOAD CONFIG
         self.load_config()
 
-    def progress_fn(self, step, max_step):
-        self.print_sim_output(f"{step}/{max_step} steps completed", "black")
-
     def simulation_thread(self, progress_callback):
+        #initialise the sim class
         tester = getattr(self.sim_module, self.sim_name)()
-        # tester2 = self.sim_module.GuiTestSim()
         step = 0
-        complete = dict(n=step, total=tester.sim_steps)
-        sim_data = pd.DataFrame()
         output = dict()
         while self.run_thread:
-            step_data = dict()
+            # step_data = dict()
+
             # get the result of the step
             result = tester.run_sim()
 
             # append the raw output
-            step_data['step_data'] = result
-            step_data['step'] = step
-            output[step] = step_data
+            # step_data['step_data'] = result
+            # step_data['step'] = step
+            # output[step] = step_data
+            output[step] = result
 
             # Get the beliefs (not needed here?)
-            self.print_debug(debug=result)
+            # self.print_debug(debug=result)
 
             step = step + 1
             progress_callback.emit(step, tester.sim_steps)
@@ -124,24 +121,31 @@ class MyApp(QMainWindow, Ui_MainWindow):
         :param output:
         :return:
         """
+        # get timestamp
         now = datetime.now()
         dt_string = now.strftime("%Y%m%d_%H%M%S")
+        run_date = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        # set the current run name settings
         self.previous_run_id.setText(dt_string)
-        self.sim_data_dict[dt_string] = output
-        self.query_data_window.set_data_dropdown(self.sim_data_dict)
         self.rename_run_button.setEnabled(True)
         self.save_run_input.setEnabled(True)
         self.save_run_input.setText(dt_string)
+
+        # store the data in the main dict
+        self.sim_data_dict[dt_string] = pgh.PsychSimRun(id=dt_string,
+                                                        data=output,
+                                                        sim_file=self.sim_name,
+                                                        steps=len(output),
+                                                        run_date=run_date)
+        #TODO: fix this for all in same screen
+        self.query_data_window.set_data_dropdown(self.sim_data_dict)
 
         self.update_data_table()
 
     def update_data_table(self):
         self.loaded_data_window.clear_table()  # TODO: find better way to do this so it isn't loaded a new each time
         for data_id, data in self.sim_data_dict.items():
-            # save the data in the class dict
-            now = datetime.now()
-            date_string = now.strftime("%d/%m/%Y %H:%M:%S")
-            # self.sim_data_dict_beliefs[dt_string] = data
 
             # create the button to rename the data
             btn = QPushButton(self.loaded_data_window.loaded_data_table)
@@ -153,19 +157,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
             btn2.setText('save')
             btn2.clicked.connect(partial(self.save_data_window, data_id))
 
-            # # add a value to the data dropdown for querying (and sampling
-            # self.query_data_window.set_data_dropdown(self.sim_data_dict_beliefs)
+            #update the loaded data table
+            new_row = [data.run_date, data.id, data.sim_file, str(data.steps), btn, btn2]
+            self.loaded_data_window.add_row_to_table(new_row)
 
-            # set the loaded data window row
-            # self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-            # columns = ['date', 'data_id', 'sim_file', '', '']
-            self.loaded_data_window.add_row_to_table([date_string, data_id, self.sim_name, btn, btn2])
-
-    def test_print_out(self, tst):
-        print(tst)
+    def progress_fn(self, step, max_step):
+        self.print_sim_output(f"{step}/{max_step} steps completed", "black")
 
     def thread_complete(self):
-        self.print_sim_output("THREAD COMPLETE!", "black")
+        self.print_sim_output("SIMULATION FINISHED!", "black")
 
     def stop_thread(self):
         self.run_thread = False
@@ -177,7 +177,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
 
-        # THEIR STUFF---------------------------
         # Pass the function to execute
         self.run_thread = True
         worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
@@ -187,7 +186,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # Execute
         self.threadpool.start(worker)
 
-    # --------------------------------
 
     def rename_data(self, old_key):
         # show the rename dialog and get the new name

@@ -11,7 +11,7 @@ import pandas as pd
 @dataclass
 class PsychSimRun:
     id: str
-    data: pd.DataFrame
+    data: object
     sim_file: str
     steps: int
     run_date: str = ""
