@@ -18,7 +18,7 @@ from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
 from query_functions import PsychSimQuery
 
-from QueryDataWindow import QueryDataWindow
+# from QueryDataWindow import QueryDataWindow
 from LoadedDataWindow import LoadedDataWindow
 from DataViewWindow import RawDataWindow
 from SampleDataWindow import SampleDataWindow
@@ -43,7 +43,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # SET UP OTHER WINDOWS
         self.data_window = RawDataWindow()
         self.loaded_data_window = LoadedDataWindow()
-        self.query_data_window = QueryDataWindow()#TODO: remove this
+        # self.query_data_window = QueryDataWindow()#TODO: remove this
         self.sample_data_window = SampleDataWindow()
         self.plot_window = PlotWindow()
 
@@ -85,7 +85,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.actionview_data.triggered.connect(self.show_loaded_data_window)
-        self.actionquery_data.triggered.connect(self.show_query_data_window)#TODO: remove this
+        # self.actionquery_data.triggered.connect(self.show_query_data_window)#TODO: remove this (and associated function if necessesary)
         self.actionmain.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.actionquery_data_page.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actioncreate_samples.triggered.connect(self.show_sample_data_window)
@@ -102,12 +102,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         self.execute_query_button.clicked.connect(self.execute_query)
         self.view_query_button.clicked.connect(self.view_query)
+        self.save_csv_query_button.clicked.connect(self.save_csv_query)
         # self.diff_query_button.clicked.connect(self.diff_query)
         # self.data_combo.activated.connect(self.set_agent_dropdown)
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
         # self.main_tab.currentChanged.connect(self.update_query_lists)
-        # self.rename_query_button.clicked.connect(self.rename_query)
         # self.view_query_button.clicked.connect(self.view_query)
 
 
@@ -470,6 +470,19 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.data_id_label.setText(selected_query.data_id)
         self.sim_file_label.setText(selected_query_asc_data.sim_file)
         self.function_label.setText(selected_query.function)
+
+    def save_csv_query(self):
+        query_id = self.view_query_list.text()
+        if query_id in self.query_data_dict.keys():
+            now = datetime.now()
+            dt_string = now.strftime("%Y%m%d_%H%M%S")
+            output_directory = 'sim_output'
+            if not os.path.exists(output_directory):
+                os.makedirs(output_directory)
+            output_path = os.path.join(output_directory, f"{query_id}_{dt_string}.csv")
+            self.query_data_dict[query_id].results.to_csv(output_path)
+            self.print_query_output(f"{query_id} saved to: {output_path}", "black")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

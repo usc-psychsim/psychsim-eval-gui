@@ -123,8 +123,8 @@ class PsychSimQuery:
             data_id = kwargs['data_id']
             agent_id = kwargs['agent']
             output_data = pd.DataFrame()
-            for step, step_data in data[data_id].items():
-                output_data = output_data.append(self.__get_debug_data(debug=step_data['step_data'], step=step))
+            for step, step_data in data.data.items():
+                output_data = output_data.append(self.__get_debug_data(debug=step_data, step=step))
             return output_data
         except:
             tb = traceback.format_exc()

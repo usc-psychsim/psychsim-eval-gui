@@ -360,16 +360,16 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <widget class="QPushButton" name="rename_query_button">
+            <widget class="QPushButton" name="view_query_button">
              <property name="text">
-              <string>Rename Query</string>
+              <string>View Query Data</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="view_query_button">
+            <widget class="QPushButton" name="save_csv_query_button">
              <property name="text">
-              <string>View Query Data</string>
+              <string>Save as CSV</string>
              </property>
             </widget>
            </item>
