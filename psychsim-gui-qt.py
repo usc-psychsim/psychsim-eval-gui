@@ -23,6 +23,7 @@ from LoadedDataWindow import LoadedDataWindow
 from DataViewWindow import RawDataWindow
 from SampleDataWindow import SampleDataWindow
 from renameDataDialog import RenameDataDialog
+from query_data_dialog import QueryDataDialog
 from PlotWindow import PlotWindow
 
 qtCreatorFile = "psychsim-gui-main.ui"
@@ -38,9 +39,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
-
-        # LOAD CONFIG
-        self.load_config()
 
         # SET UP OTHER WINDOWS
         self.data_window = RawDataWindow()
@@ -67,6 +65,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sim_path = ""
         self.sim_name = ""
         self.sim_data_dict = dict()
+        self.query_data_dict = dict()
 
         # SET UP MAIN WINDOW BUTTONS
         self.run_sim_button.setEnabled(False)
@@ -93,11 +92,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
         self.actioncreate_plot.triggered.connect(self.show_plot_window)
 
+        # LOAD CONFIG
+        self.load_config()
+
         # SET UP QUERY WINDOW --------------
         self.psychsim_query = PsychSimQuery()
         self.set_function_dropdown()
+        self.current_query_function = None
 
-        # self.execute_query_button.clicked.connect(self.execute_query)
+        self.execute_query_button.clicked.connect(self.execute_query)
+        self.view_query_button.clicked.connect(self.view_query)
         # self.diff_query_button.clicked.connect(self.diff_query)
         # self.data_combo.activated.connect(self.set_agent_dropdown)
         # self.data_combo.activated.connect(self.set_action_dropdown)
@@ -246,7 +250,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             sys.path.insert(1, self.psychsim_path)
             sys.path.insert(1, self.definitions_path)
 
-            # import psychsim
+            import psychsim
             psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
             self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
             psychsim_spec.loader.exec_module(self.psychsim_module)
@@ -275,7 +279,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.print_sim_output(f"{data_id} saved to: {output_path}", "black")
         self.update_data_table()
 
-    def print_sim_output(self, msg, color):
+    #todo: refactor these types of functions
+    def print_query_output(self, msg, color="black"):
+        self.query_output.setTextColor(QColor(color))
+        self.query_output.append(msg)
+
+    def print_sim_output(self, msg, color="black"):
         self.simulation_output.setTextColor(QColor(color))
         self.simulation_output.append(msg)
 
@@ -355,6 +364,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
             print(f"{end_node} {debug}")
 
     # QUERY FUNCTIONS-------------------------------------------
+    def set_query_list_dropdown(self):
+        query_items = [item for item in self.query_data_dict.keys()]
+        pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.btnstate, parent=self)
+
     def set_data_dropdown(self):
         self.data_combo.clear()
         new_items = [item for item in self.sim_data_dict.keys()]
@@ -366,6 +379,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
                          and '__' not in method_name]
         pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate, parent=self)
 
+    def set_agent_dropdown(self):
+        # todo: refactor this and other dropdown generation functions
+        # TODO: figure out how to set this based on the data set (i.e. remove old ones and add new ones)
+        data_id = self.data_combo.currentText()
+        if data_id:
+            agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
+            self.agent_combo.clear()
+            self.agent_combo.addItems(agents['agent'].tolist())
+
     def btnstate(self, action, button):
         selection = action.checkedAction().text()
         if button == self.function_button:
@@ -374,6 +396,66 @@ class MyApp(QMainWindow, Ui_MainWindow):
         #TODO: make this conditional functionality smarter
         if selection == "get_actions":
             self.set_agent_dropdown()
+            #TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
+
+    def execute_query(self):
+        # query_function = self.function_combo.currentText()
+        query_function = self.current_query_function
+        agent = self.agent_combo.currentText()
+        data_id = self.data_combo.currentText()
+        try:
+            result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id, agent=agent)
+            self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
+            if type(result) == pd.DataFrame:
+
+                #create query ID
+                now = datetime.now()
+                dt_string = now.strftime("%Y%m%d_%H%M%S")
+                query_id = f"{query_function}_{data_id}_{dt_string}"
+
+                #create a new query object
+                id: str
+                data_id: str
+                params: list
+                function: str
+                results: pd.DataFrame
+                new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function, results=result)
+
+                #create new dialog and show results + query ID
+                model = PandasModel(result)
+                query_dialog = QueryDataDialog(new_query, model)
+                result = query_dialog.exec_()
+                new_query = query_dialog.query_data
+
+                #get new/old ID from dialog and save in query dict
+                self.query_data_dict[new_query.id] = new_query
+
+                #update the query list
+                self.set_query_list_dropdown()
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
+    def save_query(self):
+        pass
+
+    def view_query(self):
+        #get the current query
+        query_id = self.view_query_list.text()
+        if query_id in self.query_data_dict.keys():
+            selected_query = self.query_data_dict[query_id]
+
+            #show the dialog for it
+            query_dialog = QueryDataDialog(selected_query, model=PandasModel(selected_query.results))
+            result = query_dialog.exec_()
+            selected_query = query_dialog.query_data
+            print(selected_query.id)
+
+            #get new/old ID from dialog and save in query dict
+            self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
+
+            #update the query dropdown
+            self.set_query_list_dropdown()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

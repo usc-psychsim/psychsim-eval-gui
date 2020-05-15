@@ -7,6 +7,8 @@ import pandas as pd
 import numpy as np
 import traceback
 
+import psychsim_gui_helpers as pgh
+
 class PsychSimQuery:
     def __init__(self):
         pass
@@ -65,21 +67,21 @@ class PsychSimQuery:
 
     def get_agents(self, *args, **kwargs):
         """
-        get list of agents in the data
+        get list of agents in the data. Data must be a PsychSimRun class
         :return:
         """
         #TODO: return a dataframe
-        agent_list = dict()
+        agent_dict = dict(agent=[])
         for key, value in kwargs.items():
             if key == "data":
-                for sim_data in value.values():
-                    for step_data in sim_data.values():
-                        for agent_data in step_data.values():
-                            if type(agent_data) == dict:
-                                for agent in list(agent_data.keys()):
-                                    agent_list[agent] = agent
+                for step_data in value.data.values():
+                    if type(step_data) == dict:
+                        for agent in list(step_data.keys()):
+                            if agent not in agent_dict['agent']:
+                                agent_dict['agent'].append(agent)
 
-        return agent_list
+        output_data = pd.DataFrame.from_dict(agent_dict)
+        return output_data
 
 
 
