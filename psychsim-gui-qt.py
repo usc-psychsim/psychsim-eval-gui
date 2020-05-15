@@ -397,6 +397,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         if selection == "get_actions":
             self.set_agent_dropdown()
             #TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
+        if button == self.view_query_list:
+            self.update_query_info(self.query_data_dict[selection])
 
     def execute_query(self):
         # query_function = self.function_combo.currentText()
@@ -406,6 +408,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id, agent=agent)
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
+            self.print_query_output(str(result))
             if type(result) == pd.DataFrame:
 
                 #create query ID
@@ -426,12 +429,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 query_dialog = QueryDataDialog(new_query, model)
                 result = query_dialog.exec_()
                 new_query = query_dialog.query_data
+                if result:
+                    new_query.id = query_dialog.query_id_input.text()
 
                 #get new/old ID from dialog and save in query dict
                 self.query_data_dict[new_query.id] = new_query
 
                 #update the query list
                 self.set_query_list_dropdown()
+
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
@@ -454,8 +460,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
             #get new/old ID from dialog and save in query dict
             self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
 
-            #update the query dropdown
+            #update the query dropdown and info
             self.set_query_list_dropdown()
+            self.update_query_info(selected_query)
+
+    def update_query_info(self, selected_query):
+        selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
+        self.query_name_label.setText(selected_query.id)
+        self.data_id_label.setText(selected_query.data_id)
+        self.sim_file_label.setText(selected_query_asc_data.sim_file)
+        self.function_label.setText(selected_query.function)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
