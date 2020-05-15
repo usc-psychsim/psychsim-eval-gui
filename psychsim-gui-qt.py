@@ -103,13 +103,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.execute_query_button.clicked.connect(self.execute_query)
         self.view_query_button.clicked.connect(self.view_query)
         self.save_csv_query_button.clicked.connect(self.save_csv_query)
-        # self.diff_query_button.clicked.connect(self.diff_query)
+        self.diff_query_button.clicked.connect(self.diff_query)
         # self.data_combo.activated.connect(self.set_agent_dropdown)
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
-        # self.main_tab.currentChanged.connect(self.update_query_lists)
-        # self.view_query_button.clicked.connect(self.view_query)
-
 
 
     def simulation_thread(self, progress_callback):
@@ -367,6 +364,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def set_query_list_dropdown(self):
         query_items = [item for item in self.query_data_dict.keys()]
         pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.btnstate, parent=self)
+        pgh.update_toolbutton_list(list=query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
+        pgh.update_toolbutton_list(list=query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
 
     def set_data_dropdown(self):
         self.data_combo.clear()
@@ -483,6 +482,22 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.query_data_dict[query_id].results.to_csv(output_path)
             self.print_query_output(f"{query_id} saved to: {output_path}", "black")
 
+    def diff_query(self):
+        try:
+            #get the two queries
+            q1 = self.query_data_dict[self.query_diff_1.text()]
+            q2 = self.query_data_dict[self.query_diff_2.text()]
+
+            #check that they are the same type
+            if q1.function == q2.function:
+                #diff the results
+                self.print_query_output(f"DIFFING: {q1.id} and {q2.id}", 'green')
+            else:
+                self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
+                self.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

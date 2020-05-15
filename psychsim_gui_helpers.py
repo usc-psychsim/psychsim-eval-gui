@@ -59,6 +59,11 @@ def update_toolbutton_list(button, list, action_function, parent=None):
     button.setPopupMode(QToolButton.InstantPopup)
 
 
+def set_toolbutton_text(action, button):
+    selection = action.checkedAction().text()
+    button.setText(action.checkedAction().text())
+
+
 if __name__ == "__main__":
     df = pd.DataFrame()
     test_data = PsychSimRun(id="test_id", run_date="date", data=df, sim_file="simfile", steps=9)
