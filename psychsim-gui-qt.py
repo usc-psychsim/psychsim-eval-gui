@@ -2,6 +2,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 import os
 import pickle
 import importlib.util
@@ -12,6 +13,10 @@ import pandas as pd
 import configparser
 from datetime import datetime
 from functools import partial
+
+import plotly
+import plotly.graph_objects as go
+import plotly.express as px
 
 from gui_threading import Worker, WorkerSignals
 from PandasModel import PandasModel
@@ -24,7 +29,7 @@ from DataViewWindow import RawDataWindow
 from SampleDataWindow import SampleDataWindow
 from renameDataDialog import RenameDataDialog
 from query_data_dialog import QueryDataDialog
-from PlotWindow import PlotWindow
+# from PlotWindow import PlotWindow
 
 qtCreatorFile = "psychsim-gui-main.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
@@ -45,7 +50,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.loaded_data_window = LoadedDataWindow()
         # self.query_data_window = QueryDataWindow()#TODO: remove this
         self.sample_data_window = SampleDataWindow()
-        self.plot_window = PlotWindow()
+        # self.plot_window = PlotWindow()
 
         # SET UP THREADING
         self.threadpool = QThreadPool()
@@ -88,9 +93,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.actionquery_data.triggered.connect(self.show_query_data_window)#TODO: remove this (and associated function if necessesary)
         self.actionmain.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.actionquery_data_page.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
         self.actioncreate_samples.triggered.connect(self.show_sample_data_window)
         self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
-        self.actioncreate_plot.triggered.connect(self.show_plot_window)
+        # self.actioncreate_plot.triggered.connect(self.show_plot_window)
 
         # LOAD CONFIG
         self.load_config()
@@ -107,6 +113,24 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.data_combo.activated.connect(self.set_agent_dropdown)
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
+
+
+        # SET UP PLOT WINDOW ----------------
+
+        # TEST DATA
+        # data_id = "test_data"
+        # data = px.data.iris()
+        # self.test_data_dict = {data_id: data}
+        # pgh.update_toolbutton_list(list=self.test_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
+        # END TEST DATA
+
+        self.plot_button.clicked.connect(self.plot_data)
+
+        self.set_type_dropdown()
+        self.set_stat_dropdown()
+
+        self.setup_plot()
+
 
 
     def simulation_thread(self, progress_callback):
@@ -366,6 +390,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.btnstate, parent=self)
         pgh.update_toolbutton_list(list=query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
         pgh.update_toolbutton_list(list=query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
+        pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
+
 
     def set_data_dropdown(self):
         self.data_combo.clear()
@@ -498,6 +524,122 @@ class MyApp(QMainWindow, Ui_MainWindow):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+
+    # PLOT FUNCTIONS -------------------------------------------
+    def plot_data(self):
+        # data = self.test_data_dict[self.plot_query.text()]
+        data = self.query_data_dict[self.plot_query.text()].results
+        x_axis = self.plot_x.text()
+        y_axis = self.plot_y.text()
+
+        #get the stat and do the operation on the data
+        stat = self.plot_stat.text()
+        if stat == "mean":
+            data.groupby(x_axis).mean()
+        elif stat == "median":
+            pass
+        elif stat == "count":
+            pass
+        elif stat == "none":
+            pass
+
+        #get the type of plot ["line", "scatter", "box", "violin"]
+        plot_type = self.plot_type.text()
+        if plot_type == "scatter":
+            self.add_scatter_plot(data=data, x=x_axis, y=y_axis)
+        elif plot_type == "line":
+            self.add_line_plot(data=data, x=x_axis, y=y_axis)
+        elif plot_type == "histogram":
+            self.add_histogram_plot(data=data, x=x_axis, y=y_axis)
+        elif plot_type == "violin":
+            pass
+
+    def set_stat_dropdown(self):
+        stats = ["none", "mean", "median", "count"]
+        pgh.update_toolbutton_list(list=stats, button=self.plot_stat, action_function=pgh.set_toolbutton_text, parent=self)
+
+    def set_type_dropdown(self):
+        stats = ["line", "scatter", "histogram", "violin"]
+        pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text, parent=self)
+
+    def setup_plot(self):
+        # we create an instance of QWebEngineView and set the html code
+        self.plot_widget = QWebEngineView()
+
+        vbox_layout = QVBoxLayout()
+        vbox_layout.addWidget(self.plot_widget)
+        self.plot_frame.setLayout(vbox_layout)
+
+    def set_axis_dropdowns(self, action, button):
+        #TODO: make sure these are the same types of queries (same function) - refactor with similar code
+        selection = action.checkedAction().text()
+        print(action.checkedAction().text())
+        button.setText(action.checkedAction().text())
+
+        #get the sample / data
+        data_key = selection
+
+        #set x and y axis dropdowns
+        # axis_values = sorted(self.test_data_dict[data_key])
+        axis_values = sorted(self.query_data_dict[data_key].results.columns)
+        pgh.update_toolbutton_list(list=axis_values, button=self.plot_y, action_function=pgh.set_toolbutton_text, parent=self)
+        pgh.update_toolbutton_list(list=axis_values, button=self.plot_x, action_function=pgh.set_toolbutton_text, parent=self)
+
+    #TODO: REFACTOR - gather similar plotting code to one (maybe put in helpers also)
+    def add_scatter_plot(self, data, x, y):
+        fig = px.scatter(data, x=x, y=y, trendline="ols", color=data.index) #FOR SOME REASON THIS LINE IS AN ISSUE HERE BUT NOT IN THE SEPARATE WINDOW. IT IS BNECAUSE OF SETTING PARENT IN THE ACTION.
+        fig.update_layout(
+            margin=dict(
+                l=1,
+                r=1,
+                b=1,
+                t=1,
+                pad=4
+            ),
+        )
+        fig.update_yaxes(automargin=True)
+        # we create html code of the figure
+        html = '<html><body>'
+        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
+        html += '</body></html>'
+        self.plot_widget.setHtml(html)
+
+    def add_line_plot(self, data, x, y):
+        fig = px.line(data, x=x, y=y)
+        #                       # line_group="country", hover_name="country"))
+        # x_axis = data[x].to_numpy()
+        # y_axis = data[y].to_numpy()
+        # fig = go.Figure(data=go.Scatter(x=x_axis, y=y_axis))
+        fig.update_layout(
+            margin=dict(
+                l=1,
+                r=1,
+                b=1,
+                t=1,
+                pad=4
+            ),
+        )
+        html = '<html><body>'
+        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
+        html += '</body></html>'
+        self.plot_widget.setHtml(html)
+
+    def add_histogram_plot(self, data, x, y):
+        fig = px.histogram(data, x=x, y=y)
+        fig.update_layout(
+            margin=dict(
+                l=1,
+                r=1,
+                b=1,
+                t=1,
+                pad=4
+            ),
+        )
+        html = '<html><body>'
+        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
+        html += '</body></html>'
+        self.plot_widget.setHtml(html)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
