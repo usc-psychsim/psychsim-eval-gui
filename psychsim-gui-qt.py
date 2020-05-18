@@ -29,6 +29,7 @@ from DataViewWindow import RawDataWindow
 from SampleDataWindow import SampleDataWindow
 from renameDataDialog import RenameDataDialog
 from query_data_dialog import QueryDataDialog
+
 # from PlotWindow import PlotWindow
 
 qtCreatorFile = "psychsim-gui-main.ui"
@@ -114,7 +115,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
-
         # SET UP PLOT WINDOW ----------------
 
         # TEST DATA
@@ -125,17 +125,18 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # END TEST DATA
 
         self.plot_button.clicked.connect(self.plot_data)
-        self.clear_plot_button.clicked.connect(self.setup_plot)
+        self.add_plot_button.clicked.connect(self.plot_data)
+        self.clear_plot_button.clicked.connect(self.clear_plot)
 
         self.set_type_dropdown()
         self.set_stat_dropdown()
 
-        self.setup_plot()
+        self.setup_plot_widget()
 
-
+        self.current_fig = None
 
     def simulation_thread(self, progress_callback):
-        #initialise the sim class
+        # initialise the sim class
         tester = getattr(self.sim_module, self.sim_name)()
         step = 0
         output = dict()
@@ -190,7 +191,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def update_data_table(self):
         self.loaded_data_window.clear_table()  # TODO: find better way to do this so it isn't loaded a new each time
         for data_id, data in self.sim_data_dict.items():
-
             # create the button to rename the data
             btn = QPushButton(self.loaded_data_window.loaded_data_table)
             btn.setText('RENAME')
@@ -201,7 +201,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             btn2.setText('save')
             btn2.clicked.connect(partial(self.save_data_window, data_id))
 
-            #update the loaded data table
+            # update the loaded data table
             new_row = [data.run_date, data.id, data.sim_file, str(data.steps), btn, btn2]
             self.loaded_data_window.add_row_to_table(new_row)
 
@@ -301,7 +301,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.print_sim_output(f"{data_id} saved to: {output_path}", "black")
         self.update_data_table()
 
-    #todo: refactor these types of functions
+    # todo: refactor these types of functions
     def print_query_output(self, msg, color="black"):
         self.query_output.setTextColor(QColor(color))
         self.query_output.append(msg)
@@ -333,9 +333,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def load_data_from_file(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "Select data file", "", "psychsim data (*.pickle)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Select data file", "", "psychsim data (*.pickle)",
+                                                  options=options)
         if fileName:
-            #load the psychsim libs
+            # load the psychsim libs
             self.load_sim()
             with open(fileName, 'rb') as f:
                 data = pickle.load(f)
@@ -389,11 +390,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
     # QUERY FUNCTIONS-------------------------------------------
     def set_query_list_dropdown(self):
         query_items = [item for item in self.query_data_dict.keys()]
-        pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.btnstate, parent=self)
+        pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.btnstate,
+                                   parent=self)
         pgh.update_toolbutton_list(list=query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
         pgh.update_toolbutton_list(list=query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
-        pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
-
+        pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
+                                   parent=self)
 
     def set_data_dropdown(self):
         self.data_combo.clear()
@@ -404,7 +406,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
                          and '__' not in method_name]
-        pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate, parent=self)
+        pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate,
+                                   parent=self)
 
     def set_agent_dropdown(self):
         # todo: refactor this and other dropdown generation functions
@@ -420,10 +423,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         if button == self.function_button:
             self.current_query_function = selection
         button.setText(action.checkedAction().text())
-        #TODO: make this conditional functionality smarter
+        # TODO: make this conditional functionality smarter
         if selection == "get_actions":
             self.set_agent_dropdown()
-            #TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
+            # TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
         if button == self.view_query_list:
             self.update_query_info(self.query_data_dict[selection])
 
@@ -433,25 +436,27 @@ class MyApp(QMainWindow, Ui_MainWindow):
         agent = self.agent_combo.currentText()
         data_id = self.data_combo.currentText()
         try:
-            result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id, agent=agent)
+            result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
+                                                                  agent=agent)
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
             if type(result) == pd.DataFrame:
 
-                #create query ID
+                # create query ID
                 now = datetime.now()
                 dt_string = now.strftime("%Y%m%d_%H%M%S")
                 query_id = f"{query_function}_{data_id}_{dt_string}"
 
-                #create a new query object
+                # create a new query object
                 id: str
                 data_id: str
                 params: list
                 function: str
                 results: pd.DataFrame
-                new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function, results=result)
+                new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
+                                            results=result)
 
-                #create new dialog and show results + query ID
+                # create new dialog and show results + query ID
                 model = PandasModel(result)
                 query_dialog = QueryDataDialog(new_query, model)
                 result = query_dialog.exec_()
@@ -459,10 +464,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 if result:
                     new_query.id = query_dialog.query_id_input.text()
 
-                #get new/old ID from dialog and save in query dict
+                # get new/old ID from dialog and save in query dict
                 self.query_data_dict[new_query.id] = new_query
 
-                #update the query list
+                # update the query list
                 self.set_query_list_dropdown()
 
         except:
@@ -473,21 +478,21 @@ class MyApp(QMainWindow, Ui_MainWindow):
         pass
 
     def view_query(self):
-        #get the current query
+        # get the current query
         query_id = self.view_query_list.text()
         if query_id in self.query_data_dict.keys():
             selected_query = self.query_data_dict[query_id]
 
-            #show the dialog for it
+            # show the dialog for it
             query_dialog = QueryDataDialog(selected_query, model=PandasModel(selected_query.results))
             result = query_dialog.exec_()
             selected_query = query_dialog.query_data
             print(selected_query.id)
 
-            #get new/old ID from dialog and save in query dict
+            # get new/old ID from dialog and save in query dict
             self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
 
-            #update the query dropdown and info
+            # update the query dropdown and info
             self.set_query_list_dropdown()
             self.update_query_info(selected_query)
 
@@ -512,13 +517,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def diff_query(self):
         try:
-            #get the two queries
+            # get the two queries
             q1 = self.query_data_dict[self.query_diff_1.text()]
             q2 = self.query_data_dict[self.query_diff_2.text()]
 
-            #check that they are the same type
+            # check that they are the same type
             if q1.function == q2.function:
-                #diff the results
+                # diff the results
                 self.print_query_output(f"DIFFING: {q1.id} and {q2.id}", 'green')
             else:
                 self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
@@ -526,7 +531,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
-
 
     # PLOT FUNCTIONS -------------------------------------------
     def plot_data(self):
@@ -536,7 +540,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         x_axis = self.plot_x.text()
         y_axis = self.plot_y.text()
 
-        #get the stat and do the operation on the data
+        # get the stat and do the operation on the data
         stat = self.plot_stat.text()
         if stat == "mean":
             data.groupby(x_axis).mean()
@@ -547,28 +551,44 @@ class MyApp(QMainWindow, Ui_MainWindow):
         elif stat == "none":
             pass
 
-        #get the type of plot ["line", "scatter", "box", "violin"]
+
+
+        # get the type of plot ["line", "scatter", "box", "violin"]
         plot_type = self.plot_type.text()
         if plot_type == "scatter":
-            self.add_scatter_plot(data=data, x=x_axis, y=y_axis)
+            fig = px.scatter(data, x=x_axis, y=y_axis, trendline="ols", color=data.index)
+            # self.add_scatter_plot(data=data, x=x_axis, y=y_axis)
         elif plot_type == "line":
-            self.add_line_plot(data=data, x=x_axis, y=y_axis)
+            fig = px.line(data, x=x_axis, y=y_axis)
+            # self.add_line_plot(data=data, x=x_axis, y=y_axis)
         elif plot_type == "histogram":
-            self.add_histogram_plot(data=data, x=x_axis, y=y_axis)
+            fig = px.histogram(data, x=x_axis, y=y_axis)
+            # self.add_histogram_plot(data=data, x=x_axis, y=y_axis)
         elif plot_type == "violin":
-            self.add_violin_plot(data=data, x=x_axis, y=y_axis)
+            fig = px.violin(data, y=x_axis, x=y_axis, box=True, points="all", hover_data=data.columns)
+            # self.add_violin_plot(data=data, x=x_axis, y=y_axis)
         elif plot_type == "test":
-            self.add_test_plot()
+            iris = px.data.iris()
+            fig = px.scatter(iris, x="sepal_width", y="sepal_length", color="species")
+
+        #clear the plot if it's a new plot otherwise leave it
+        if self.sender() == self.plot_button:
+            self.clear_plot()
+            self.add_new_plot(fig=fig)
+        else:
+            self.add_additional_plot(fig=fig)
 
     def set_stat_dropdown(self):
         stats = ["none", "mean", "median", "count"]
-        pgh.update_toolbutton_list(list=stats, button=self.plot_stat, action_function=pgh.set_toolbutton_text, parent=self)
+        pgh.update_toolbutton_list(list=stats, button=self.plot_stat, action_function=pgh.set_toolbutton_text,
+                                   parent=self)
 
     def set_type_dropdown(self):
         stats = ["line", "scatter", "histogram", "violin", "test"]
-        pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text, parent=self)
+        pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text,
+                                   parent=self)
 
-    def setup_plot(self):
+    def setup_plot_widget(self):
         # we create an instance of QWebEngineView and set the html code
         self.plot_widget = QWebEngineView()
 
@@ -576,25 +596,32 @@ class MyApp(QMainWindow, Ui_MainWindow):
         vbox_layout.addWidget(self.plot_widget)
         self.plot_frame.setLayout(vbox_layout)
 
+    def clear_plot(self):
+        fig = px.bar(pd.DataFrame(dict(x=[], y=[])), x="x", y="y")
+        self.add_new_plot(fig)
+
     def set_axis_dropdowns(self, action, button):
-        #TODO: make sure these are the same types of queries (same function) - refactor with similar code
+        # TODO: make sure these are the same types of queries (same function) - refactor with similar code
         selection = action.checkedAction().text()
         print(action.checkedAction().text())
         button.setText(action.checkedAction().text())
 
-        #get the sample / data
+        # get the sample / data
         data_key = selection
 
-        #set x and y axis dropdowns
+        # set x and y axis dropdowns
         # axis_values = sorted(self.test_data_dict[data_key])
         axis_values = sorted(self.query_data_dict[data_key].results.columns)
-        pgh.update_toolbutton_list(list=axis_values, button=self.plot_y, action_function=pgh.set_toolbutton_text, parent=self)
-        pgh.update_toolbutton_list(list=axis_values, button=self.plot_x, action_function=pgh.set_toolbutton_text, parent=self)
+        pgh.update_toolbutton_list(list=axis_values, button=self.plot_y, action_function=pgh.set_toolbutton_text,
+                                   parent=self)
+        pgh.update_toolbutton_list(list=axis_values, button=self.plot_x, action_function=pgh.set_toolbutton_text,
+                                   parent=self)
 
-    #TODO: REFACTOR - gather similar plotting code to one (maybe put in helpers also)
-    def add_scatter_plot(self, data, x, y):
-        fig = px.scatter(data, x=x, y=y, trendline="ols", color=data.index) #FOR SOME REASON THIS LINE IS AN ISSUE HERE BUT NOT IN THE SEPARATE WINDOW. IT IS BNECAUSE OF SETTING PARENT IN THE ACTION.
-        fig.update_layout(
+    def add_new_plot(self, fig):
+        #update stored fig
+        self.current_fig = fig
+        # set up layout
+        layout = dict(
             margin=dict(
                 l=1,
                 r=1,
@@ -603,86 +630,21 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 pad=4
             ),
         )
+        fig.update_layout(layout)
         fig.update_yaxes(automargin=True)
-        # we create html code of the figure
         html = '<html><body>'
         html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
         html += '</body></html>'
         self.plot_widget.setHtml(html)
 
-    def add_line_plot(self, data, x, y):
-        fig = px.line(data, x=x, y=y)
-        #                       # line_group="country", hover_name="country"))
-        # x_axis = data[x].to_numpy()
-        # y_axis = data[y].to_numpy()
-        # fig = go.Figure(data=go.Scatter(x=x_axis, y=y_axis))
-        fig.update_layout(
-            margin=dict(
-                l=1,
-                r=1,
-                b=1,
-                t=1,
-                pad=4
-            ),
-        )
-        html = '<html><body>'
-        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
-        html += '</body></html>'
-        self.plot_widget.setHtml(html)
+    def add_additional_plot(self, fig):
+        if self.current_fig:
+            self.current_fig.add_trace(fig.data[0])
+            html = '<html><body>'
+            html += plotly.offline.plot(self.current_fig, output_type='div', include_plotlyjs='cdn')
+            html += '</body></html>'
+            self.plot_widget.setHtml(html)
 
-    def add_histogram_plot(self, data, x, y):
-        fig = px.histogram(data, x=x, y=y)
-        fig.update_layout(
-            margin=dict(
-                l=1,
-                r=1,
-                b=1,
-                t=1,
-                pad=4
-            ),
-        )
-        html = '<html><body>'
-        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
-        html += '</body></html>'
-        self.plot_widget.setHtml(html)
-
-    def add_violin_plot(self, data, x, y):
-        fig = px.violin(data, y=y, x=x, box=True, points="all", hover_data=data.columns)
-        fig.update_layout(
-            margin=dict(
-                l=1,
-                r=1,
-                b=1,
-                t=1,
-                pad=4
-            ),
-        )
-        html = '<html><body>'
-        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
-        html += '</body></html>'
-        self.plot_widget.setHtml(html)
-
-    def add_test_plot(self):
-        iris = px.data.iris()
-        fig = px.scatter(iris, x="sepal_width", y="sepal_length", color="species")
-        fig.update_layout(
-            margin=dict(
-                l=1,
-                r=1,
-                b=1,
-                t=1,
-                pad=4
-            ),
-        )
-        df = pd.DataFrame({
-            'x': [1, 2, 3, 4],
-            'y': [5, 6, 7, 8], })
-        fig2 = px.bar(df, x="x", y="y")
-        fig.add_trace(fig2.data[0])
-        html = '<html><body>'
-        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
-        html += '</body></html>'
-        self.plot_widget.setHtml(html)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

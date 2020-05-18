@@ -827,7 +827,14 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>PLOT</string>
+                 <string>Plot New</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="add_plot_button">
+                <property name="text">
+                 <string>Add to plot</string>
                 </property>
                </widget>
               </item>
