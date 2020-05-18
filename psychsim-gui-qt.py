@@ -125,6 +125,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # END TEST DATA
 
         self.plot_button.clicked.connect(self.plot_data)
+        self.clear_plot_button.clicked.connect(self.setup_plot)
 
         self.set_type_dropdown()
         self.set_stat_dropdown()
@@ -530,7 +531,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
     # PLOT FUNCTIONS -------------------------------------------
     def plot_data(self):
         # data = self.test_data_dict[self.plot_query.text()]
-        data = self.query_data_dict[self.plot_query.text()].results
+        if self.plot_query.text() in self.query_data_dict.keys():
+            data = self.query_data_dict[self.plot_query.text()].results
         x_axis = self.plot_x.text()
         y_axis = self.plot_y.text()
 
@@ -554,14 +556,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
         elif plot_type == "histogram":
             self.add_histogram_plot(data=data, x=x_axis, y=y_axis)
         elif plot_type == "violin":
-            pass
+            self.add_violin_plot(data=data, x=x_axis, y=y_axis)
+        elif plot_type == "test":
+            self.add_test_plot()
 
     def set_stat_dropdown(self):
         stats = ["none", "mean", "median", "count"]
         pgh.update_toolbutton_list(list=stats, button=self.plot_stat, action_function=pgh.set_toolbutton_text, parent=self)
 
     def set_type_dropdown(self):
-        stats = ["line", "scatter", "histogram", "violin"]
+        stats = ["line", "scatter", "histogram", "violin", "test"]
         pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text, parent=self)
 
     def setup_plot(self):
@@ -653,6 +657,28 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 pad=4
             ),
         )
+        html = '<html><body>'
+        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
+        html += '</body></html>'
+        self.plot_widget.setHtml(html)
+
+    def add_test_plot(self):
+        iris = px.data.iris()
+        fig = px.scatter(iris, x="sepal_width", y="sepal_length", color="species")
+        fig.update_layout(
+            margin=dict(
+                l=1,
+                r=1,
+                b=1,
+                t=1,
+                pad=4
+            ),
+        )
+        df = pd.DataFrame({
+            'x': [1, 2, 3, 4],
+            'y': [5, 6, 7, 8], })
+        fig2 = px.bar(df, x="x", y="y")
+        fig.add_trace(fig2.data[0])
         html = '<html><body>'
         html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
         html += '</body></html>'
