@@ -341,6 +341,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
                 self.sim_data_dict[data.id] = data
                 self.update_data_table()
+                self.set_data_dropdown()
 
     def show_rename_dialog(self, old_key):
         # show the rename dialog and get the new name
@@ -627,6 +628,22 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def add_histogram_plot(self, data, x, y):
         fig = px.histogram(data, x=x, y=y)
+        fig.update_layout(
+            margin=dict(
+                l=1,
+                r=1,
+                b=1,
+                t=1,
+                pad=4
+            ),
+        )
+        html = '<html><body>'
+        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
+        html += '</body></html>'
+        self.plot_widget.setHtml(html)
+
+    def add_violin_plot(self, data, x, y):
+        fig = px.violin(data, y=y, x=x, box=True, points="all", hover_data=data.columns)
         fig.update_layout(
             margin=dict(
                 l=1,
