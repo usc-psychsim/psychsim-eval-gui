@@ -562,16 +562,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # get the type of plot ["line", "scatter", "box", "violin"]
         plot_type = self.plot_type.text()
         if plot_type == "scatter":
-            # fig = px.scatter(data, x=x_axis, y=y_axis, trendline="ols", color=data.index)
             fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=self.plot_x.text()))
         elif plot_type == "line":
-            # fig = px.line(data, x=x_axis, y=y_axis)
             fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=self.plot_x.text()))
         elif plot_type == "histogram":
-            # fig = px.histogram(data, x=x_axis, y=y_axis)
             fig.add_trace(go.Histogram(x=x_axis))
         elif plot_type == "violin":
-            # fig = px.violin(data, y=x_axis, x=y_axis, box=True, points="all", hover_data=data.columns)
             fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
                                            meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
                                            x0=''))
@@ -582,12 +578,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.current_fig = fig
         self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
 
-        # #clear the plot if it's a new plot otherwise leave it
-        # if self.sender() == self.plot_button:
-        #     # self.clear_plot()
-        #     self.add_new_plot(fig=fig)
-        # else:
-        #     self.add_additional_plot(fig=fig)
 
     def set_stat_dropdown(self):
         stats = ["none", "mean", "median", "count"]
@@ -649,14 +639,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
         html += '</body></html>'
         self.plot_widget.setHtml(html)
-
-    def add_additional_plot(self, fig):
-        if self.current_fig:
-            self.current_fig.add_trace(fig)
-            html = '<html><body>'
-            html += plotly.offline.plot(self.current_fig, output_type='div', include_plotlyjs='cdn')
-            html += '</body></html>'
-            self.plot_widget.setHtml(html)
 
 
 if __name__ == "__main__":
