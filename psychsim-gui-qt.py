@@ -116,17 +116,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
         # SET UP PLOT WINDOW ----------------
-
-        # TEST DATA
-        # data_id = "test_data"
-        # data = px.data.iris()
-        # self.test_data_dict = {data_id: data}
-        # pgh.update_toolbutton_list(list=self.test_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
-        # END TEST DATA
-
         self.plot_button.clicked.connect(self.plot_data)
         self.add_plot_button.clicked.connect(self.plot_data)
         self.clear_plot_button.clicked.connect(self.clear_plot)
+        self.test_check.stateChanged.connect(self.setup_test_plot)
 
         self.set_type_dropdown()
         self.set_stat_dropdown()
@@ -533,10 +526,28 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.print_query_output(tb, "red")
 
     # PLOT FUNCTIONS -------------------------------------------
+    def setup_test_plot(self):
+        if self.test_check.isChecked():
+            data_id = "test_query"
+            data = px.data.iris()
+            self.test_data_dict = {data_id: data}
+            self.query_data_dict[data_id] = pgh.PsySimQuery(id=data_id,
+                                                                data_id=data_id,
+                                                                params=[],
+                                                                function="test",
+                                                                results=data)
+            pgh.update_toolbutton_list(list=self.test_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
+
+
+
     def plot_data(self):
+        # get the type of plot ["line", "scatter", "box", "violin"]
+        plot_type = self.plot_type.text()
+
         # data = self.test_data_dict[self.plot_query.text()]
         if self.plot_query.text() in self.query_data_dict.keys():
             data = self.query_data_dict[self.plot_query.text()].results
+            # get the axis values
             x_axis = data[self.plot_x.text()].to_numpy()
             y_axis = data[self.plot_y.text()].to_numpy()
 
@@ -559,8 +570,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
             fig = self.current_fig
             print("adding new figure")
 
-        # get the type of plot ["line", "scatter", "box", "violin"]
-        plot_type = self.plot_type.text()
         if plot_type == "scatter":
             fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=self.plot_x.text()))
         elif plot_type == "line":
@@ -572,8 +581,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                            meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
                                            x0=''))
         elif plot_type == "test":
-            iris = px.data.iris()
-            fig = px.scatter(iris, x="sepal_width", y="sepal_length", color="species")
+            fig = px.scatter(data, x="sepal_width", y="sepal_length", color="species")
 
         self.current_fig = fig
         self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
