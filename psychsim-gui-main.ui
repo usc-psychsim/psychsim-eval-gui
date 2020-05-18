@@ -355,35 +355,6 @@
                  </layout>
                 </widget>
                </item>
-               <item>
-                <widget class="QFrame" name="frame_7">
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_4">
-                  <item>
-                   <widget class="QLabel" name="label_17">
-                    <property name="text">
-                     <string>Query Name:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="query_name_input"/>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="Query_save_button">
-                    <property name="text">
-                     <string>SAVE</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="view_tab">
@@ -400,89 +371,6 @@
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_4">
-                  <item row="8" column="1">
-                   <widget class="QLabel" name="label_12">
-                    <property name="text">
-                     <string>actions:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QLabel" name="label_13">
-                    <property name="text">
-                     <string>Name: </string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="1">
-                   <widget class="QLabel" name="label_16">
-                    <property name="text">
-                     <string>Sim file: </string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="Line" name="line">
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="8" column="2">
-                   <widget class="QLabel" name="actions_label">
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="2">
-                   <widget class="QLabel" name="sim_file_label">
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="2">
-                   <widget class="QLabel" name="data_id_label">
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="6" column="1">
-                   <widget class="QLabel" name="label_15">
-                    <property name="text">
-                     <string>function:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="2">
-                   <widget class="QLabel" name="agents_label">
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QLabel" name="label_14">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                    <property name="text">
-                     <string>Data id: </string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="7" column="1">
-                   <widget class="QLabel" name="label_11">
-                    <property name="text">
-                     <string>agents:</string>
-                    </property>
-                   </widget>
-                  </item>
                   <item row="0" column="2">
                    <widget class="QToolButton" name="view_query_list">
                     <property name="sizePolicy">
@@ -503,6 +391,54 @@
                     </property>
                    </widget>
                   </item>
+                  <item row="2" column="1">
+                   <widget class="QLabel" name="label_13">
+                    <property name="text">
+                     <string>Name: </string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="2">
+                   <widget class="QLabel" name="function_label">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="1">
+                   <widget class="QLabel" name="label_16">
+                    <property name="text">
+                     <string>Sim file: </string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="6" column="1">
+                   <widget class="QLabel" name="label_15">
+                    <property name="text">
+                     <string>function:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QLabel" name="label_14">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>Data id: </string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="2">
+                   <widget class="QLabel" name="data_id_label">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="1">
                    <widget class="QLabel" name="label_10">
                     <property name="sizePolicy">
@@ -516,8 +452,15 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="2">
-                   <widget class="QLabel" name="function_label">
+                  <item row="1" column="1">
+                   <widget class="Line" name="line">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="5" column="2">
+                   <widget class="QLabel" name="sim_file_label">
                     <property name="text">
                      <string>...</string>
                     </property>
@@ -876,6 +819,62 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_3">
+       <layout class="QVBoxLayout" name="verticalLayout_10">
+        <item>
+         <widget class="QFrame" name="frame_7">
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Raised</enum>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Step range</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="sample_step_combo"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="sample_agent_combo"/>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>action(s)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QComboBox" name="sample_action_combo"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>Agent(s)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QPushButton" name="save_sample_button">
+             <property name="text">
+              <string>SAVE</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="sample_table"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -901,14 +900,6 @@
     </property>
     <addaction name="actionview_data"/>
     <addaction name="actionload_data_from_file"/>
-    <addaction name="actionquery_data"/>
-    <addaction name="actioncreate_samples"/>
-   </widget>
-   <widget class="QMenu" name="menuplots">
-    <property name="title">
-     <string>plots</string>
-    </property>
-    <addaction name="actioncreate_plot"/>
    </widget>
    <widget class="QMenu" name="menuwindow">
     <property name="title">
@@ -917,10 +908,10 @@
     <addaction name="actionmain"/>
     <addaction name="actionquery_data_page"/>
     <addaction name="actionplot"/>
+    <addaction name="actionsample"/>
    </widget>
    <addaction name="menufile"/>
    <addaction name="menudata"/>
-   <addaction name="menuplots"/>
    <addaction name="menuwindow"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -972,6 +963,11 @@
   <action name="actionplot">
    <property name="text">
     <string>plot</string>
+   </property>
+  </action>
+  <action name="actionsample">
+   <property name="text">
+    <string>sample</string>
    </property>
   </action>
  </widget>

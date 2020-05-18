@@ -23,14 +23,10 @@ from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
 from query_functions import PsychSimQuery
 
-# from QueryDataWindow import QueryDataWindow
 from LoadedDataWindow import LoadedDataWindow
-from DataViewWindow import RawDataWindow
-from SampleDataWindow import SampleDataWindow
-from renameDataDialog import RenameDataDialog
-from query_data_dialog import QueryDataDialog
+from RenameDataDialog import RenameDataDialog
+from QueryDataDialog import QueryDataDialog
 
-# from PlotWindow import PlotWindow
 
 qtCreatorFile = "psychsim-gui-main.ui"
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
@@ -47,11 +43,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # SET UP OTHER WINDOWS
-        self.data_window = RawDataWindow()
         self.loaded_data_window = LoadedDataWindow()
-        # self.query_data_window = QueryDataWindow()#TODO: remove this
-        self.sample_data_window = SampleDataWindow()
-        # self.plot_window = PlotWindow()
 
         # SET UP THREADING
         self.threadpool = QThreadPool()
@@ -95,9 +87,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.actionmain.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.actionquery_data_page.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
-        self.actioncreate_samples.triggered.connect(self.show_sample_data_window)
+        self.actionsample.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3))
         self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
-        # self.actioncreate_plot.triggered.connect(self.show_plot_window)
 
         # LOAD CONFIG
         self.load_config()
@@ -302,15 +293,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def print_sim_output(self, msg, color="black"):
         self.simulation_output.setTextColor(QColor(color))
         self.simulation_output.append(msg)
-
-    def show_data_window(self, key):
-        # this should really accept a key to access the dict of data saved at the top level
-        # then set the model based on this
-        # todo: add some exception handling
-        model = PandasModel(self.sim_data_dict_beliefs[key])
-        self.data_window.set_pandas_model(model)
-        self.data_window.setWindowTitle(f"{key} data")
-        self.data_window.show()
 
     def show_loaded_data_window(self):
         self.loaded_data_window.show()
