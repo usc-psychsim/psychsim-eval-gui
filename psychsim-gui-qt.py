@@ -431,6 +431,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
                                                                   agent=agent)
+            result = result.apply(pd.to_numeric, errors='ignore')
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
             if type(result) == pd.DataFrame:
@@ -548,19 +549,20 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         if self.plot_query.text() in self.query_data_dict.keys():
             data = self.query_data_dict[self.plot_query.text()].results
+            print(data.dtypes)
 
-            trace_name = self.plot_x.text()
+            trace_name = ""
 
             # get the stat and do the operation on the data
             stat = self.plot_stat.text()
             if stat == "mean":
                 data = data.groupby(self.plot_x.text()).mean()
                 data[self.plot_x.text()] = data.index
-                trace_name = trace_name + "_mean"
+                trace_name = "_mean"
             elif stat == "median":
                 data = data.groupby(self.plot_x.text()).median()
                 data[self.plot_x.text()] = data.index
-                trace_name = trace_name + "_median"
+                trace_name = "_median"
             elif stat == "count":
                 pass
             elif stat == "none":
@@ -580,12 +582,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 fig = self.current_fig
                 print("adding new figure")
 
+            # for i in data.index.unique().tolist():
+            name = f"{trace_name}"
             if plot_type == "scatter":
-                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=trace_name))
+                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=name))
             elif plot_type == "line":
-                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=trace_name))
+                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=name))
             elif plot_type == "histogram":
-                fig.add_trace(go.Histogram(x=x_axis, name=trace_name))
+                fig.add_trace(go.Histogram(x=x_axis, name=name))
             elif plot_type == "violin":
                 fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
                                                meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
