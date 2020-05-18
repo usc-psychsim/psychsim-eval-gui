@@ -5,9 +5,9 @@
 
 from psychsim.world import World, WORLD
 from psychsim.pwl import stateKey, actionKey
-# from new_locations_fewacts import Locations, Directions
+from new_locations_fewacts import Locations, Directions
 from victims_fewacts import Victims
-from new_locations import Locations, Directions
+# from new_locations import Locations, Directions
 # from victims import Victims
 from SandRMap import getSandRMap, getSandRVictims, getSmallSandRMap, getSmallSandRVictims, checkSRMap
 from helpers import testMMBelUpdate, setBeliefs
@@ -66,4 +66,5 @@ class GuiTestSim2(SimBase):
 
 if __name__ == "__main__":
     sim = GuiTestSim2()
-    sim.run_sim()
+    for step in range(10):
+        sim.run_sim()
