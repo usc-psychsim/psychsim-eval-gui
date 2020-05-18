@@ -529,13 +529,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def setup_test_plot(self):
         if self.test_check.isChecked():
             data_id = "test_query"
-            data = px.data.iris()
-            self.test_data_dict = {data_id: data}
-            self.query_data_dict[data_id] = pgh.PsySimQuery(id=data_id,
-                                                                data_id=data_id,
-                                                                params=[],
-                                                                function="test",
-                                                                results=data)
+            xx = px.data
+            self.test_data_dict = dict(iris=px.data.iris(), wind=px.data.wind(), gapminder=px.data.gapminder())
+
+            for key, data in self.test_data_dict.items():
+                self.query_data_dict[key] = pgh.PsySimQuery(id=key,
+                                                                    data_id=key,
+                                                                    params=[],
+                                                                    function="test",
+                                                                    results=data)
             pgh.update_toolbutton_list(list=self.test_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
 
 
@@ -544,47 +546,53 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # get the type of plot ["line", "scatter", "box", "violin"]
         plot_type = self.plot_type.text()
 
-        # data = self.test_data_dict[self.plot_query.text()]
         if self.plot_query.text() in self.query_data_dict.keys():
             data = self.query_data_dict[self.plot_query.text()].results
+
+            trace_name = self.plot_x.text()
+
+            # get the stat and do the operation on the data
+            stat = self.plot_stat.text()
+            if stat == "mean":
+                data = data.groupby(self.plot_x.text()).mean()
+                data[self.plot_x.text()] = data.index
+                trace_name = trace_name + "_mean"
+            elif stat == "median":
+                data = data.groupby(self.plot_x.text()).median()
+                data[self.plot_x.text()] = data.index
+                trace_name = trace_name + "_median"
+            elif stat == "count":
+                pass
+            elif stat == "none":
+                pass
+
             # get the axis values
             x_axis = data[self.plot_x.text()].to_numpy()
             y_axis = data[self.plot_y.text()].to_numpy()
 
-        # get the stat and do the operation on the data
-        stat = self.plot_stat.text()
-        if stat == "mean":
-            data.groupby(x_axis).mean()
-        elif stat == "median":
-            pass
-        elif stat == "count":
-            pass
-        elif stat == "none":
-            pass
 
-        #clear the plot if it's a new plot otherwise leave it
-        if self.sender() == self.plot_button:
-            fig = go.Figure()
-            print("setting new figure")
-        else:
-            fig = self.current_fig
-            print("adding new figure")
 
-        if plot_type == "scatter":
-            fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=self.plot_x.text()))
-        elif plot_type == "line":
-            fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=self.plot_x.text()))
-        elif plot_type == "histogram":
-            fig.add_trace(go.Histogram(x=x_axis))
-        elif plot_type == "violin":
-            fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
-                                           meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
-                                           x0=''))
-        elif plot_type == "test":
-            fig = px.scatter(data, x="sepal_width", y="sepal_length", color="species")
+            #clear the plot if it's a new plot otherwise leave it
+            if self.sender() == self.plot_button:
+                fig = go.Figure()
+                print("setting new figure")
+            else:
+                fig = self.current_fig
+                print("adding new figure")
 
-        self.current_fig = fig
-        self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
+            if plot_type == "scatter":
+                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=trace_name))
+            elif plot_type == "line":
+                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=trace_name))
+            elif plot_type == "histogram":
+                fig.add_trace(go.Histogram(x=x_axis, name=trace_name))
+            elif plot_type == "violin":
+                fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
+                                               meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
+                                               x0=''))
+
+            self.current_fig = fig
+            self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
 
 
     def set_stat_dropdown(self):
@@ -593,7 +601,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                    parent=self)
 
     def set_type_dropdown(self):
-        stats = ["line", "scatter", "histogram", "violin", "test"]
+        stats = ["line", "scatter", "histogram", "violin"]
         pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text,
                                    parent=self)
 
