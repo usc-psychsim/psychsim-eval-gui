@@ -537,8 +537,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # data = self.test_data_dict[self.plot_query.text()]
         if self.plot_query.text() in self.query_data_dict.keys():
             data = self.query_data_dict[self.plot_query.text()].results
-        x_axis = self.plot_x.text()
-        y_axis = self.plot_y.text()
+            x_axis = data[self.plot_x.text()].to_numpy()
+            y_axis = data[self.plot_y.text()].to_numpy()
 
         # get the stat and do the operation on the data
         stat = self.plot_stat.text()
@@ -551,32 +551,43 @@ class MyApp(QMainWindow, Ui_MainWindow):
         elif stat == "none":
             pass
 
-
+        #clear the plot if it's a new plot otherwise leave it
+        if self.sender() == self.plot_button:
+            fig = go.Figure()
+            print("setting new figure")
+        else:
+            fig = self.current_fig
+            print("adding new figure")
 
         # get the type of plot ["line", "scatter", "box", "violin"]
         plot_type = self.plot_type.text()
         if plot_type == "scatter":
-            fig = px.scatter(data, x=x_axis, y=y_axis, trendline="ols", color=data.index)
-            # self.add_scatter_plot(data=data, x=x_axis, y=y_axis)
+            # fig = px.scatter(data, x=x_axis, y=y_axis, trendline="ols", color=data.index)
+            fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=self.plot_x.text()))
         elif plot_type == "line":
-            fig = px.line(data, x=x_axis, y=y_axis)
-            # self.add_line_plot(data=data, x=x_axis, y=y_axis)
+            # fig = px.line(data, x=x_axis, y=y_axis)
+            fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=self.plot_x.text()))
         elif plot_type == "histogram":
-            fig = px.histogram(data, x=x_axis, y=y_axis)
-            # self.add_histogram_plot(data=data, x=x_axis, y=y_axis)
+            # fig = px.histogram(data, x=x_axis, y=y_axis)
+            fig.add_trace(go.Histogram(x=x_axis))
         elif plot_type == "violin":
-            fig = px.violin(data, y=x_axis, x=y_axis, box=True, points="all", hover_data=data.columns)
-            # self.add_violin_plot(data=data, x=x_axis, y=y_axis)
+            # fig = px.violin(data, y=x_axis, x=y_axis, box=True, points="all", hover_data=data.columns)
+            fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
+                                           meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
+                                           x0=''))
         elif plot_type == "test":
             iris = px.data.iris()
             fig = px.scatter(iris, x="sepal_width", y="sepal_length", color="species")
 
-        #clear the plot if it's a new plot otherwise leave it
-        if self.sender() == self.plot_button:
-            self.clear_plot()
-            self.add_new_plot(fig=fig)
-        else:
-            self.add_additional_plot(fig=fig)
+        self.current_fig = fig
+        self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
+
+        # #clear the plot if it's a new plot otherwise leave it
+        # if self.sender() == self.plot_button:
+        #     # self.clear_plot()
+        #     self.add_new_plot(fig=fig)
+        # else:
+        #     self.add_additional_plot(fig=fig)
 
     def set_stat_dropdown(self):
         stats = ["none", "mean", "median", "count"]
@@ -617,9 +628,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         pgh.update_toolbutton_list(list=axis_values, button=self.plot_x, action_function=pgh.set_toolbutton_text,
                                    parent=self)
 
-    def add_new_plot(self, fig):
-        #update stored fig
-        self.current_fig = fig
+    def add_new_plot(self, fig, title="", x_name="", y_name=""):
         # set up layout
         layout = dict(
             margin=dict(
@@ -629,6 +638,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 t=1,
                 pad=4
             ),
+            showlegend=True,
+            title=title,
+            xaxis_title=x_name,
+            yaxis_title=y_name,
         )
         fig.update_layout(layout)
         fig.update_yaxes(automargin=True)
@@ -639,7 +652,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def add_additional_plot(self, fig):
         if self.current_fig:
-            self.current_fig.add_trace(fig.data[0])
+            self.current_fig.add_trace(fig)
             html = '<html><body>'
             html += plotly.offline.plot(self.current_fig, output_type='div', include_plotlyjs='cdn')
             html += '</body></html>'
