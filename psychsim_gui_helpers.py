@@ -59,6 +59,11 @@ def update_toolbutton_list(button, list, action_function, parent=None):
     button.setPopupMode(QToolButton.InstantPopup)
 
 
+def set_combo_dropdown(combo_box, new_items):
+    combo_box.clear()
+    combo_box.addItems(new_items)
+
+
 def set_toolbutton_text(action, button):
     selection = action.checkedAction().text()
     button.setText(action.checkedAction().text())

@@ -903,7 +903,7 @@
    </widget>
    <widget class="QMenu" name="menuwindow">
     <property name="title">
-     <string>window</string>
+     <string>view</string>
     </property>
     <addaction name="actionmain"/>
     <addaction name="actionquery_data_page"/>

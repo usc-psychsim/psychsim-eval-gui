@@ -26,6 +26,7 @@ from query_functions import PsychSimQuery
 from LoadedDataWindow import LoadedDataWindow
 from RenameDataDialog import RenameDataDialog
 from QueryDataDialog import QueryDataDialog
+from PlotViewDialog import PlotViewDialog
 
 
 qtCreatorFile = "psychsim-gui-main.ui"
@@ -122,23 +123,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def simulation_thread(self, progress_callback):
         # initialise the sim class
         tester = getattr(self.sim_module, self.sim_name)()
+
+        # initialise local vars
         step = 0
         output = dict()
         while self.run_thread:
-            # step_data = dict()
-
-            # get the result of the step
             result = tester.run_sim()
-
-            # append the raw output
-            # step_data['step_data'] = result
-            # step_data['step'] = step
-            # output[step] = step_data
             output[step] = result
-
-            # Get the beliefs (not needed here?)
-            # self.print_debug(debug=result)
-
             step = step + 1
             progress_callback.emit(step, tester.sim_steps)
             if step == tester.sim_steps:
@@ -162,13 +153,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.save_run_input.setEnabled(True)
         self.save_run_input.setText(dt_string)
 
-        # store the data in the main dict
+        # store the data as a PsySimObject in the main dict
         self.sim_data_dict[dt_string] = pgh.PsychSimRun(id=dt_string,
                                                         data=output,
                                                         sim_file=self.sim_name,
                                                         steps=len(output),
                                                         run_date=run_date)
-        self.set_data_dropdown()
+        #Set the dropdowns to select data
+        pgh.set_combo_dropdown(self.data_combo, [item for item in self.sim_data_dict.keys()])
 
         self.update_data_table()
 
@@ -201,18 +193,19 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def start_sim_thread(self):
         try:
             self.sim_spec.loader.exec_module(self.sim_module)
+
+            # Pass the function to execute
+            self.run_thread = True
+            worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
+            worker.signals.result.connect(self.handle_output)
+            worker.signals.finished.connect(self.thread_complete)
+            worker.signals.progress.connect(self.progress_fn)
+
+            # Execute
+            self.threadpool.start(worker)
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
-
-        # Pass the function to execute
-        self.run_thread = True
-        worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
-        worker.signals.result.connect(self.handle_output)
-        worker.signals.finished.connect(self.thread_complete)
-        worker.signals.progress.connect(self.progress_fn)
-        # Execute
-        self.threadpool.start(worker)
 
     def open_config_loader(self):
         # open file dialog
@@ -256,6 +249,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             sys.path.insert(1, self.psychsim_path)
             sys.path.insert(1, self.definitions_path)
 
+            #import the psychsim module
             import psychsim
             psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
             self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
@@ -319,6 +313,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 self.sim_data_dict[data.id] = data
                 self.update_data_table()
                 self.set_data_dropdown()
+                # pgh.set_combo_dropdown(self.data_combo, [item for item in self.sim_data_dict.keys()])
 
     def show_rename_dialog(self, old_key):
         # show the rename dialog and get the new name
@@ -331,6 +326,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sim_data_dict[new_key].id = new_key
         self.update_data_table()
         self.set_data_dropdown()
+        self.update_query_dataid(old_key=old_key, new_key=new_key)
+
+    def update_query_dataid(self, old_key,  new_key):
+        for query_id, query in self.query_data_dict.items():
+            if query.data_id == old_key:
+                self.query_data_dict[query_id].data_id = new_key
 
     def rename_data_from_input(self, old_key=None):
         old_key = self.previous_run_id.text()
@@ -376,6 +377,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.data_combo.clear()
         new_items = [item for item in self.sim_data_dict.keys()]
         self.data_combo.addItems(new_items)
+
 
     def set_function_dropdown(self):
         query_methods = [method_name for method_name in dir(self.psychsim_query)
@@ -642,6 +644,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         html += '</body></html>'
         self.plot_widget.setHtml(html)
 
+        #Open dialog
+        # plot_dialog = PlotViewDialog()
+        # plot_dialog.plot_widget.setHtml(html)
+        # result = plot_dialog.exec_()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
