@@ -209,7 +209,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def open_config_loader(self):
         # open file dialog
-        config_path = self.get_file_path(file_type="Config files (*.ini)")
+        config_path = pgh.get_file_path(file_type="Config files (*.ini)", path_label="select config file")
         self.load_config(config_path)
 
     def load_config(self, path=None):
@@ -412,6 +412,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
                                                                   agent=agent)
+            print(f"DOC: {getattr(self.psychsim_query, query_function).__doc__}")
             result = result.apply(pd.to_numeric, errors='ignore')
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))

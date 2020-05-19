@@ -70,7 +70,6 @@ class PsychSimQuery:
         get list of agents in the data. Data must be a PsychSimRun class
         :return:
         """
-        #TODO: return a dataframe
         agent_dict = dict(agent=[])
         for key, value in kwargs.items():
             if key == "data":
