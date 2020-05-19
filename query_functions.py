@@ -1,7 +1,6 @@
 """
 Query function definitions used by psychsim gui
 """
-#TODO: make the doc strings appear in the dialog?
 
 import pandas as pd
 import numpy as np
@@ -130,7 +129,6 @@ class PsychSimQuery:
             print(tb)
 
     def __get_debug_data(self, debug, step, level=0):
-        # TODO: make this output some sort of dataframe
         # THIS ASSUMES THE STRUCTURE WON'T CHANGE
         sim_info = pd.DataFrame(columns=["step", "agent", "action"])
         step_info = []
@@ -178,6 +176,5 @@ class PsychSimQuery:
             clean_header.append(key)
         data = pd.DataFrame(actor_values).T
         data.columns = clean_header
-        # TODO: create the region column
         vds_values = vds_values.append(data)
         return vds_values

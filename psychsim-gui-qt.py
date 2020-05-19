@@ -84,7 +84,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.actionview_data.triggered.connect(self.show_loaded_data_window)
-        # self.actionquery_data.triggered.connect(self.show_query_data_window)#TODO: remove this (and associated function if necessesary)
         self.actionmain.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.actionquery_data_page.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
@@ -291,9 +290,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def show_loaded_data_window(self):
         self.loaded_data_window.show()
-
-    def show_query_data_window(self):
-        self.query_data_window.show()
 
     def show_sample_data_window(self):
         self.sample_data_window.show()
