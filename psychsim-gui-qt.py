@@ -103,6 +103,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.view_query_button.clicked.connect(self.view_query)
         self.save_csv_query_button.clicked.connect(self.save_csv_query)
         self.diff_query_button.clicked.connect(self.diff_query)
+        self.query_doc_button.clicked.connect(self.get_query_doc)
         # self.data_combo.activated.connect(self.set_agent_dropdown)
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
@@ -404,6 +405,17 @@ class MyApp(QMainWindow, Ui_MainWindow):
         if button == self.view_query_list:
             self.update_query_info(self.query_data_dict[selection])
 
+    def get_query_doc(self):
+        query_function = self.current_query_function
+        agent = self.agent_combo.currentText()
+        data_id = self.data_combo.currentText()
+        try:
+            self.print_query_output(f"{query_function}: {getattr(self.psychsim_query, query_function).__doc__}")
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
+
     def execute_query(self):
         # query_function = self.function_combo.currentText()
         query_function = self.current_query_function
@@ -412,7 +424,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
                                                                   agent=agent)
-            print(f"DOC: {getattr(self.psychsim_query, query_function).__doc__}")
             result = result.apply(pd.to_numeric, errors='ignore')
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
