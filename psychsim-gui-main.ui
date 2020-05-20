@@ -242,7 +242,14 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="data_combo"/>
+                   <widget class="QComboBox" name="data_combo">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                   </widget>
                   </item>
                   <item>
                    <spacer name="horizontalSpacer_2">
