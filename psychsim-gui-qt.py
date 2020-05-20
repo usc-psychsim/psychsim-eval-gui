@@ -533,59 +533,63 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
 
     def plot_data(self):
-        # get the type of plot ["line", "scatter", "box", "violin"]
-        plot_type = self.plot_type.text()
+        try:
+            # get the type of plot ["line", "scatter", "box", "violin"]
+            plot_type = self.plot_type.text()
 
-        if self.plot_query.text() in self.query_data_dict.keys():
-            data = self.query_data_dict[self.plot_query.text()].results
-            print(data.dtypes)
+            if self.plot_query.text() in self.query_data_dict.keys():
+                data = self.query_data_dict[self.plot_query.text()].results
+                print(data.dtypes)
 
-            trace_name = ""
+                trace_name = ""
 
-            # get the stat and do the operation on the data
-            stat = self.plot_stat.text()
-            if stat == "mean":
-                data = data.groupby(self.plot_x.text()).mean()
-                data[self.plot_x.text()] = data.index
-                trace_name = "_mean"
-            elif stat == "median":
-                data = data.groupby(self.plot_x.text()).median()
-                data[self.plot_x.text()] = data.index
-                trace_name = "_median"
-            elif stat == "count":
-                pass
-            elif stat == "none":
-                pass
+                # get the stat and do the operation on the data
+                stat = self.plot_stat.text()
+                if stat == "mean":
+                    data = data.groupby(self.plot_x.text()).mean()
+                    data[self.plot_x.text()] = data.index
+                    trace_name = "_mean"
+                elif stat == "median":
+                    data = data.groupby(self.plot_x.text()).median()
+                    data[self.plot_x.text()] = data.index
+                    trace_name = "_median"
+                elif stat == "count":
+                    pass
+                elif stat == "none":
+                    pass
 
-            # get the axis values
-            x_axis = data[self.plot_x.text()].to_numpy()
-            y_axis = data[self.plot_y.text()].to_numpy()
+                # get the axis values
+                x_axis = data[self.plot_x.text()].to_numpy()
+                y_axis = data[self.plot_y.text()].to_numpy()
 
 
 
-            #clear the plot if it's a new plot otherwise leave it
-            if self.sender() == self.plot_button:
-                fig = go.Figure()
-                print("setting new figure")
-            else:
-                fig = self.current_fig
-                print("adding new figure")
+                #clear the plot if it's a new plot otherwise leave it
+                if self.sender() == self.plot_button:
+                    fig = go.Figure()
+                    print("setting new figure")
+                else:
+                    fig = self.current_fig
+                    print("adding new figure")
 
-            # for i in data.index.unique().tolist():
-            name = f"{trace_name}"
-            if plot_type == "scatter":
-                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=name))
-            elif plot_type == "line":
-                fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=name))
-            elif plot_type == "histogram":
-                fig.add_trace(go.Histogram(x=x_axis, name=name))
-            elif plot_type == "violin":
-                fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
-                                               meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
-                                               x0=''))
+                # for i in data.index.unique().tolist():
+                name = f"{trace_name}"
+                if plot_type == "scatter":
+                    fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=name))
+                elif plot_type == "line":
+                    fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=name))
+                elif plot_type == "histogram":
+                    fig.add_trace(go.Histogram(x=x_axis, name=name))
+                elif plot_type == "violin":
+                    fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
+                                                   meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
+                                                   x0=''))
 
-            self.current_fig = fig
-            self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
+                self.current_fig = fig
+                self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
+        except:
+            tb = traceback.format_exc()
+            self.print_sim_output(tb, "red")
 
 
     def set_stat_dropdown(self):
