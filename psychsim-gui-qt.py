@@ -463,30 +463,39 @@ class MyApp(QMainWindow, Ui_MainWindow):
         pass
 
     def view_query(self):
-        # get the current query
-        query_id = self.view_query_list.text()
-        if query_id in self.query_data_dict.keys():
-            selected_query = self.query_data_dict[query_id]
+        try:
+            # get the current query
+            query_id = self.view_query_list.text()
+            if query_id in self.query_data_dict.keys():
+                selected_query = self.query_data_dict[query_id]
 
-            # show the dialog for it
-            query_dialog = QueryDataDialog(selected_query, model=PandasModel(selected_query.results))
-            result = query_dialog.exec_()
-            selected_query = query_dialog.query_data
-            print(selected_query.id)
+                # show the dialog for it
+                query_dialog = QueryDataDialog(selected_query, model=PandasModel(selected_query.results))
+                result = query_dialog.exec_()
+                selected_query = query_dialog.query_data
+                print(selected_query.id)
 
-            # get new/old ID from dialog and save in query dict
-            self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
+                # get new/old ID from dialog and save in query dict
+                self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
 
-            # update the query dropdown and info
-            self.set_query_list_dropdown()
-            self.update_query_info(selected_query)
+                # update the query dropdown and info
+                self.set_query_list_dropdown()
+                self.update_query_info(selected_query)
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
 
     def update_query_info(self, selected_query):
-        selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
-        self.query_name_label.setText(selected_query.id)
-        self.data_id_label.setText(selected_query.data_id)
-        self.sim_file_label.setText(selected_query_asc_data.sim_file)
-        self.function_label.setText(selected_query.function)
+        try:
+            selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
+            self.query_name_label.setText(selected_query.id)
+            self.data_id_label.setText(selected_query.data_id)
+            self.sim_file_label.setText(selected_query_asc_data.sim_file)
+            self.function_label.setText(selected_query.function)
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
     def save_csv_query(self):
         query_id = self.view_query_list.text()
@@ -545,27 +554,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
                 trace_name = ""
 
-                # get the stat and do the operation on the data
-                stat = self.plot_stat.text()
-                if stat == "mean":
-                    data = data.groupby(self.plot_x.text()).mean()
-                    data[self.plot_x.text()] = data.index
-                    trace_name = "_mean"
-                elif stat == "median":
-                    data = data.groupby(self.plot_x.text()).median()
-                    data[self.plot_x.text()] = data.index
-                    trace_name = "_median"
-                elif stat == "count":
-                    pass
-                elif stat == "none":
-                    pass
-
-                # get the axis values
-                x_axis = data[self.plot_x.text()].to_numpy()
-                y_axis = data[self.plot_y.text()].to_numpy()
-
-
-
                 #clear the plot if it's a new plot otherwise leave it
                 if self.sender() == self.plot_button:
                     fig = go.Figure()
@@ -574,24 +562,47 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     fig = self.current_fig
                     print("adding new figure")
 
-                # for i in data.index.unique().tolist():
-                name = f"{trace_name}"
-                if plot_type == "scatter":
-                    fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='markers', name=name))
-                elif plot_type == "line":
-                    fig.add_trace(go.Scatter(x=x_axis, y=y_axis, mode='lines+markers', name=name))
-                elif plot_type == "histogram":
-                    fig.add_trace(go.Histogram(x=x_axis, name=name))
-                elif plot_type == "violin":
-                    fig = go.Figure(data=go.Violin(y=y_axis, box_visible=True, line_color='black',
-                                                   meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
-                                                   x0=''))
+                stat = self.plot_stat.text()
+                if self.plot_group.text() not in ["none"]:
+                    if stat in ["none", "..."]:
+                        for group in data[self.plot_group.text()].unique().tolist():
+                            group_data = data[data[self.plot_group.text()] == group]
+                            x_data = group_data[self.plot_x.text()].tolist()
+                            y_data = group_data[self.plot_y.text()].tolist()
+                            name = f"{group}"
+                            fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
+                    else:
+                        data = getattr(data.groupby(data[self.plot_x.text()]), stat)()
+                        data[self.plot_x.text()] = data.index
+                        x_data = data[self.plot_x.text()].to_numpy()
+                        y_data = data[self.plot_y.text()].to_numpy()
+                        name = f"{self.plot_y.text()}_{stat}"
+                        fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
+                else:
+                    x_data = data[self.plot_x.text()].to_numpy()
+                    y_data = data[self.plot_y.text()].to_numpy()
+                    name = f"{self.plot_x.text()}"
+                    fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
 
                 self.current_fig = fig
-                self.add_new_plot(fig=fig, title="plot", x_name=self.plot_x.text(), y_name=self.plot_y.text())
+                self.add_new_plot(fig=fig, title="", x_name=self.plot_x.text(), y_name=self.plot_y.text())
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
+
+    def add_trace_to_plot(self, fig, plot_type, x_data, y_data, name):
+        # Group by the group variable
+        if plot_type == "Scatter":
+            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='markers', name=name))
+        elif plot_type == "Line":
+            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='lines+markers', name=name))
+        elif plot_type == "Histogram":
+            fig.add_trace(getattr(go, plot_type)(x=x_data, name=name))
+        elif plot_type == "Violin":
+            fig = go.Figure(data=getattr(go, plot_type)(y=y_data, box_visible=True, line_color='black',
+                                     meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
+                                     x0='', name=name))
+        return fig
 
 
     def set_stat_dropdown(self):
@@ -600,7 +611,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                    parent=self)
 
     def set_type_dropdown(self):
-        stats = ["line", "scatter", "histogram", "violin"]
+        stats = ["Line", "Scatter", "Histogram", "Violin"]
         pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text,
                                    parent=self)
 
@@ -632,6 +643,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                    parent=self)
         pgh.update_toolbutton_list(list=axis_values, button=self.plot_x, action_function=pgh.set_toolbutton_text,
                                    parent=self)
+        axis_values.append("none")
+        pgh.update_toolbutton_list(list=axis_values, button=self.plot_group, action_function=pgh.set_toolbutton_text,
+                                   parent=self)
 
     def add_new_plot(self, fig, title="", x_name="", y_name=""):
         # set up layout
@@ -640,7 +654,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 l=1,
                 r=1,
                 b=1,
-                t=1,
+                t=25,
                 pad=4
             ),
             showlegend=True,
@@ -649,7 +663,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             yaxis_title=y_name,
         )
         fig.update_layout(layout)
-        fig.update_yaxes(automargin=True)
+        # fig.update_yaxes(automargin=True)
         html = '<html><body>'
         html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
         html += '</body></html>'
