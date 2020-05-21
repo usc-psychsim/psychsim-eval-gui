@@ -425,10 +425,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
             query.id = query_dialog.query_id_input.text()
         return query
 
-
     def view_query(self):
         try:
-            # get the current query
             query_id = self.view_query_list.text()
             if query_id in self.query_data_dict.keys():
                 selected_query = self.query_data_dict[query_id]
@@ -439,7 +437,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
-
 
     def update_query_info(self, selected_query):
         try:
@@ -494,7 +491,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                                                     params=[],
                                                                     function="test",
                                                                     results=data)
-            pgh.update_toolbutton_list(list=self.test_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
+            pgh.update_toolbutton_list(list=self.query_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
+
 
 
 
