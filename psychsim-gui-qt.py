@@ -333,7 +333,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     # QUERY FUNCTIONS-------------------------------------------
     def set_query_list_dropdown(self):
         query_items = [item for item in self.query_data_dict.keys()]
-        pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.btnstate,
+        pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.update_view_query_list,
                                    parent=self)
         pgh.update_toolbutton_list(list=query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
         pgh.update_toolbutton_list(list=query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
@@ -365,27 +365,28 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.cycle_combo.clear()
         self.horizon_combo.clear()
         self.state_combo.clear()
-        #Todo: populate combo boxes based on the function that is selected
+        # Todo: populate combo boxes based on the function that is selected
 
     def btnstate(self, action, button):
         selection = action.checkedAction().text()
-        button.setText(action.checkedAction().text())
+        button.setText(selection)
         if selection == "get_actions":
             self.set_agent_dropdown()
             # TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
+
+    def update_view_query_list(self, action, button):
+        selection = action.checkedAction().text()
+        button.setText(selection)
         if button == self.view_query_list:
             self.update_query_info(self.query_data_dict[selection])
 
     def get_query_doc(self):
         query_function = self.function_button.text()
-        agent = self.agent_combo.currentText()
-        data_id = self.data_combo.currentText()
         try:
             self.print_query_output(f"{query_function}: {getattr(self.psychsim_query, query_function).__doc__}")
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
-
 
     def execute_query(self):
         query_function = self.function_button.text()
@@ -394,45 +395,36 @@ class MyApp(QMainWindow, Ui_MainWindow):
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
                                                                   agent=agent)
-            result = result.apply(pd.to_numeric, errors='ignore')
+            result = result.apply(pd.to_numeric, errors='ignore') #convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
-            if type(result) == pd.DataFrame:
 
-                # create query ID
-                now = datetime.now()
-                dt_string = now.strftime("%Y%m%d_%H%M%S")
-                query_id = f"{query_function}_{data_id}_{dt_string}"
+            # create query ID
+            now = datetime.now()
+            dt_string = now.strftime("%Y%m%d_%H%M%S")
+            query_id = f"{query_function}_{data_id}_{dt_string}"
 
-                # create a new query object
-                id: str
-                data_id: str
-                params: list
-                function: str
-                results: pd.DataFrame
-                new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
-                                            results=result)
+            # create a new query object
+            new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
+                                        results=result)
 
-                # create new dialog and show results + query ID
-                model = PandasModel(result)
-                query_dialog = QueryDataDialog(new_query, model)
-                result = query_dialog.exec_()
-                new_query = query_dialog.query_data
-                if result:
-                    new_query.id = query_dialog.query_id_input.text()
-
-                # get new/old ID from dialog and save in query dict
-                self.query_data_dict[new_query.id] = new_query
-
-                # update the query list
-                self.set_query_list_dropdown()
+            # create new dialog and show results + query ID
+            new_query = self.show_query_dialog(model=PandasModel(result), query=new_query)
+            self.query_data_dict[new_query.id] = new_query
+            self.set_query_list_dropdown()
 
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def save_query(self):
-        pass
+    def show_query_dialog(self, model, query):
+        query_dialog = QueryDataDialog(query, model)
+        result = query_dialog.exec_()
+        query = query_dialog.query_data
+        if result:
+            query.id = query_dialog.query_id_input.text()
+        return query
+
 
     def view_query(self):
         try:
@@ -440,17 +432,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
             query_id = self.view_query_list.text()
             if query_id in self.query_data_dict.keys():
                 selected_query = self.query_data_dict[query_id]
-
-                # show the dialog for it
-                query_dialog = QueryDataDialog(selected_query, model=PandasModel(selected_query.results))
-                result = query_dialog.exec_()
-                selected_query = query_dialog.query_data
-                print(selected_query.id)
-
-                # get new/old ID from dialog and save in query dict
+                selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
                 self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
-
-                # update the query dropdown and info
                 self.set_query_list_dropdown()
                 self.update_query_info(selected_query)
         except:

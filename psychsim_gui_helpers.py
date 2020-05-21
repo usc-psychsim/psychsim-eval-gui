@@ -61,7 +61,7 @@ def update_toolbutton_list(button, list, action_function, parent=None):
 
 def set_toolbutton_text(action, button):
     selection = action.checkedAction().text()
-    button.setText(action.checkedAction().text())
+    button.setText(selection)
 
 
 def print_output(text_output_obj, msg, color):
