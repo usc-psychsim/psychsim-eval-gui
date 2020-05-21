@@ -358,7 +358,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
             agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
             self.agent_combo.clear()
             self.agent_combo.addItems(agents['agent'].tolist())
-            
+
+    def reset_params(self):
+        self.agent_combo.clear()
+        self.action_combo.clear()
+        self.cycle_combo.clear()
+        self.horizon_combo.clear()
+        self.state_combo.clear()
+        #Todo: populate combo boxes based on the function that is selected
 
     def btnstate(self, action, button):
         selection = action.checkedAction().text()
