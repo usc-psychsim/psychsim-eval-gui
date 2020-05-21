@@ -35,6 +35,8 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
 # TODO: split generic gui stuff to other files
 # TODO: try to get rid of class variables and use passed variables where possible (for readability)
+# TODO: final refactor to make sure code is readable
+# TODO: add docstrings
 
 
 class MyApp(QMainWindow, Ui_MainWindow):
@@ -83,7 +85,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.save_run_input.returnPressed.connect(self.rename_data_from_input)
 
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
-        self.actionview_data.triggered.connect(self.show_loaded_data_window)
+        self.actionview_data.triggered.connect(self.loaded_data_window.show)
         self.actionmain.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.actionquery_data_page.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
@@ -96,14 +98,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # SET UP QUERY WINDOW --------------
         self.psychsim_query = PsychSimQuery()
         self.set_function_dropdown()
-        self.current_query_function = None
 
         self.execute_query_button.clicked.connect(self.execute_query)
         self.view_query_button.clicked.connect(self.view_query)
         self.save_csv_query_button.clicked.connect(self.save_csv_query)
         self.diff_query_button.clicked.connect(self.diff_query)
         self.query_doc_button.clicked.connect(self.get_query_doc)
-        # self.data_combo.activated.connect(self.set_agent_dropdown)
+        self.data_combo.activated.connect(self.reset_params)
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
@@ -137,11 +138,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         return output
 
     def handle_output(self, output):
-        """
-        update the query_data_window dropwdown to select data
-        :param output:
-        :return:
-        """
         # get timestamp
         now = datetime.now()
         dt_string = now.strftime("%Y%m%d_%H%M%S")
@@ -159,13 +155,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                                         sim_file=self.sim_name,
                                                         steps=len(output),
                                                         run_date=run_date)
-        #Set the dropdowns to select data
+        # Update appropriate places
         self.set_data_dropdown()
-
         self.update_data_table()
 
     def update_data_table(self):
-        self.loaded_data_window.clear_table()  # TODO: find better way to do this so it isn't loaded a new each time
+        self.loaded_data_window.clear_table()
         for data_id, data in self.sim_data_dict.items():
             # create the button to rename the data
             btn = QPushButton(self.loaded_data_window.loaded_data_table)
@@ -245,11 +240,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def load_sim(self):
         try:
+            # add the psychsim paths to the sys PATH environment var
             self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
             sys.path.insert(1, self.psychsim_path)
             sys.path.insert(1, self.definitions_path)
 
-            #import the psychsim module
+            # import the psychsim module
             import psychsim
             psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
             self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
@@ -279,34 +275,26 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.print_sim_output(f"{data_id} saved to: {output_path}", "black")
         self.update_data_table()
 
-    # todo: refactor these types of functions
     def print_query_output(self, msg, color="black"):
-        self.query_output.setTextColor(QColor(color))
-        self.query_output.append(msg)
+        pgh.print_output(self.query_output, msg, color)
 
     def print_sim_output(self, msg, color="black"):
-        self.simulation_output.setTextColor(QColor(color))
-        self.simulation_output.append(msg)
-
-    def show_loaded_data_window(self):
-        self.loaded_data_window.show()
-
-    def show_sample_data_window(self):
-        self.sample_data_window.show()
-
-    def show_plot_window(self):
-        self.plot_window.show()
+        pgh.print_output(self.simulation_output, msg, color)
 
     def load_data_from_file(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "Select data file", "", "psychsim data (*.pickle)",
+        fileName, _ = QFileDialog.getOpenFileName(self,
+                                                  "Select data file",
+                                                  "",
+                                                  "psychsim data (*.pickle)",
                                                   options=options)
         if fileName:
-            # load the psychsim libs
+            # load the psychsim libs to read the pickle objects
             self.load_sim()
             with open(fileName, 'rb') as f:
                 data = pickle.load(f)
 
+                # update the data #todo: refactor these 3 lines (they appear in some form together)
                 self.sim_data_dict[data.id] = data
                 self.update_data_table()
                 self.set_data_dropdown()
@@ -329,7 +317,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             if query.data_id == old_key:
                 self.query_data_dict[query_id].data_id = new_key
 
-    def rename_data_from_input(self, old_key=None):
+    def rename_data_from_input(self):
         old_key = self.previous_run_id.text()
         if self.save_run_input.text():
             new_key = self.save_run_input.text()
@@ -341,23 +329,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 self.print_sim_output(f"{old_key} renamed to {new_key}", "green")
         else:
             self.print_sim_output("NO NEW NAME ENTERED", "red")
-
-    def print_debug(self, debug, level=0):
-        reg_node = "".join(['│\t' for i in range(level)]) + "├─"
-        end_node = "".join(['│\t' for i in range(level)]) + "├─"
-        level = level + 1
-        if type(debug) == dict:
-            for k, v in debug.items():
-                print(f"{reg_node} {k}")
-                self.print_debug(v, level)
-        elif type(debug) == self.psychsim_module.VectorDistributionSet:
-            for key in debug.keyMap:
-                print(f"{end_node} {key}: {str(debug.marginal(key)).split()[-1]}")
-        elif type(debug) == self.psychsim_module.ActionSet:
-            for key in debug:
-                print(f"{end_node} {key}: ")
-        else:
-            print(f"{end_node} {debug}")
 
     # QUERY FUNCTIONS-------------------------------------------
     def set_query_list_dropdown(self):
@@ -374,7 +345,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
         new_items = [item for item in self.sim_data_dict.keys()]
         self.data_combo.addItems(new_items)
 
-
     def set_function_dropdown(self):
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
@@ -383,20 +353,16 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                    parent=self)
 
     def set_agent_dropdown(self):
-        # todo: refactor this and other dropdown generation functions
-        # TODO: figure out how to set this based on the data set (i.e. remove old ones and add new ones)
         data_id = self.data_combo.currentText()
         if data_id:
             agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
             self.agent_combo.clear()
             self.agent_combo.addItems(agents['agent'].tolist())
+            
 
     def btnstate(self, action, button):
         selection = action.checkedAction().text()
-        if button == self.function_button:
-            self.current_query_function = selection
         button.setText(action.checkedAction().text())
-        # TODO: make this conditional functionality smarter
         if selection == "get_actions":
             self.set_agent_dropdown()
             # TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
@@ -404,7 +370,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.update_query_info(self.query_data_dict[selection])
 
     def get_query_doc(self):
-        query_function = self.current_query_function
+        query_function = self.function_button.text()
         agent = self.agent_combo.currentText()
         data_id = self.data_combo.currentText()
         try:
@@ -415,8 +381,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
 
     def execute_query(self):
-        # query_function = self.function_combo.currentText()
-        query_function = self.current_query_function
+        query_function = self.function_button.text()
         agent = self.agent_combo.currentText()
         data_id = self.data_combo.currentText()
         try:

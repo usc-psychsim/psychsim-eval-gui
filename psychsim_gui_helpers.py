@@ -64,6 +64,36 @@ def set_toolbutton_text(action, button):
     button.setText(action.checkedAction().text())
 
 
+def print_output(text_output_obj, msg, color):
+    text_output_obj.setTextColor(QColor(color))
+    text_output_obj.append(msg)
+
+
+def print_debug(psychsim_module, debug, level=0):
+    """
+    Expand and print the minecraft sim debug dictionary
+    :param psychsim_module:
+    :param debug: debug dictionary
+    :param level:
+    :return:
+    """
+    reg_node = "".join(['│\t' for i in range(level)]) + "├─"
+    end_node = "".join(['│\t' for i in range(level)]) + "├─"
+    level = level + 1
+    if type(debug) == dict:
+        for k, v in debug.items():
+            print(f"{reg_node} {k}")
+            print_debug(v, level)
+    elif type(debug) == psychsim_module.VectorDistributionSet:
+        for key in debug.keyMap:
+            print(f"{end_node} {key}: {str(debug.marginal(key)).split()[-1]}")
+    elif type(debug) == psychsim_module.ActionSet:
+        for key in debug:
+            print(f"{end_node} {key}: ")
+    else:
+        print(f"{end_node} {debug}")
+
+
 if __name__ == "__main__":
     df = pd.DataFrame()
     test_data = PsychSimRun(id="test_id", run_date="date", data=df, sim_file="simfile", steps=9)

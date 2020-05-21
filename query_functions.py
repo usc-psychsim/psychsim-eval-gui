@@ -178,3 +178,25 @@ class PsychSimQuery:
         data.columns = clean_header
         vds_values = vds_values.append(data)
         return vds_values
+
+
+    def get_generic_data(self, *args, **kwargs):
+        """
+        This is a test of getting data from any simulation
+        :param "data": data from psychsimGUI in dict format
+        :param kwargs:
+        :return: Dataframe containing data
+        """
+        data_dict = dict(channel=[], x=[], y=[], step=[])
+        for key, value in kwargs.items():
+            if key == "data":
+                for step, step_data in value.data.items():
+                    if type(step_data) == dict:
+                        for channel, data in list(step_data.items()):
+                            data_dict["channel"].append(channel)
+                            data_dict["x"].append(data["x"])
+                            data_dict["y"].append(data["y"])
+                            data_dict["step"].append(step)
+
+        output_data = pd.DataFrame.from_dict(data_dict)
+        return output_data
