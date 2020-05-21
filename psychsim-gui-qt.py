@@ -516,7 +516,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                     print("adding new figure")
 
                 stat = self.plot_stat.text()
-                if self.plot_group.text() not in ["none"]:
+                if self.plot_group.text() not in ["none", "..."]:
                     if stat in ["none", "..."]:
                         for group in data[self.plot_group.text()].unique().tolist():
                             group_data = data[data[self.plot_group.text()] == group]
@@ -534,7 +534,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 else:
                     x_data = data[self.plot_x.text()].to_numpy()
                     y_data = data[self.plot_y.text()].to_numpy()
-                    name = f"{self.plot_x.text()}"
+                    name = f"{self.plot_y.text()}"
                     fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
 
                 self.current_fig = fig
