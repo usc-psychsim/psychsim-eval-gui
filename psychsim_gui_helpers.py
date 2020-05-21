@@ -25,6 +25,14 @@ class PsySimQuery:
     function: str
     results: pd.DataFrame
 
+@dataclass
+class PsySimPlot:
+    id: str
+    fig: str
+    title: str
+    x_name: str
+    y_name: str
+
 
 def get_directory(path_label, caption):
     options = QFileDialog.Options()

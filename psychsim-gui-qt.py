@@ -26,6 +26,7 @@ from query_functions import PsychSimQuery
 from LoadedDataWindow import LoadedDataWindow
 from RenameDataDialog import RenameDataDialog
 from QueryDataDialog import QueryDataDialog
+from SavePlotDialog import SavePlotDialog
 from PlotViewDialog import PlotViewDialog
 
 
@@ -67,6 +68,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sim_name = ""
         self.sim_data_dict = dict()
         self.query_data_dict = dict()
+        self.plot_data_dict = dict()
 
         # SET UP MAIN WINDOW BUTTONS
         self.run_sim_button.setEnabled(False)
@@ -109,10 +111,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
         # SET UP PLOT WINDOW ----------------
+        self.current_plot = None
+
         self.plot_button.clicked.connect(self.plot_data)
         self.add_plot_button.clicked.connect(self.plot_data)
         self.clear_plot_button.clicked.connect(self.clear_plot)
         self.test_check.stateChanged.connect(self.setup_test_plot)
+        self.save_plot_button.clicked.connect(self.save_plot)
+        self.plot_listwidget.itemClicked.connect(self.add_plot_from_list)
+        self.remove_plot_button.clicked.connect(self.remove_plot)
 
         self.set_type_dropdown()
         self.set_stat_dropdown()
@@ -579,6 +586,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def clear_plot(self):
         fig = px.bar(pd.DataFrame(dict(x=[], y=[])), x="x", y="y")
         self.add_new_plot(fig)
+        self.current_plot = None
 
     def set_axis_dropdowns(self, action, button):
         # TODO: make sure these are the same types of queries (same function) - refactor with similar code
@@ -622,10 +630,40 @@ class MyApp(QMainWindow, Ui_MainWindow):
         html += '</body></html>'
         self.plot_widget.setHtml(html)
 
+        # set the current plot with the current details
+        self.current_plot = pgh.PsySimPlot(id="current",
+                                           fig=fig,
+                                           title=title,
+                                           x_name=x_name,
+                                           y_name=y_name)
+
         #Open dialog
         # plot_dialog = PlotViewDialog()
         # plot_dialog.plot_widget.setHtml(html)
         # result = plot_dialog.exec_()
+
+    def save_plot(self):
+        #populate the list view with saved plots
+        new_key, accepted = SavePlotDialog.get_new_name()
+        if accepted:
+            self.plot_data_dict[new_key] = self.current_plot
+            item = QListWidgetItem(f"{new_key}")
+            self.plot_listwidget.addItem(item)
+
+    def add_plot_from_list(self, item):
+        #TODO: fix updating old saved plts
+        if item.text() in self.plot_data_dict.keys():
+            selected_plot = self.plot_data_dict[item.text()]
+            if selected_plot:
+                self.clear_plot()
+                self.add_new_plot(fig=selected_plot.fig,
+                                  title=selected_plot.title,
+                                  x_name=selected_plot.x_name,
+                                  y_name=selected_plot.y_name)
+
+    def remove_plot(self):
+        pass
+        #remove the item/key from the self.plot_data_dict of the plot selected
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
