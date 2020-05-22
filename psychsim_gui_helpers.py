@@ -4,7 +4,7 @@ This file has the classes and functions that are common across the gui windows
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 import pandas as pd
 
 
@@ -24,6 +24,9 @@ class PsySimQuery:
     params: list
     function: str
     results: pd.DataFrame
+
+    def get_steps(self):
+        return self.results.index.to_list()
 
 @dataclass
 class PsySimPlot:
@@ -67,6 +70,19 @@ def update_toolbutton_list(button, list, action_function, parent=None):
     button.setPopupMode(QToolButton.InstantPopup)
 
 
+#todo: fix to base on d1, d2 objects (name, function, etc) rather than d1, d2 results
+def print_diff(text_output_obj, d1, d2, diff_name1, diff_name2, diff_type):
+    if d1 == d2:
+        text_output_obj.append(f"{_green_str('NO DIFF IN')}: {_green_str(diff_type)}")
+        text_output_obj.append(f"{diff_name1}: {_green_str(d1)}")
+        text_output_obj.append(f"{diff_name2}: {_green_str(d2)}")
+    else:
+        text_output_obj.append(f"{_red_str('DIFF IN')}: {_red_str(diff_type)}")
+        text_output_obj.append(f"{diff_name1}: {_red_str(d1)}")
+        text_output_obj.append(f"{diff_name2}: {_red_str(d2)}")
+
+
+#Todo: fix these output functinos for a more generic formatting
 def set_toolbutton_text(action, button):
     selection = action.checkedAction().text()
     button.setText(selection)
@@ -75,6 +91,22 @@ def set_toolbutton_text(action, button):
 def print_output(text_output_obj, msg, color):
     text_output_obj.setTextColor(QColor(color))
     text_output_obj.append(msg)
+
+
+def _green_str(s):
+    return f'<span style=\" color: #008000;\">{s}</span>'
+
+
+def _red_str(s):
+    return f'<span style=\" color: #ff0000;\">{s}</span>'
+
+
+def _black_str(s):
+    return f'<span style=\" color: #000000;\">{s}</span>'
+
+
+def _blue_str(s):
+    return f'<span style=\" color: #0000ff ;\">{s}</span>'
 
 
 def print_debug(psychsim_module, debug, level=0):
@@ -101,6 +133,17 @@ def print_debug(psychsim_module, debug, level=0):
     else:
         print(f"{end_node} {debug}")
 
+
+def dataframe_difference(df1, df2, which=None):
+    """Find rows which are different between two DataFrames."""
+    comparison_df = df1.merge(df2,
+                              indicator=True,
+                              how='outer')
+    if which is None:
+        diff_df = comparison_df[comparison_df['_merge'] != 'both']
+    else:
+        diff_df = comparison_df[comparison_df['_merge'] == which]
+    return diff_df
 
 if __name__ == "__main__":
     df = pd.DataFrame()

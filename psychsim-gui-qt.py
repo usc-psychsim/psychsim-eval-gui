@@ -408,6 +408,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.print_query_output(str(result))
 
             # create query ID
+            #TODO: refactor this as create_new() in the query class?
             now = datetime.now()
             dt_string = now.strftime("%Y%m%d_%H%M%S")
             query_id = f"{query_function}_{data_id}_{dt_string}"
@@ -434,8 +435,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
         return query
 
     def view_query(self):
+        query_id = self.view_query_list.text()
+        self.display_query(query_id)
+
+    def view_diff_query(self):
+        query_id = self.new_diff_query_name.text()
+        self.display_query(query_id)
+
+    def display_query(self, query_id):
         try:
-            query_id = self.view_query_list.text()
             if query_id in self.query_data_dict.keys():
                 selected_query = self.query_data_dict[query_id]
                 selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
@@ -448,10 +456,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
     def update_query_info(self, selected_query):
         try:
-            selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
+            if selected_query.data_id in self.sim_data_dict.keys():
+                selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
+                self.sim_file_label.setText(selected_query_asc_data.sim_file)
+            else:
+                self.sim_file_label.setText("...")
             self.query_name_label.setText(selected_query.id)
             self.data_id_label.setText(selected_query.data_id)
-            self.sim_file_label.setText(selected_query_asc_data.sim_file)
             self.function_label.setText(selected_query.function)
         except:
             tb = traceback.format_exc()
@@ -477,8 +488,35 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
             # check that they are the same type
             if q1.function == q2.function:
-                # diff the results
-                self.print_query_output(f"DIFFING: {q1.id} and {q2.id}", 'green')
+                self.print_query_output(f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}") #TODO: be consistant with colour coding of text
+                # Diff the data ID
+                pgh.print_diff(self.query_output, q1.data_id, q2.data_id, f"{q1.id} data_id", f"{q2.id} data_id", "data_id")
+
+                # Diff length
+                pgh.print_diff(self.query_output, len(q1.results.index), len(q2.results.index), f"{q1.id} steps", f"{q2.id} steps", "steps")
+
+                # Diff the results
+                diff_results = pgh.dataframe_difference(q1.results, q2.results)
+                if len(diff_results.index) > 0:
+                    self.query_output.append(f"{pgh._red_str('DIFF IN')}: {pgh._red_str('query results')}")
+                else:
+                    self.query_output.append(f"{pgh._green_str('NO DIFF IN')}: {pgh._green_str('query results')}")
+                now = datetime.now()
+                dt_string = now.strftime("%Y%m%d_%H%M%S")
+                query_id = f"{q1.id}-{q2.id}_{q1.function}_diff"
+                data_id = f"{q1.data_id}-{q2.data_id}"
+
+                # create a new query object
+                #TODO: add this to a separate diff object instead of a query (OR just set a 'diff' flag in the class)
+                #TODO: add a toolbutton and view button for viewing diff results
+                new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=q1.function,
+                                            results=diff_results)
+
+                # create new dialog and show results + query ID
+                new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)
+                self.query_data_dict[new_query.id] = new_query
+                self.set_query_list_dropdown()
+                self.new_diff_query_name.setText(query_id)
             else:
                 self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
                 self.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
