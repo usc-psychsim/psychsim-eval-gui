@@ -111,7 +111,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
-        # SET UP PLOT WINDOW ----------------
+
+        # SET UP SAMPLE WINDOW ----------------
         self.current_plot = None
 
         self.plot_button.clicked.connect(self.plot_data)
@@ -128,6 +129,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.setup_plot_widget()
 
         self.current_fig = None
+
+        # SET UP PLOT WINDOW ----------------
+        self.sample_data_combo.activated.connect(self.set_sample_params)
+        self.save_sample_button.clicked.connect(self.save_sample)
 
     def simulation_thread(self, progress_callback):
         # initialise the sim class
@@ -164,7 +169,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                                         steps=len(output),
                                                         run_date=run_date)
         # Update appropriate places
-        self.set_data_dropdown()
+        self.set_data_dropdown(self.data_combo)
+        self.set_data_dropdown(self.sample_data_combo)
         self.update_data_table()
 
     def update_data_table(self):
@@ -305,7 +311,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 # update the data #todo: refactor these 3 lines (they appear in some form together)
                 self.sim_data_dict[data.id] = data
                 self.update_data_table()
-                self.set_data_dropdown()
+                self.set_data_dropdown(self.data_combo)
+                self.set_data_dropdown(self.sample_data_combo)
 
     def show_rename_dialog(self, old_key):
         # show the rename dialog and get the new name
@@ -317,7 +324,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
         self.sim_data_dict[new_key].id = new_key
         self.update_data_table()
-        self.set_data_dropdown()
+        self.set_data_dropdown(self.data_combo)
+        self.set_data_dropdown(self.sample_data_combo)
         self.update_query_dataid(old_key=old_key, new_key=new_key)
 
     def update_query_dataid(self, old_key,  new_key):
@@ -350,10 +358,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
         pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
         pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
 
-    def set_data_dropdown(self):
-        self.data_combo.clear()
+    def set_data_dropdown(self, combo_box):
+        combo_box.clear()
         new_items = [item for item in self.sim_data_dict.keys()]
-        self.data_combo.addItems(new_items)
+        combo_box.addItems(new_items)
 
     def set_function_dropdown(self):
         query_methods = [method_name for method_name in dir(self.psychsim_query)
@@ -708,6 +716,45 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.plot_listwidget.takeItem(self.plot_listwidget.row(item))
             self.plot_data_dict.pop(item.text())
 
+
+    # SAMPLE FUNCTIONS -------------------------------------------
+    def set_sample_params(self):
+        #Set the sample_step_start_spinBox and sample_step_end_spinBox values based on the data steps
+        try:
+            sample_data_source = self.sim_data_dict[self.sample_data_combo.currentText()].data
+            max_steps = max(sample_data_source.keys())
+            min_steps = min(sample_data_source.keys())
+            self.sample_step_range_label.setText(f"step range (min:{min_steps}, max:{max_steps})")
+            self.sample_step_start_spinBox.setRange(min_steps, max_steps)
+            self.sample_step_end_spinBox.setRange(min_steps, max_steps)
+        except:
+            tb = traceback.format_exc()
+            print(tb)
+            #TODO: add an output screen here - maybe a single output text area should be used and the plot should have a pop-up window (maybe not a dialog)
+            pass
+
+    def save_sample(self):
+        step_min = self.sample_step_start_spinBox.value()
+        step_max = self.sample_step_end_spinBox.value()
+        step_range = range(step_min, step_max+1)
+        if step_min > step_max:
+            print("THE END STEP MUST BE LESS THAN THE START STEP")
+            #todo: print this message on output (once it's there)
+        else:
+            sample_data_source = self.sim_data_dict[self.sample_data_combo.currentText()]
+            sampled_data = {k : v for k, v in sample_data_source.data.items() if k in step_range}
+
+            data_id = f"{sample_data_source.id}_sample_step_{step_min}-{step_max}"
+            # store the data as a PsySimObject in the main dict
+            self.sim_data_dict[data_id] = pgh.PsychSimRun(id=data_id,
+                                                            data=sampled_data,
+                                                            sim_file=sample_data_source.sim_file,
+                                                            steps=len(step_range),
+                                                            run_date="...")
+            # Update appropriate places
+            self.set_data_dropdown(self.data_combo)
+            self.set_data_dropdown(self.sample_data_combo)
+            self.update_data_table()
 
 
 if __name__ == "__main__":
