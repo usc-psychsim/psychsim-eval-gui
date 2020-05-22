@@ -663,8 +663,13 @@ class MyApp(QMainWindow, Ui_MainWindow):
                                   y_name=selected_plot.y_name)
 
     def remove_plot(self):
-        pass
-        #remove the item/key from the self.plot_data_dict of the plot selected
+        listItems = self.plot_listwidget.selectedItems()
+        if not listItems: return
+        for item in listItems:
+            self.plot_listwidget.takeItem(self.plot_listwidget.row(item))
+            self.plot_data_dict.pop(item.text())
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
