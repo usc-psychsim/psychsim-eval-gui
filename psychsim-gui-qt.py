@@ -13,6 +13,7 @@ import pandas as pd
 import configparser
 from datetime import datetime
 from functools import partial
+import copy
 
 import plotly
 import plotly.graph_objects as go
@@ -646,7 +647,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         #populate the list view with saved plots
         new_key, accepted = SavePlotDialog.get_new_name()
         if accepted:
-            self.plot_data_dict[new_key] = self.current_plot
+            self.plot_data_dict[new_key] = copy.deepcopy(self.current_plot)
             item = QListWidgetItem(f"{new_key}")
             self.plot_listwidget.addItem(item)
 
