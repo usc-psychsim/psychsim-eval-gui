@@ -343,10 +343,12 @@ class MyApp(QMainWindow, Ui_MainWindow):
         query_items = [item for item in self.query_data_dict.keys()]
         pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.update_view_query_list,
                                    parent=self)
-        pgh.update_toolbutton_list(list=query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
-        pgh.update_toolbutton_list(list=query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
         pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
                                    parent=self)
+
+        non_diff_query_items = [item for item in self.query_data_dict.keys() if not self.query_data_dict[item].diff_query]
+        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
+        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
 
     def set_data_dropdown(self):
         self.data_combo.clear()
@@ -464,6 +466,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.query_name_label.setText(selected_query.id)
             self.data_id_label.setText(selected_query.data_id)
             self.function_label.setText(selected_query.function)
+            self.is_diff_label.setText(str(selected_query.diff_query))
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
@@ -507,10 +510,8 @@ class MyApp(QMainWindow, Ui_MainWindow):
                 data_id = f"{q1.data_id}-{q2.data_id}"
 
                 # create a new query object
-                #TODO: add this to a separate diff object instead of a query (OR just set a 'diff' flag in the class)
-                #TODO: add a toolbutton and view button for viewing diff results
                 new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=q1.function,
-                                            results=diff_results)
+                                            results=diff_results, diff_query=True)
 
                 # create new dialog and show results + query ID
                 new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)

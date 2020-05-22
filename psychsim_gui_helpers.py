@@ -24,6 +24,7 @@ class PsySimQuery:
     params: list
     function: str
     results: pd.DataFrame
+    diff_query: bool=False
 
     def get_steps(self):
         return self.results.index.to_list()
