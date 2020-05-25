@@ -10,7 +10,7 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
     def __init__(self):
         super(LoadedDataWindow, self).__init__()
         self.setupUi(self)
-
+        self.setWindowTitle("View Data")
         columns = ['date', 'data_id', 'sim_file', 'steps', '', '']
         self.loaded_data_table.setColumnCount(len(columns))
         self.loaded_data_table.setHorizontalHeaderLabels(columns)
