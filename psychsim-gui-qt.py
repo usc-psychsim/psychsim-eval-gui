@@ -299,6 +299,9 @@ class MyApp(QMainWindow, Ui_MainWindow):
     def print_sim_output(self, msg, color="black"):
         pgh.print_output(self.simulation_output, msg, color)
 
+    def print_sample_output(self, msg, color="black"):
+        pgh.print_output(self.sample_output, msg, color)
+
     def load_data_from_file(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self,
@@ -733,8 +736,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.sample_step_end_spinBox.setRange(min_steps, max_steps)
         except:
             tb = traceback.format_exc()
-            print(tb)
-            #TODO: add an output screen here - maybe a single output text area should be used and the plot should have a pop-up window (maybe not a dialog)
+            self.print_sample_output(tb, 'red')
             pass
 
     def save_sample(self):
@@ -742,8 +744,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         step_max = self.sample_step_end_spinBox.value()
         step_range = range(step_min, step_max+1)
         if step_min > step_max:
-            print("THE END STEP MUST BE LESS THAN THE START STEP")
-            #todo: print this message on output (once it's there)
+            self.print_sample_output("THE END STEP MUST BE LESS THAN THE START STEP", "red")
         else:
             sample_data_source = self.sim_data_dict[self.sample_data_combo.currentText()]
             sampled_data = {k : v for k, v in sample_data_source.data.items() if k in step_range}
