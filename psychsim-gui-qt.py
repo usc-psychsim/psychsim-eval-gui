@@ -762,6 +762,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.set_data_dropdown(self.data_combo)
             self.set_data_dropdown(self.sample_data_combo)
             self.update_data_table()
+            self.print_sample_output(f"New sample saved as: {data_id}, with {len(step_range)} steps from {step_min} to {step_max}", "black")
 
 
 if __name__ == "__main__":
