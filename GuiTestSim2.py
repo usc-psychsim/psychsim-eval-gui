@@ -7,18 +7,14 @@ from psychsim.world import World, WORLD
 from psychsim.pwl import stateKey, actionKey
 from new_locations_fewacts import Locations, Directions
 from victims_fewacts import Victims
-# from new_locations import Locations, Directions
-# from victims import Victims
 from SandRMap import getSandRMap, getSandRVictims, getSmallSandRMap, getSmallSandRVictims, checkSRMap
 from helpers import testMMBelUpdate, setBeliefs
-
-from psychsim.pwl import stateKey, Distribution, actionKey, VectorDistributionSet, ActionSet
 
 from SimBase import SimBase
 
 class GuiTestSim2(SimBase):
     def __init__(self):
-        self.sim_steps = 45
+        self.sim_steps = 25
         self.horizon = 4
 
         # MDP or POMDP
@@ -31,30 +27,32 @@ class GuiTestSim2(SimBase):
         ##################
 
         self.world = World()
-        k = self.world.defineState(WORLD, 'seconds', int)
-        self.world.setFeature(k, 0)
+        # k = self.world.defineState(WORLD, 'seconds', int)
+        # self.world.setFeature(k, 0)
 
-        triageAgent = self.world.addAgent('TriageAg1')
-        agent = self.world.addAgent('ATOMIC')
+        self.triageAgent = self.world.addAgent('TriageAg1')
+        self.agent = self.world.addAgent('ATOMIC')
 
         VICTIMS_LOCS = list(SandRVics.keys())
         VICTIM_TYPES = [SandRVics[v] for v in VICTIMS_LOCS]
         Victims.world = self.world
-        Victims.makeVictims(VICTIMS_LOCS, VICTIM_TYPES, [triageAgent.name], list(SandRLocs.keys()))
-        Victims.makePreTriageActions(triageAgent)
-        Victims.makeTriageAction(triageAgent)
+        Victims.makeVictims(VICTIMS_LOCS, VICTIM_TYPES, [self.triageAgent.name], list(SandRLocs.keys()))
+        Victims.makePreTriageActions(self.triageAgent)
+        Victims.makeTriageAction(self.triageAgent)
+
+        Victims.P_VIC_FOV = (1.0 - Victims.P_EMPTY_FOV) / len(Victims.victimAgents)
 
         ################# Locations and Move actions
         Locations.EXPLORE_BONUS = 0
         Locations.world = self.world
         Locations.makeMapDict(SandRLocs)
-        Locations.makePlayerLocation(triageAgent, "BH2")
+        Locations.makePlayerLocation(self.triageAgent, "BH2")
 
         ## These must come before setting triager's beliefs
-        self.world.setOrder([{triageAgent.name}])
+        self.world.setOrder([{self.triageAgent.name}])
 
         ## Set players horizons
-        triageAgent.setAttribute('horizon', self.horizon)
+        self.triageAgent.setAttribute('horizon', self.horizon)
         # triageAgent.setAttribute('selection', 'random')
 
     def run_sim(self):
@@ -66,5 +64,6 @@ class GuiTestSim2(SimBase):
 
 if __name__ == "__main__":
     sim = GuiTestSim2()
-    for step in range(10):
-        sim.run_sim()
+    for step in range(sim.sim_steps):
+        res = sim.run_sim()
+    pass

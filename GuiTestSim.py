@@ -80,7 +80,7 @@ class GuiTestSim:
         ## Set players horizons
         self.horizon = 4
         self.triageAgent.setAttribute('horizon', self.horizon)
-        # self.triageAgent.setAttribute('selection', 'random')
+        self.triageAgent.setAttribute('selection', 'random')
         self.triageAgent2.setAttribute('horizon', 4)
 
         ## Set uncertain beliefs

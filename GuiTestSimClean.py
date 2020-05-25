@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 19 14:35:40 2020
 
-@author: mostafh
-"""
 # import sys
 # print(sys.path)
 # psychsim_path = "/home/chris/Documents/GLASGOW_MARSELLA/atomic"
@@ -105,7 +101,7 @@ class GuiTestSimClean:
 
 
 if __name__ == "__main__":
-    sim = GuiTestSim()
+    sim = GuiTestSimClean()
     for step in range(10):
         print(step)
         result = sim.run_sim()
