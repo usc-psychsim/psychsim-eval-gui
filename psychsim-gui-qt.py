@@ -47,8 +47,11 @@ class MyApp(QMainWindow, Ui_MainWindow):
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
 
+        self.setWindowTitle("PyschSim GUI")
+
         # SET UP OTHER WINDOWS
         self.loaded_data_window = LoadedDataWindow()
+        self.loaded_data_window.load_data_button.clicked.connect(self.load_data_from_file)
 
         # SET UP THREADING
         self.threadpool = QThreadPool()
@@ -89,11 +92,10 @@ class MyApp(QMainWindow, Ui_MainWindow):
 
         self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.actionview_data.triggered.connect(self.loaded_data_window.show)
-        self.actionmain.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
-        self.actionquery_data_page.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        self.actionrun_sim.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.actionquery.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
-        self.actionsample.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3))
-        self.actionload_data_from_file.triggered.connect(self.load_data_from_file)
+        self.actionsample_data.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3))
 
         # LOAD CONFIG
         self.load_config()

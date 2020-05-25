@@ -18,7 +18,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="main">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -1167,6 +1167,7 @@
      <string>simulation</string>
     </property>
     <addaction name="actionSelect_load_config"/>
+    <addaction name="actionrun_sim"/>
    </widget>
    <widget class="QMenu" name="menudata">
     <property name="title">
@@ -1174,15 +1175,14 @@
     </property>
     <addaction name="actionview_data"/>
     <addaction name="actionload_data_from_file"/>
+    <addaction name="actionquery"/>
+    <addaction name="actionsample_data"/>
    </widget>
    <widget class="QMenu" name="menuwindow">
     <property name="title">
-     <string>view</string>
+     <string>plot</string>
     </property>
-    <addaction name="actionmain"/>
-    <addaction name="actionquery_data_page"/>
     <addaction name="actionplot"/>
-    <addaction name="actionsample"/>
    </widget>
    <addaction name="menufile"/>
    <addaction name="menudata"/>
@@ -1196,7 +1196,7 @@
   </action>
   <action name="actionview_data">
    <property name="text">
-    <string>view raw data</string>
+    <string>view loaded raw</string>
    </property>
   </action>
   <action name="actionquery_data">
@@ -1221,7 +1221,7 @@
   </action>
   <action name="actionload_data_from_file">
    <property name="text">
-    <string>load data from file</string>
+    <string>load from file</string>
    </property>
   </action>
   <action name="actionquery_data_page">
@@ -1240,6 +1240,21 @@
    </property>
   </action>
   <action name="actionsample">
+   <property name="text">
+    <string>sample</string>
+   </property>
+  </action>
+  <action name="actionrun_sim">
+   <property name="text">
+    <string>run sim</string>
+   </property>
+  </action>
+  <action name="actionquery">
+   <property name="text">
+    <string>query</string>
+   </property>
+  </action>
+  <action name="actionsample_data">
    <property name="text">
     <string>sample</string>
    </property>
