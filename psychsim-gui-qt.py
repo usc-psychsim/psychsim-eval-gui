@@ -247,10 +247,14 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.psychsim_path = pgh.get_directory(self.psychsim_dir_path, "Select Psychsim Directory")
 
     def set_definitions_path(self):
-        self.definitions_path = pgh.get_directory(self.def_dir_path, "Select Definitions Directory")
+        new_path = pgh.get_directory(self.def_dir_path, "Select Definitions Directory")
+        if new_path:
+            self.definitions_path = new_path
 
     def set_sim_path(self):
-        self.sim_path = pgh.get_file_path(path_label=self.sim_path_label)
+        new_path = pgh.get_file_path(path_label=self.sim_path_label)
+        if new_path:
+            self.sim_path = new_path
 
     def load_sim(self):
         try:
