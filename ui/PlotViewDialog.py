@@ -2,9 +2,10 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+import os
 
 
-plot_view_file = "plot_dialog.ui"
+plot_view_file = os.path.join("ui", "plot_dialog.ui")
 ui_plotView, QtBaseClass = uic.loadUiType(plot_view_file)
 
 

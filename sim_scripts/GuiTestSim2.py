@@ -1,7 +1,7 @@
-# import sys
-# print(sys.path)
-# sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic")
-# sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions")
+import sys
+print(sys.path)
+sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic")
+sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions")
 
 from psychsim.world import World, WORLD
 from psychsim.pwl import stateKey, actionKey
@@ -10,11 +10,10 @@ from victims_fewacts import Victims
 from SandRMap import getSandRMap, getSandRVictims, getSmallSandRMap, getSmallSandRVictims, checkSRMap
 from helpers import testMMBelUpdate, setBeliefs
 
-from SimBase import SimBase
 
-class GuiTestSim2(SimBase):
+class GuiTestSim2():
     def __init__(self):
-        self.sim_steps = 25
+        self.sim_steps = 10
         self.horizon = 4
 
         # MDP or POMDP

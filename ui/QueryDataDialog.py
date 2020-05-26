@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
+import os
 
-
-query_data_view_file = "query_data_dialog.ui"
+query_data_view_file = os.path.join("ui", "query_data_dialog.ui")
 ui_queryDataView, QtBaseClass = uic.loadUiType(query_data_view_file)
 
 class QueryDataDialog(QDialog, ui_queryDataView):

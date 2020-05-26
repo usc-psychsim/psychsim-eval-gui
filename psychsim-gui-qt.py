@@ -22,17 +22,17 @@ import plotly.express as px
 from gui_threading import Worker, WorkerSignals
 from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
-from query_functions import PsychSimQuery
+from functions.query_functions import PsychSimQuery
 
-from LoadedDataWindow import LoadedDataWindow
-from RenameDataDialog import RenameDataDialog
-from QueryDataDialog import QueryDataDialog
-from SavePlotDialog import SavePlotDialog
-from DocWindow import DocWindow
-from PlotViewDialog import PlotViewDialog
+from ui.LoadedDataWindow import LoadedDataWindow
+from ui.RenameDataDialog import RenameDataDialog
+from ui.QueryDataDialog import QueryDataDialog
+from ui.SavePlotDialog import SavePlotDialog
+from ui.DocWindow import DocWindow
+from ui.PlotViewDialog import PlotViewDialog
 
 
-qtCreatorFile = "psychsim-gui-main.ui"
+qtCreatorFile = os.path.join("ui", "psychsim-gui-main.ui")
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
 

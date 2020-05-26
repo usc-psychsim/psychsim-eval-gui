@@ -2,8 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
 import pickle
+import os
 
-loaded_data_view_file = "loaded_data_view.ui"
+loaded_data_view_file = os.path.join("ui", "loaded_data_view.ui")
 ui_loadedDataView, QtBaseClass = uic.loadUiType(loaded_data_view_file)
 
 class LoadedDataWindow(QMainWindow, ui_loadedDataView):

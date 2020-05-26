@@ -2,8 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 import sys
+import os
 
-doc_window_file = "doc_window.ui"
+doc_window_file = os.path.join("ui", "doc_window.ui")
 ui_docWindow, QtBaseClass = uic.loadUiType(doc_window_file)
 
 class DocWindow(QMainWindow, ui_docWindow):
