@@ -18,7 +18,7 @@ from SimBase import SimBase
 import numpy as np
 
 
-class GenericSim(SimBase):
+class GenericSim:
     def __init__(self):
         self.sim_steps = 100
         self.current_step = 0
