@@ -42,7 +42,7 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 # TODO: add docstrings
 
 
-class MyApp(QMainWindow, Ui_MainWindow):
+class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -777,6 +777,6 @@ class MyApp(QMainWindow, Ui_MainWindow):
 if __name__ == "__main__":
     sys.argv.append("--disable-web-security")
     app = QApplication(sys.argv)
-    window = MyApp()
+    window = PsychSimGuiMainWindow()
     window.show()
     sys.exit(app.exec_())
