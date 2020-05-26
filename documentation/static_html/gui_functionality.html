@@ -1,0 +1,237 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>GUI Functionalty &#8212; psychsim_gui_doc  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Simulation Script" href="simulation_script.html" />
+    <link rel="prev" title="Introduction" href="intro.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="gui-functionalty">
+<h1>GUI Functionalty<a class="headerlink" href="#gui-functionalty" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="simulation">
+<h2>Simulation<a class="headerlink" href="#simulation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="run-sim-start-screen">
+<h3>run sim (start screen)<a class="headerlink" href="#run-sim-start-screen" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>The ‘run sim’ screen lets you set the paths for psychsim, and the simulation file, load the sim, run the sim (and stop it), and rename the output data.</li>
+</ul>
+<img alt="_images/run_sim.png" src="_images/run_sim.png" />
+<ol class="arabic simple">
+<li><strong>Select PsychSim Dir</strong>: Set the path to the psychsim root directory</li>
+<li><strong>Select Definitions Dir</strong>: Set the path to the psychsim definitions root directory</li>
+<li><strong>Select Sim</strong>: set the path to the simulation script</li>
+<li><strong>Load Sim</strong>: load the simulation file (import it) into the GUI. <em>NOTE</em> a simulation MUST be loaded after selected. This button allows changes to simulation code to be quickly implemented, then ‘re-loaded’ in the sim without having to re-find the path.</li>
+<li><strong>RUN</strong>: becomes active when a valid simulation is loaded. Start the simulation thread</li>
+<li><strong>STOP</strong>: Stop the simulation thread and save the data</li>
+<li><strong>RENAME</strong>: Rename the run to a desired name</li>
+</ol>
+</div>
+</div>
+<div class="section" id="data">
+<h2>data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="view-loaded-raw">
+<h3>view loaded raw<a class="headerlink" href="#view-loaded-raw" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>View loaded raw shows you info about data loaded in the GUI. These could come from simulation runs, or from loading saved data sets.</li>
+<li>Data is saved and loaded from Pickle file</li>
+</ul>
+<img alt="_images/view_data.png" src="_images/view_data.png" />
+<ol class="arabic simple">
+<li><strong>RENAME</strong>: rename the data ID for use through the GUI.</li>
+<li><strong>Save</strong>: Save the data to disk (as a pickle file). Data is saved to the ‘sim_output’ directory</li>
+<li><strong>Load data from file</strong>: Load saved (pickle) data</li>
+</ol>
+</div>
+<div class="section" id="sample">
+<h3>sample<a class="headerlink" href="#sample" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Raw data from simulation runs can be sampled. Currently, this data can only be sampled on step (sampling on agent and action does not work).</li>
+<li>Sampled data sets can be viewed, renamed, and saved as raw loaded data from the view raw loaded screen.</li>
+</ul>
+<img alt="_images/sample.png" src="_images/sample.png" />
+<ol class="arabic simple">
+<li><strong>Data</strong>: select the data to sample</li>
+<li><strong>Step range</strong>: select the start and end step to sample the data over</li>
+<li><strong>SAVE</strong>: saves the new data. Saved data can be viewed from the “data&gt;view” loaded raw screen</li>
+</ol>
+</div>
+<div class="section" id="query">
+<h3>query<a class="headerlink" href="#query" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Data can be saved as any arbitrary python object. The query screen allows custom functions to be run to extract desired information from simulation outputs. Different queries results can also be compared (Diff)</li>
+<li>New functions can be written to handle different queries, and different simulation output types (see: :<a class="reference internal" href="function_definitions.html#function-definitions"><span class="std std-ref">Function Definitions</span></a>.)</li>
+<li>Queries are saved for viewing, diffing, and plotting.</li>
+</ul>
+<div class="section" id="create">
+<h4>Create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Create and save a new query</li>
+</ul>
+<img alt="_images/query_create.png" src="_images/query_create.png" />
+<ol class="arabic simple">
+<li><strong>Function</strong>: select the custom function to run on the data. E.g. get_beliefs will extract beliefs for agents after a psychsim simulation run. Get_actions: extracts only actions, etc.</li>
+<li><strong>Agent, action, cycle, horizon, state</strong>: these are parameters to pass to the selected function <em>NOTE</em> only ‘agent’ is currently implemented.</li>
+<li><strong>Doc</strong>: display the docstring of the function</li>
+<li><strong>Execute</strong>: execute the function. This pops up the results dialog</li>
+<li><strong>Results Dialog</strong>: allows you to rename the query</li>
+</ol>
+</div>
+<div class="section" id="view">
+<h4>View<a class="headerlink" href="#view" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>View saved queries, and save as a CSV to disk</li>
+</ul>
+<img alt="_images/query_view.png" src="_images/query_view.png" />
+<ol class="arabic simple">
+<li><strong>Select Query</strong>: Shows saved queries <em>NOTE</em> These are saved internally, not saved to disk</li>
+<li><strong>Save as CSV</strong>: Save the query as a CSV file to disk</li>
+</ol>
+</div>
+<div class="section" id="diff">
+<h4>Diff<a class="headerlink" href="#diff" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Diff two queries created by the same function. Queries cannot be diffed if they were created by different functions.</li>
+<li>Diff queries are saved as a special ‘diff’ query. These can be viewed and plotted, but not re-diffed. I.e. you cannot diff a query that was created by diffing two other queries.</li>
+</ul>
+<img alt="_images/query_diff.png" src="_images/query_diff.png" />
+<ol class="arabic simple">
+<li><strong>Select Query</strong>: Shows saved queries <em>NOTE</em> These are saved internally, not saved to disk</li>
+<li><strong>Save as CSV</strong>: Save the query as a CSV file to disk</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="section" id="plot">
+<h2>plot<a class="headerlink" href="#plot" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>plot<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Allows you to plot queries as plotly plots.</li>
+<li>Only queries can be plotted, not raw or sampled data.</li>
+</ul>
+<img alt="_images/query_diff.png" src="_images/query_diff.png" />
+<ol class="arabic simple">
+<li><strong>Test datasets enabled</strong>: for testing, allows you to use built-in datasets to test plotting functionality</li>
+<li><strong>query</strong>: select the query to plot</li>
+<li><strong>X-axis</strong>: select the variable to put on the x-axis</li>
+<li><strong>Y-axis</strong>: select the variable to put on the y-axis</li>
+<li><strong>Group</strong>: select the variable to group traces by. e.g. if you want to view the actions of multiple agents over time. You might want to group by agents. Do differentiate the traces.</li>
+<li><strong>Plot type</strong>: select the type of plot to display. <em>NOTE</em> not all plot types are suitable for all plots. It is up to the user to know which plot is useful for the given variables.</li>
+<li><strong>Stat</strong>: select the stat to apply. This is applied over the ‘group’ variable</li>
+<li><strong>Plot New</strong>: create a new plot with the given parameters</li>
+<li><strong>Add to plot:</strong> add the trace with given parameters to the current plot</li>
+<li><strong>Clear</strong>: clear the current plot</li>
+<li><strong>Save current plot</strong>: Save the current plot. Saved plots appear in the list below this button. Saved plots can be viewed by clicking on the name in the list.</li>
+<li><strong>Remove selected</strong>: Remove a saved plot from the list</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">psychsim_gui_doc</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GUI Functionalty</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#simulation">Simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#run-sim-start-screen">run sim (start screen)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#data">data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#view-loaded-raw">view loaded raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sample">sample</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#query">query</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#plot">plot</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">plot</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulation_script.html">Simulation Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="function_definitions.html">Function Definitions</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="simulation_script.html" title="next chapter">Simulation Script</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Turner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/gui_functionality.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
