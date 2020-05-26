@@ -28,6 +28,7 @@ from LoadedDataWindow import LoadedDataWindow
 from RenameDataDialog import RenameDataDialog
 from QueryDataDialog import QueryDataDialog
 from SavePlotDialog import SavePlotDialog
+from DocWindow import DocWindow
 from PlotViewDialog import PlotViewDialog
 
 
@@ -52,6 +53,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         # SET UP OTHER WINDOWS
         self.loaded_data_window = LoadedDataWindow()
         self.loaded_data_window.load_data_button.clicked.connect(self.load_data_from_file)
+        self.doc_window = DocWindow()
 
         # SET UP THREADING
         self.threadpool = QThreadPool()
@@ -96,6 +98,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.actionquery.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
         self.actionsample_data.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3))
+        self.actionmanual.triggered.connect(self.show_doc_window)
 
         # LOAD CONFIG
         self.load_config()
@@ -764,8 +767,15 @@ class MyApp(QMainWindow, Ui_MainWindow):
             self.update_data_table()
             self.print_sample_output(f"New sample saved as: {data_id}, with {len(step_range)} steps from {step_min} to {step_max}", "black")
 
+    def show_doc_window(self):
+        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "documentation", "static_html", "index.html"))
+        local_url = QUrl.fromLocalFile(file_path)
+        self.doc_window.web_widget.load(local_url)
+        self.doc_window.show()
+
 
 if __name__ == "__main__":
+    sys.argv.append("--disable-web-security")
     app = QApplication(sys.argv)
     window = MyApp()
     window.show()

@@ -816,7 +816,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>sample/query:</string>
+                 <string>query:</string>
                 </property>
                </widget>
               </item>
@@ -1241,8 +1241,8 @@
      <string>data</string>
     </property>
     <addaction name="actionview_data"/>
-    <addaction name="actionquery"/>
     <addaction name="actionsample_data"/>
+    <addaction name="actionquery"/>
    </widget>
    <widget class="QMenu" name="menuwindow">
     <property name="title">
@@ -1250,9 +1250,16 @@
     </property>
     <addaction name="actionplot"/>
    </widget>
+   <widget class="QMenu" name="menuabout">
+    <property name="title">
+     <string>about</string>
+    </property>
+    <addaction name="actionmanual"/>
+   </widget>
    <addaction name="menufile"/>
    <addaction name="menudata"/>
    <addaction name="menuwindow"/>
+   <addaction name="menuabout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSelect_load_config">
@@ -1323,6 +1330,11 @@
   <action name="actionsample_data">
    <property name="text">
     <string>sample</string>
+   </property>
+  </action>
+  <action name="actionmanual">
+   <property name="text">
+    <string>manual</string>
    </property>
   </action>
  </widget>
