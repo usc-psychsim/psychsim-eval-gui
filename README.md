@@ -1,7 +1,7 @@
 # pyshsim-gui-qt
 
 ## Installation and Running instructions:
-1. if not already installed, install pip using your OS' package manager
+1. if not already installed, install pip. Instructions can be found [here](https://pip.pypa.io/en/stable/installing/)
 1. install pipenv using instructions [here](https://pipenv-fork.readthedocs.io/en/latest/install.html#installing-pipenv)
 2. cd to the root directory
 
