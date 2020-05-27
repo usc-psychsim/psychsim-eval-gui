@@ -274,7 +274,12 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
             psychsim_spec.loader.exec_module(self.psychsim_module)
             self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
+        except:
+            tb = traceback.format_exc()
+            self.print_sim_output(tb, "red")
+            self.sim_loaded_state.setText("ERROR")
 
+        try:
             # import the sim module
             self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
             self.sim_module = importlib.util.module_from_spec(self.sim_spec)
