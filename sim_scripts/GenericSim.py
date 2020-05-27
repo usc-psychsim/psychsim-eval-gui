@@ -14,7 +14,7 @@ The test generates an array of data based on the current step
 *SIM FILE MUST BE NAMED AS THE CLASS
 """
 
-from SimBase import SimBase
+
 import numpy as np
 
 
