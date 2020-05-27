@@ -77,7 +77,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.plot_data_dict = dict()
 
         # SET UP MAIN WINDOW BUTTONS
-        self.run_sim_button.setEnabled(False)
+        self.run_sim_button.setEnabled(True)
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
 
