@@ -372,8 +372,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                                    parent=self)
 
         non_diff_query_items = [item for item in self.query_data_dict.keys() if not self.query_data_dict[item].diff_query]
-        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text)
-        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text)
+        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text, parent=self)
+        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text, parent=self)
 
     def set_data_dropdown(self, combo_box):
         combo_box.clear()
