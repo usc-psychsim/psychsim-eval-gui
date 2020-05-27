@@ -773,7 +773,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.print_sample_output(f"New sample saved as: {data_id}, with {len(step_range)} steps from {step_min} to {step_max}", "black")
 
     def show_doc_window(self):
-        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "documentation", "static_html", "index.html"))
+        file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "static_html", "index.html"))
         local_url = QUrl.fromLocalFile(file_path)
         self.doc_window.web_widget.load(local_url)
         self.doc_window.show()
