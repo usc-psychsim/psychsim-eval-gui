@@ -33,7 +33,8 @@
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>PsychSim Gui can be used to run custom simulation scripts. These scripts can be generic but must follow a few rules (outlined below). Once the simulation is run, the results are stored internally and can be saved to disk as a pickle file. Data can be sampled and in turn, queried with custom functions that can be defined by the user. These queries can then be plotted.</p>
+<img alt="_images/flow_chart.svg" src="_images/flow_chart.svg" /><p>The workflow of the GUI is described in the flowchart above. First, a simulation is loaded and run. This will generate some raw ‘run data’. This data can be then be sampled (selecting a step range). The raw data, or the sampled data, can be queried using query functions. The results of these query functions can then be plotted.</p>
+<p>PsychSim Gui can be used to run custom simulation scripts. These scripts can be generic but must follow a few rules (see: <a class="reference internal" href="function_definitions.html#function-definitions"><span class="std std-ref">Function Definitions</span></a>). Once the simulation is run, the results are stored internally and can be saved to disk as a pickle file.</p>
 </div>
 
 
@@ -56,6 +57,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gui_functionality.html">GUI Functionalty</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation_script.html">Simulation Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="function_definitions.html">Function Definitions</a></li>
 </ul>
 
 <div class="relations">
