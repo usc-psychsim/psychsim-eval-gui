@@ -18,7 +18,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="main">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -55,7 +55,7 @@
            <item row="3" column="0">
             <widget class="QPushButton" name="load_sim_button">
              <property name="text">
-              <string>Load Sim</string>
+              <string>Load Simulation</string>
              </property>
             </widget>
            </item>
@@ -83,7 +83,7 @@
            <item row="2" column="0">
             <widget class="QPushButton" name="select_sim">
              <property name="text">
-              <string>Select Sim</string>
+              <string>Select Simulation file</string>
              </property>
             </widget>
            </item>
@@ -102,14 +102,14 @@
            <item>
             <widget class="QPushButton" name="run_sim_button">
              <property name="text">
-              <string>RUN</string>
+              <string>RUN SIM</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="stop_sim_button">
              <property name="text">
-              <string>STOP</string>
+              <string>STOP SIM</string>
              </property>
             </widget>
            </item>
@@ -1140,7 +1140,7 @@
   </action>
   <action name="actionview_data">
    <property name="text">
-    <string>view loaded raw</string>
+    <string>view table of stored data</string>
    </property>
   </action>
   <action name="actionquery_data">
@@ -1180,7 +1180,7 @@
   </action>
   <action name="actionplot">
    <property name="text">
-    <string>plot</string>
+    <string>plot query results</string>
    </property>
   </action>
   <action name="actionsample">
@@ -1190,17 +1190,17 @@
   </action>
   <action name="actionrun_sim">
    <property name="text">
-    <string>run sim</string>
+    <string>view simulation info</string>
    </property>
   </action>
   <action name="actionquery">
    <property name="text">
-    <string>query</string>
+    <string>create query from data/sample</string>
    </property>
   </action>
   <action name="actionsample_data">
    <property name="text">
-    <string>sample</string>
+    <string>create sample from data</string>
    </property>
   </action>
   <action name="actionmanual">
