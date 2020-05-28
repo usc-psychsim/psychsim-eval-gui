@@ -8,8 +8,8 @@ doc_window_file = os.path.join("ui", "doc_window.ui")
 ui_docWindow, QtBaseClass = uic.loadUiType(doc_window_file)
 
 class DocWindow(QMainWindow, ui_docWindow):
-    def __init__(self):
-        super(DocWindow, self).__init__()
+    def __init__(self, parent=None):
+        super(DocWindow, self).__init__(parent)
         self.setupUi(self)
         self.setWindowTitle("Manual")
         self.setup_web_engine()

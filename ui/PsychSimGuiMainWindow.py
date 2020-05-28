@@ -78,6 +78,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.plot_data_dict = dict()
 
         # SET UP MAIN WINDOW BUTTONS
+        self.sim_info_button.setToolTip('Click for how to write simulation files')
         self.run_sim_button.setEnabled(True)
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
@@ -98,7 +99,15 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.actionquery.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
         self.actionsample_data.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3))
-        self.actionmanual.triggered.connect(self.show_doc_window)
+        self.actionmanual.triggered.connect(lambda: self.show_doc_window("index.html"))
+
+        #help buttons
+        self.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
+        self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
+        self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
+        self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
+        self.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
+        self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
 
         # LOAD CONFIG
         self.load_config()
@@ -106,6 +115,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # SET UP QUERY WINDOW --------------
         self.psychsim_query = PsychSimQuery()
         self.set_function_dropdown()
+        self.function_info_button.setToolTip('Click for how to write custom query functions')
 
         self.execute_query_button.clicked.connect(self.execute_query)
         self.view_query_button.clicked.connect(self.view_query)
@@ -640,11 +650,13 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.update_data_table()
             self.print_sample_output(f"New sample saved as: {data_id}, with {len(step_range)} steps from {step_min} to {step_max}", "black")
 
-    def show_doc_window(self):
-        file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "static_html", "index.html"))
+    def show_doc_window(self, doc_file, doc_section=""):
+        file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "static_html", f"{doc_file}"))
         local_url = QUrl.fromLocalFile(file_path)
-        self.doc_window.web_widget.load(local_url)
-        self.doc_window.show()
+        local_url.setFragment(f"{doc_section}")
+        doc_window = DocWindow(parent=self)
+        doc_window.web_widget.load(local_url)
+        doc_window.show()
 
 
 if __name__ == "__main__":
