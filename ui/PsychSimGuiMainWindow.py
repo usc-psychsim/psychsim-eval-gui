@@ -29,6 +29,7 @@ from ui.RenameDataDialog import RenameDataDialog
 from ui.QueryDataDialog import QueryDataDialog
 from ui.SavePlotDialog import SavePlotDialog
 from ui.DocWindow import DocWindow
+from ui.PlotWindow import PlotWindow
 from ui.PlotViewDialog import PlotViewDialog
 
 
@@ -117,25 +118,25 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
 
-        # SET UP SAMPLE WINDOW ----------------
+        # SET UP PLOT WINDOW ----------------
         self.current_plot = None
 
-        self.plot_button.clicked.connect(self.plot_data)
-        self.add_plot_button.clicked.connect(self.plot_data)
-        self.clear_plot_button.clicked.connect(self.clear_plot)
+        self.create_new_plot_button.clicked.connect(lambda: self.create_new_plot())#self.plot_data)
+        # self.add_plot_button.clicked.connect(self.plot_data)
+        # self.clear_plot_button.clicked.connect(self.clear_plot) #TODO: remove associated function
         self.test_check.stateChanged.connect(self.setup_test_plot)
-        self.save_plot_button.clicked.connect(self.save_plot)
+        # self.save_plot_button.clicked.connect(self.save_plot)
         self.plot_listwidget.itemClicked.connect(self.add_plot_from_list)
         self.remove_plot_button.clicked.connect(self.remove_plot)
 
-        self.set_type_dropdown()
-        self.set_stat_dropdown()
+        # self.set_type_dropdown()
+        # self.set_stat_dropdown()
 
-        self.setup_plot_widget()
+        # self.setup_plot_widget()
 
         self.current_fig = None
 
-        # SET UP PLOT WINDOW ----------------
+        # SET UP SAMPLE WINDOW ----------------
         self.sample_data_combo.activated.connect(self.set_sample_params)
         self.save_sample_button.clicked.connect(self.save_sample)
 
@@ -312,6 +313,9 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def print_sample_output(self, msg, color="black"):
         pgh.print_output(self.sample_output, msg, color)
 
+    def print_plot_output(self, msg, color="black"):
+        pgh.print_output(self.plot_output, msg, color)
+
     def load_data_from_file(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self,
@@ -368,8 +372,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         query_items = [item for item in self.query_data_dict.keys()]
         pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.update_view_query_list,
                                    parent=self)
-        pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
-                                   parent=self)
+        # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
+        #                            parent=self)
 
         non_diff_query_items = [item for item in self.query_data_dict.keys() if not self.query_data_dict[item].diff_query]
         pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text, parent=self)
@@ -552,6 +556,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
     # PLOT FUNCTIONS -------------------------------------------
     def setup_test_plot(self):
+        #TODO: remove this if this is unchecked
         if self.test_check.isChecked():
             data_id = "test_query"
             xx = px.data
@@ -563,165 +568,34 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                                                                     params=[],
                                                                     function="test",
                                                                     results=data)
-            pgh.update_toolbutton_list(list=self.query_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
+            # pgh.update_toolbutton_list(list=self.query_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
 
+    def create_new_plot(self, plot_name="New plot"):
+        plot_window = PlotWindow(query_data_dict=self.query_data_dict, window_name=plot_name, parent=self)
+        #connect the save figure
+        plot_window.save_plot_button.clicked.connect(lambda: self.save_plot(plot_window.current_plot))
+        #set the query dropdown
+        pgh.update_toolbutton_list(list=self.query_data_dict.keys(), button=plot_window.plot_query,
+                                   action_function=plot_window.set_axis_dropdowns, parent=self)
+        plot_window.show()
+        return plot_window
 
-
-
-    def plot_data(self):
-        try:
-            # get the type of plot ["line", "scatter", "box", "violin"]
-            plot_type = self.plot_type.text()
-
-            if self.plot_query.text() in self.query_data_dict.keys():
-                data = self.query_data_dict[self.plot_query.text()].results
-                print(data.dtypes)
-
-                trace_name = ""
-
-                #clear the plot if it's a new plot otherwise leave it
-                if self.sender() == self.plot_button:
-                    fig = go.Figure()
-                    print("setting new figure")
-                else:
-                    fig = self.current_fig
-                    print("adding new figure")
-
-                stat = self.plot_stat.text()
-                if self.plot_group.text() not in ["none", "..."]:
-                    if stat in ["none", "..."]:
-                        for group in data[self.plot_group.text()].unique().tolist():
-                            group_data = data[data[self.plot_group.text()] == group]
-                            x_data = group_data[self.plot_x.text()].tolist()
-                            y_data = group_data[self.plot_y.text()].tolist()
-                            name = f"{group}"
-                            fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
-                    else:
-                        data = getattr(data.groupby(data[self.plot_x.text()]), stat)()
-                        data[self.plot_x.text()] = data.index
-                        x_data = data[self.plot_x.text()].to_numpy()
-                        y_data = data[self.plot_y.text()].to_numpy()
-                        name = f"{self.plot_y.text()}_{stat}"
-                        fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
-                else:
-                    x_data = data[self.plot_x.text()].to_numpy()
-                    y_data = data[self.plot_y.text()].to_numpy()
-                    name = f"{self.plot_y.text()}"
-                    fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
-
-                self.current_fig = fig
-                self.add_new_plot(fig=fig, title="", x_name=self.plot_x.text(), y_name=self.plot_y.text())
-        except:
-            tb = traceback.format_exc()
-            self.print_sim_output(tb, "red")
-
-    def add_trace_to_plot(self, fig, plot_type, x_data, y_data, name):
-        # Group by the group variable
-        if plot_type == "Scatter":
-            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='markers', name=name))
-        elif plot_type == "Line":
-            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='lines+markers', name=name))
-        elif plot_type == "Histogram":
-            fig.add_trace(getattr(go, plot_type)(x=x_data, name=name))
-        elif plot_type == "Violin":
-            fig = go.Figure(data=getattr(go, plot_type)(y=y_data, box_visible=True, line_color='black',
-                                     meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
-                                     x0='', name=name))
-        return fig
-
-
-    def set_stat_dropdown(self):
-        stats = ["none", "mean", "median", "count"]
-        pgh.update_toolbutton_list(list=stats, button=self.plot_stat, action_function=pgh.set_toolbutton_text,
-                                   parent=self)
-
-    def set_type_dropdown(self):
-        stats = ["Line", "Scatter", "Histogram", "Violin"]
-        pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text,
-                                   parent=self)
-
-    def setup_plot_widget(self):
-        # we create an instance of QWebEngineView and set the html code
-        self.plot_widget = QWebEngineView()
-
-        vbox_layout = QVBoxLayout()
-        vbox_layout.addWidget(self.plot_widget)
-        self.plot_frame.setLayout(vbox_layout)
-
-    def clear_plot(self):
-        fig = px.bar(pd.DataFrame(dict(x=[], y=[])), x="x", y="y")
-        self.add_new_plot(fig)
-        self.current_plot = None
-
-    def set_axis_dropdowns(self, action, button):
-        # TODO: make sure these are the same types of queries (same function) - refactor with similar code
-        selection = action.checkedAction().text()
-        print(action.checkedAction().text())
-        button.setText(action.checkedAction().text())
-
-        # get the sample / data
-        data_key = selection
-
-        # set x and y axis dropdowns
-        # axis_values = sorted(self.test_data_dict[data_key])
-        axis_values = sorted(self.query_data_dict[data_key].results.columns)
-        pgh.update_toolbutton_list(list=axis_values, button=self.plot_y, action_function=pgh.set_toolbutton_text,
-                                   parent=self)
-        pgh.update_toolbutton_list(list=axis_values, button=self.plot_x, action_function=pgh.set_toolbutton_text,
-                                   parent=self)
-        axis_values.append("none")
-        pgh.update_toolbutton_list(list=axis_values, button=self.plot_group, action_function=pgh.set_toolbutton_text,
-                                   parent=self)
-
-    def add_new_plot(self, fig, title="", x_name="", y_name=""):
-        # set up layout
-        layout = dict(
-            margin=dict(
-                l=1,
-                r=1,
-                b=1,
-                t=25,
-                pad=4
-            ),
-            showlegend=True,
-            title=title,
-            xaxis_title=x_name,
-            yaxis_title=y_name,
-        )
-        fig.update_layout(layout)
-        # fig.update_yaxes(automargin=True)
-        html = '<html><body>'
-        html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
-        html += '</body></html>'
-        self.plot_widget.setHtml(html)
-
-        # set the current plot with the current details
-        self.current_plot = pgh.PsySimPlot(id="current",
-                                           fig=fig,
-                                           title=title,
-                                           x_name=x_name,
-                                           y_name=y_name)
-
-        #Open dialog
-        # plot_dialog = PlotViewDialog()
-        # plot_dialog.plot_widget.setHtml(html)
-        # result = plot_dialog.exec_()
-
-    def save_plot(self):
+    def save_plot(self, plot=None):
         #populate the list view with saved plots
-        new_key, accepted = SavePlotDialog.get_new_name()
-        if accepted:
-            self.plot_data_dict[new_key] = copy.deepcopy(self.current_plot)
-            item = QListWidgetItem(f"{new_key}")
-            self.plot_listwidget.addItem(item)
+        if plot:
+            new_key, accepted = SavePlotDialog.get_new_name()
+            if accepted:
+                self.plot_data_dict[new_key] = copy.deepcopy(plot)
+                item = QListWidgetItem(f"{new_key}")
+                self.plot_listwidget.addItem(item)
 
     def add_plot_from_list(self, item):
         #TODO: fix updating old saved plts
         if item.text() in self.plot_data_dict.keys():
             selected_plot = self.plot_data_dict[item.text()]
             if selected_plot:
-                self.clear_plot()
-                self.add_new_plot(fig=selected_plot.fig,
+                new_plot = self.create_new_plot(plot_name=item.text())
+                new_plot.add_new_plot(fig=selected_plot.fig,
                                   title=selected_plot.title,
                                   x_name=selected_plot.x_name,
                                   y_name=selected_plot.y_name)
