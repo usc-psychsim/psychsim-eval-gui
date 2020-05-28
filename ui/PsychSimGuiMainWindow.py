@@ -93,7 +93,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.rename_run_button.clicked.connect(self.rename_data_from_input)
         self.save_run_input.returnPressed.connect(self.rename_data_from_input)
 
-        self.actionSelect_load_config.triggered.connect(self.open_config_loader)
         self.actionview_data.triggered.connect(self.loaded_data_window.show)
         self.actionrun_sim.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.actionquery.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
@@ -221,11 +220,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
-
-    def open_config_loader(self):
-        # open file dialog
-        config_path = pgh.get_file_path(file_type="Config files (*.ini)", path_label="select config file")
-        self.load_config(config_path)
 
     def load_config(self, path=None):
         config = configparser.ConfigParser()

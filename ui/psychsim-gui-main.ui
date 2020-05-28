@@ -1059,7 +1059,6 @@
     <property name="title">
      <string>simulation</string>
     </property>
-    <addaction name="actionSelect_load_config"/>
     <addaction name="actionrun_sim"/>
    </widget>
    <widget class="QMenu" name="menudata">
