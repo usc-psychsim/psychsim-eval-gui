@@ -265,6 +265,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         new_path = pgh.get_file_path(path_label=self.sim_path_label)
         if new_path:
             self.sim_path = new_path
+            self.sim_loaded_state.setText("...")
 
     def load_sim(self):
         try:

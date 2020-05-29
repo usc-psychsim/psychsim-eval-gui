@@ -8,7 +8,8 @@ from psychsim.pwl import stateKey, actionKey
 from new_locations_fewacts import Locations, Directions
 from victims_fewacts import Victims
 from SandRMap import getSandRMap, getSandRVictims, getSmallSandRMap, getSmallSandRVictims, checkSRMap
-from helpers import testMMBelUpdate, setBeliefs
+from helpers import testMMBelUpdate, setBeliefs, setBeliefsNoVics
+from ftime import FatherTime
 
 
 class GuiTestSim2():
@@ -31,6 +32,7 @@ class GuiTestSim2():
 
         self.triageAgent = self.world.addAgent('TriageAg1')
         self.agent = self.world.addAgent('ATOMIC')
+        clock = FatherTime(self.world, False)
 
         VICTIMS_LOCS = list(SandRVics.keys())
         VICTIM_TYPES = [SandRVics[v] for v in VICTIMS_LOCS]
