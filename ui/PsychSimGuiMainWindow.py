@@ -435,9 +435,9 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         param_list = inspect.getfullargspec(function)
         print(param_list)
         self.set_params(param_list)
-        if function_name == "get_actions":
+
+        if function_name == "get_actions": #TODO: fix this for all combo options (once we have info for how they should work)
             self.set_agent_dropdown()
-            # TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
         else:
             self.reset_params()
 
