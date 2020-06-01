@@ -34,6 +34,7 @@ class PsySimPlot:
     id: str
     fig: str
     title: str
+    type: str
     x_name: str
     y_name: str
 

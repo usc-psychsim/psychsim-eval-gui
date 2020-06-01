@@ -38,7 +38,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                                    parent=self)
 
     def set_type_dropdown(self):
-        stats = ["Line", "Scatter", "Histogram", "Violin"]
+        stats = ["Line", "Scatter", "Histogram", "Bar", "Violin"]
         pgh.update_toolbutton_list(list=stats, button=self.plot_type, action_function=pgh.set_toolbutton_text,
                                    parent=self)
 
@@ -112,6 +112,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                 self.current_plot = pgh.PsySimPlot(id="current",
                                                    fig=copy.deepcopy(fig),
                                                    title="",
+                                                   type=plot_type,
                                                    x_name=self.plot_x.text(),
                                                    y_name=self.plot_y.text())
 
@@ -131,7 +132,10 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         elif plot_type == "Line":
             fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='lines+markers', name=name))
         elif plot_type == "Histogram":
-            fig.add_trace(getattr(go, plot_type)(x=x_data, name=name))
+            # fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, name=name))
+            fig.add_trace(getattr(go, plot_type)(histfunc="count", y=y_data, x=x_data, name="count"))
+        elif plot_type == "Bar":
+            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, name=name))
         elif plot_type == "Violin":
             fig = go.Figure(data=getattr(go, plot_type)(y=y_data, box_visible=True, line_color='black',
                                      meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
@@ -142,6 +146,8 @@ class PlotWindow(QMainWindow, ui_plotWindow):
     def add_new_plot(self, fig, title="", x_name="", y_name=""):
         # remove y_axis name if there are more than one trace
         if len(self.plot_history.keys()) > 1:
+            y_name=""
+        if list(self.plot_history.values())[-1].type == "Histogram":
             y_name=""
         # set up layout
         layout = dict(
