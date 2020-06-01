@@ -6,6 +6,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 import os
 import pickle
 import importlib.util
+import inspect
 import sys
 import re
 import traceback
@@ -411,12 +412,34 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.state_combo.clear()
         # Todo: populate combo boxes based on the function that is selected
 
+    def set_params(self, param_list):
+        param_combo_boxes = dict(agent=self.agent_combo,
+                                 action=self.action_combo,
+                                 cycle=self.cycle_combo,
+                                 horizon=self.horizon_combo,
+                                 state=self.state_combo)
+
+        for name, combo in param_combo_boxes.items():
+            if name in param_list.args:
+                combo.setEnabled(True)
+            else:
+                combo.setEnabled(False)
+
     def btnstate(self, action, button):
         selection = action.checkedAction().text()
         button.setText(selection)
-        if selection == "get_actions":
+        self.handle_params(selection)
+
+    def handle_params(self, function_name):
+        function = getattr(self.psychsim_query, function_name)
+        param_list = inspect.getfullargspec(function)
+        print(param_list)
+        self.set_params(param_list)
+        if function_name == "get_actions":
             self.set_agent_dropdown()
             # TODO: set inactive the params we don't want (think about a good way to do this - maybe from the query_function params list?
+        else:
+            self.reset_params()
 
     def update_view_query_list(self, action, button):
         selection = action.checkedAction().text()
