@@ -106,7 +106,6 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                     fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
 
                 self.current_fig = fig
-                self.add_new_plot(fig=fig, title="", x_name=self.plot_x.text(), y_name=self.plot_y.text())
                 # set the current plot with the current details
                 now = datetime.now()
                 dt_string = now.strftime("%Y%m%d_%H%M%S")
@@ -118,6 +117,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
                 # append the plot to the history
                 self.plot_history[dt_string] = self.current_plot
+                self.add_new_plot(fig=fig, title="", x_name=self.plot_x.text(), y_name=self.plot_y.text())
 
         except:
             tb = traceback.format_exc()
@@ -140,6 +140,9 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
 
     def add_new_plot(self, fig, title="", x_name="", y_name=""):
+        # remove y_axis name if there are more than one trace
+        if len(self.plot_history.keys()) > 1:
+            y_name=""
         # set up layout
         layout = dict(
             margin=dict(
@@ -182,11 +185,9 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                                   y_name=plot_data.y_name)
 
             if len(self.plot_history.keys()) > 0:
-                print("undoing")
                 self.current_plot = copy.deepcopy(list(self.plot_history.values())[-1])
                 self.current_plot.id = "current"
                 self.current_fig = self.current_plot.fig
-                print("undone")
             else:
                 self.current_plot = None
                 self.current_fig = go.Figure()
