@@ -587,12 +587,15 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
     def save_plot(self, plot=None):
         #populate the list view with saved plots
+        sending_window = self.sender().window()
         if plot:
             new_key, accepted = SavePlotDialog.get_new_name()
             if accepted:
                 self.plot_data_dict[new_key] = copy.deepcopy(plot)
                 item = QListWidgetItem(f"{new_key}")
                 self.plot_listwidget.addItem(item)
+                sending_window.close()
+
 
     def add_plot_from_list(self, item):
         #TODO: fix updating old saved plts
