@@ -5,6 +5,8 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 import os
 import plotly
 import traceback
+import copy
+from datetime import datetime
 import plotly.graph_objects as go
 
 import psychsim_gui_helpers as pgh
@@ -23,9 +25,11 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         self.set_type_dropdown()
         self.set_stat_dropdown()
         self.add_plot_button.clicked.connect(self.plot_data)
+        self.plot_undo_button.clicked.connect(self.undo)
 
         self.current_fig = go.Figure()
         self.current_plot = None
+        self.plot_history = dict()
 
     def set_stat_dropdown(self):
         stats = ["none", "mean", "median", "count"]
@@ -102,6 +106,18 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
                 self.current_fig = fig
                 self.add_new_plot(fig=fig, title="", x_name=self.plot_x.text(), y_name=self.plot_y.text())
+                # set the current plot with the current details
+                now = datetime.now()
+                dt_string = now.strftime("%Y%m%d_%H%M%S")
+                self.current_plot = pgh.PsySimPlot(id="current",
+                                                   fig=copy.deepcopy(fig),
+                                                   title="",
+                                                   x_name=self.plot_x.text(),
+                                                   y_name=self.plot_y.text())
+
+                # append the plot to the history
+                self.plot_history[dt_string] = self.current_plot
+
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -142,17 +158,40 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         html = '<html><body>'
         html += plotly.offline.plot(fig, output_type='div', include_plotlyjs='cdn')
         html += '</body></html>'
-        print("SETIGND")
         self.plot_widget.setHtml(html)
 
-        # set the current plot with the current details
-        self.current_plot = pgh.PsySimPlot(id="current",
-                                           fig=fig,
-                                           title=title,
-                                           x_name=x_name,
-                                           y_name=y_name)
-        self.current_fig = fig
+        # self.current_fig = fig
 
+    def undo(self):
+        try:
+            # pop the last key from the dict
+            self.plot_history.popitem()
+
+            # clear plot
+            self.add_new_plot(fig=go.Figure(),
+                              title="",
+                              x_name="",
+                              y_name="")
+
+            # apply plots in history
+            for plot_name, plot_data in self.plot_history.items():
+                self.add_new_plot(fig=plot_data.fig,
+                                  title=plot_data.title,
+                                  x_name=plot_data.x_name,
+                                  y_name=plot_data.y_name)
+
+            if len(self.plot_history.keys()) > 0:
+                print("undoing")
+                self.current_plot = copy.deepcopy(list(self.plot_history.values())[-1])
+                self.current_plot.id = "current"
+                self.current_fig = self.current_plot.fig
+                print("undone")
+            else:
+                self.current_plot = None
+                self.current_fig = go.Figure()
+        except:
+            tb = traceback.format_exc()
+            print(tb)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
