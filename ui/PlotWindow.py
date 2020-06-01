@@ -26,6 +26,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         self.set_stat_dropdown()
         self.add_plot_button.clicked.connect(self.plot_data)
         self.plot_undo_button.clicked.connect(self.undo)
+        self.clear_plot_button.clicked.connect(self.clear_plot)
 
         self.current_fig = go.Figure()
         self.current_plot = None
@@ -192,6 +193,17 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         except:
             tb = traceback.format_exc()
             print(tb)
+
+    def clear_plot(self):
+        self.plot_history = dict()
+        self.current_plot = None
+        self.current_fig = go.Figure()
+        self.add_new_plot(fig=self.current_fig,
+                          title="",
+                          x_name="",
+                          y_name="")
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
