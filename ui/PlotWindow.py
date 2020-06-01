@@ -7,6 +7,7 @@ import plotly
 import traceback
 import copy
 from datetime import datetime
+import pandas as pd
 import plotly.graph_objects as go
 
 import psychsim_gui_helpers as pgh
@@ -28,12 +29,19 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         self.plot_undo_button.clicked.connect(self.undo)
         self.clear_plot_button.clicked.connect(self.clear_plot)
 
+        self.plot_query.setToolTip('Select the query containing data you wish to plot')
+        self.plot_x.setToolTip('Set the variable to be used for the x-axis')
+        self.plot_y.setToolTip('Set the variable to be used for the y-axis')
+        self.plot_type.setToolTip('Select the plot type')
+        self.plot_group.setToolTip('Select the variable to group the data by')
+        self.plot_stat.setToolTip('Select the statistic to apply')
+
         self.current_fig = go.Figure()
         self.current_plot = None
         self.plot_history = dict()
 
     def set_stat_dropdown(self):
-        stats = ["none", "mean", "median", "count"]
+        stats = ["none", "mean", "median"]
         pgh.update_toolbutton_list(list=stats, button=self.plot_stat, action_function=pgh.set_toolbutton_text,
                                    parent=self)
 
@@ -91,19 +99,22 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                             x_data = group_data[self.plot_x.text()].tolist()
                             y_data = group_data[self.plot_y.text()].tolist()
                             name = f"{group}"
-                            fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
+                            fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name, data=data, x_name=self.plot_x.text(), y_name=self.plot_y.text())
                     else:
                         data = getattr(data.groupby(data[self.plot_x.text()]), stat)()
                         data[self.plot_x.text()] = data.index
                         x_data = data[self.plot_x.text()].to_numpy()
                         y_data = data[self.plot_y.text()].to_numpy()
                         name = f"{self.plot_y.text()}_{stat}"
-                        fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
+                        fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name, data=data, x_name=self.plot_x.text(), y_name=self.plot_y.text())
                 else:
+                    if stat not in ["none", "..."]:
+                        data = getattr(data.groupby(data[self.plot_x.text()]), stat)()
+                        data[self.plot_x.text()] = data.index
                     x_data = data[self.plot_x.text()].to_numpy()
                     y_data = data[self.plot_y.text()].to_numpy()
                     name = f"{self.plot_y.text()}"
-                    fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name)
+                    fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name, data=data, x_name=self.plot_x.text(), y_name=self.plot_y.text())
 
                 self.current_fig = fig
                 # set the current plot with the current details
@@ -125,7 +136,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
             print(tb)
             # self.print_sim_output(tb, "red")
 
-    def add_trace_to_plot(self, fig, plot_type, x_data, y_data, name):
+    def add_trace_to_plot(self, fig, plot_type, x_data, y_data, name, data=None, x_name="", y_name=""):
         # Group by the group variable
         if plot_type == "Scatter":
             fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='markers', name=name))
@@ -133,13 +144,17 @@ class PlotWindow(QMainWindow, ui_plotWindow):
             fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='lines+markers', name=name))
         elif plot_type == "Histogram":
             # fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, name=name))
-            fig.add_trace(getattr(go, plot_type)(histfunc="count", y=y_data, x=x_data, name="count"))
+            fig.add_trace(getattr(go, plot_type)(histfunc="count", y=y_data, x=x_data, name=name))
         elif plot_type == "Bar":
             fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, name=name))
         elif plot_type == "Violin":
-            fig = go.Figure(data=getattr(go, plot_type)(y=y_data, box_visible=True, line_color='black',
-                                     meanline_visible=True, fillcolor='lightseagreen', opacity=0.6,
-                                     x0='', name=name))
+            for x_unique in data[x_name].unique():
+                fig.add_trace(go.Violin(x=data[x_name][data[x_name] == x_unique],
+                                        y=data[y_name][data[x_name] == x_unique],
+                                        name=f"{x_unique}-{y_name}",
+                                        box_visible=True,
+                                        meanline_visible=True))
+
         return fig
 
 
@@ -147,8 +162,9 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         # remove y_axis name if there are more than one trace
         if len(self.plot_history.keys()) > 1:
             y_name=""
-        if list(self.plot_history.values())[-1].type == "Histogram":
-            y_name=""
+        if len(self.plot_history.keys()) >0:
+            if list(self.plot_history.values())[-1].type == "Histogram":
+                y_name="count"
         # set up layout
         layout = dict(
             margin=dict(
