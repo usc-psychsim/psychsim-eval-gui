@@ -148,7 +148,10 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
         # SET UP SAMPLE WINDOW ----------------
         self.sample_data_combo.activated.connect(self.set_sample_params)
+        self.sample_data_combo.activated.connect(self.set_sample_agent)
         self.save_sample_button.clicked.connect(self.save_sample)
+        self.sample_step_check.stateChanged.connect(self.enable_step_sample)
+        self.sample_agents_check.stateChanged.connect(self.enable_agent_sample)
 
     def simulation_thread(self, progress_callback):
         # initialise the sim class
@@ -654,7 +657,23 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.print_sample_output(tb, 'red')
             pass
 
+    def set_sample_agent(self): #TODO: refactor (this is similar to theo ther function for querying)
+
+        data_id = self.sample_data_combo.currentText()
+        if data_id:
+            agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
+            self.sample_agent_combo.clear()
+            self.sample_agent_combo.addItems(agents['agent'].tolist())
+
     def save_sample(self):
+        if self.sample_step_check.isChecked():
+            self.sample_on_step()
+        if self.sample_step_check.isChecked():
+            self.sample_on_agent()
+        if not self.sample_step_check.isChecked() and not self.sample_step_check.isChecked():
+            self.print_sample_output("No sample selected", "black")
+
+    def sample_on_step(self):
         step_min = self.sample_step_start_spinBox.value()
         step_max = self.sample_step_end_spinBox.value()
         step_range = range(step_min, step_max+1)
@@ -676,6 +695,17 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.set_data_dropdown(self.sample_data_combo)
             self.update_data_table()
             self.print_sample_output(f"New sample saved as: {data_id}, with {len(step_range)} steps from {step_min} to {step_max}", "black")
+
+    def sample_on_agent(self):
+        pass
+
+    def enable_agent_sample(self):
+        self.sample_agent_combo.setEnabled(self.sample_agents_check.isChecked())
+
+    def enable_step_sample(self):
+        self.sample_step_start_spinBox.setEnabled(self.sample_step_check.isChecked())
+        self.sample_step_end_spinBox.setEnabled(self.sample_step_check.isChecked())
+
 
     def show_doc_window(self, doc_file, doc_section=""):
         file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "static_html", f"{doc_file}"))
