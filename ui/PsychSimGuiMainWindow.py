@@ -673,39 +673,56 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.sample_agent_combo_mult.addItems(agents['agent'].tolist())
 
     def save_sample(self):
+
+        sample_data = copy.deepcopy(self.sim_data_dict[self.sample_data_combo.currentText()])
+        sample_id = ""
+        sample_length = len(range(self.sample_step_end_spinBox.minimum(), self.sample_step_end_spinBox.maximum()))
+        if self.sample_agents_check.isChecked():
+            sample_data.data, agent_id = self.sample_on_agent(sample_data)
+            sample_id = f"{sample_id}_{agent_id}"
+            self.print_sample_output(f"Sampled with {agent_id} agents", "black")
+
         if self.sample_step_check.isChecked():
-            self.sample_on_step()
-        if self.sample_step_check.isChecked():
-            self.sample_on_agent()
-        if not self.sample_step_check.isChecked() and not self.sample_step_check.isChecked():
+            step_min = self.sample_step_start_spinBox.value()
+            step_max = self.sample_step_end_spinBox.value()
+            step_range = range(step_min, step_max + 1)
+            sample_length = len(step_range)
+            sample_data.data, step_id = self.sample_on_step(sample_data, step_min=step_min, step_max=step_max)
+            sample_id = f"{sample_id}_{step_id}"
+            self.print_sample_output(f"Sampled with {sample_length} steps from {step_min} to {step_max}", "black")
+
+        if not self.sample_agents_check.isChecked() and not self.sample_step_check.isChecked():
             self.print_sample_output("No sample selected", "black")
 
-    def sample_on_step(self):
-        #TODO: move some of the actual save stuff up to the save function
-        step_min = self.sample_step_start_spinBox.value()
-        step_max = self.sample_step_end_spinBox.value()
-        step_range = range(step_min, step_max+1)
-        if step_min > step_max:
-            self.print_sample_output("THE END STEP MUST BE LESS THAN THE START STEP", "red")
         else:
-            sample_data_source = self.sim_data_dict[self.sample_data_combo.currentText()]
-            sampled_data = {k : v for k, v in sample_data_source.data.items() if k in step_range}
-
-            data_id = f"{sample_data_source.id}_sample_step_{step_min}-{step_max}"
+            data_id = f"{sample_data.id}_sample_{sample_id}"
             # store the data as a PsySimObject in the main dict
-            self.sim_data_dict[data_id] = pgh.PsychSimRun(id=data_id,
-                                                            data=sampled_data,
-                                                            sim_file=sample_data_source.sim_file,
-                                                            steps=len(step_range),
-                                                            run_date="...")
+            sample_data.id = data_id
+            sample_data.steps = sample_length
+
+            self.sim_data_dict[data_id] = sample_data
+
             # Update appropriate places
             self.set_data_dropdown(self.data_combo)
             self.set_data_dropdown(self.sample_data_combo)
             self.update_data_table()
-            self.print_sample_output(f"New sample saved as: {data_id}, with {len(step_range)} steps from {step_min} to {step_max}", "black")
+            self.print_sample_output(f"New sample saved as: {data_id}", "black")
 
-    def sample_on_agent(self):
-        pass
+    def sample_on_step(self, sample_data_source, step_min, step_max):
+        step_range = range(step_min, step_max + 1)
+        if step_min > step_max:
+            self.print_sample_output("THE END STEP MUST BE LESS THAN THE START STEP", "red")
+        else:
+            sampled_data = {k: v for k, v in sample_data_source.data.items() if k in step_range}
+            return sampled_data, f"{step_min}-{step_max}"
+
+    def sample_on_agent(self, sample_data_source):
+        sampled_data = dict()
+        for step, step_data in sample_data_source.data.items():
+            sampled_data[step] = {agent: agent_data for agent, agent_data in step_data.items() if agent in self.sample_agent_combo_mult.currentData()}
+            sample_id = "_".join(self.sample_agent_combo_mult.currentData())
+        return sampled_data, sample_id
+
 
     def enable_agent_sample(self):
         self.sample_agent_combo_mult.setEnabled(self.sample_agents_check.isChecked())
