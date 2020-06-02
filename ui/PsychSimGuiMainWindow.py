@@ -23,6 +23,7 @@ import plotly.express as px
 from gui_threading import Worker, WorkerSignals
 from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
+from CheckableComboBox import CheckableComboBox
 from functions.query_functions import PsychSimQuery
 
 from ui.LoadedDataWindow import LoadedDataWindow
@@ -147,6 +148,12 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.current_fig = None
 
         # SET UP SAMPLE WINDOW ----------------
+        self.sample_agent_combo_mult = CheckableComboBox()
+        self.sample_agent_combo_mult.setEnabled(False)
+        vbox_layout = QVBoxLayout()
+        vbox_layout.addWidget(self.sample_agent_combo_mult)
+        self.agent_sample_combo_widget.setLayout(vbox_layout)
+
         self.sample_data_combo.activated.connect(self.set_sample_params)
         self.sample_data_combo.activated.connect(self.set_sample_agent)
         self.save_sample_button.clicked.connect(self.save_sample)
@@ -649,7 +656,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             sample_data_source = self.sim_data_dict[self.sample_data_combo.currentText()].data
             max_steps = max(sample_data_source.keys())
             min_steps = min(sample_data_source.keys())
-            self.sample_step_range_label.setText(f"step range (min:{min_steps}, max:{max_steps})")
+            self.sample_step_check.setText(f"step range (min:{min_steps}, max:{max_steps})")
             self.sample_step_start_spinBox.setRange(min_steps, max_steps)
             self.sample_step_end_spinBox.setRange(min_steps, max_steps)
         except:
@@ -662,8 +669,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         data_id = self.sample_data_combo.currentText()
         if data_id:
             agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
-            self.sample_agent_combo.clear()
-            self.sample_agent_combo.addItems(agents['agent'].tolist())
+            self.sample_agent_combo_mult.clear()
+            self.sample_agent_combo_mult.addItems(agents['agent'].tolist())
 
     def save_sample(self):
         if self.sample_step_check.isChecked():
@@ -674,6 +681,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.print_sample_output("No sample selected", "black")
 
     def sample_on_step(self):
+        #TODO: move some of the actual save stuff up to the save function
         step_min = self.sample_step_start_spinBox.value()
         step_max = self.sample_step_end_spinBox.value()
         step_range = range(step_min, step_max+1)
@@ -700,7 +708,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         pass
 
     def enable_agent_sample(self):
-        self.sample_agent_combo.setEnabled(self.sample_agents_check.isChecked())
+        self.sample_agent_combo_mult.setEnabled(self.sample_agents_check.isChecked())
 
     def enable_step_sample(self):
         self.sample_step_start_spinBox.setEnabled(self.sample_step_check.isChecked())
