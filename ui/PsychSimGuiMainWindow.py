@@ -676,7 +676,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
         sample_data = copy.deepcopy(self.sim_data_dict[self.sample_data_combo.currentText()])
         sample_id = ""
-        sample_length = len(range(self.sample_step_end_spinBox.minimum(), self.sample_step_end_spinBox.maximum()))
+        sample_length = len(range(self.sample_step_end_spinBox.minimum(), self.sample_step_end_spinBox.maximum() + 1))
         if self.sample_agents_check.isChecked():
             sample_data.data, agent_id = self.sample_on_agent(sample_data)
             sample_id = f"{sample_id}_{agent_id}"
