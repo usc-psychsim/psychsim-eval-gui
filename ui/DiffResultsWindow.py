@@ -42,7 +42,7 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         rowPosition = table.rowCount()
         table.insertRow(rowPosition)
         table.setColumnCount(len(line_items))
-        line_items[0][1:]  # strip the first characther with diff info
+        line_items[0] = line_items[0][1:]  # strip the first characther with diff info
         for idx, item in enumerate(line_items):
             cell_item = QTableWidgetItem(item)
             cell_item.setForeground(QColor(color))
