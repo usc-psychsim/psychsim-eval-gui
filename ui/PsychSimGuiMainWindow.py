@@ -627,17 +627,15 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 diff_results_window.format_diff_results(q1_csv, q2_csv, result)
                 diff_results_window.show()
 
-
-
-                # create a new query object
-                new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=q1.function,
-                                            results=diff_results, diff_query=True)
-
-                # create new dialog and show results + query ID
-                # new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)
-                self.query_data_dict[new_query.id] = new_query
-                self.set_query_list_dropdown()
-                self.new_diff_query_name.setText(query_id)
+                # create a new query object #TODO: rethink if an object with differences is really needed.
+                # new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=q1.function,
+                #                             results=diff_results, diff_query=True)
+                #
+                # # create new dialog and show results + query ID
+                # # new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)
+                # self.query_data_dict[new_query.id] = new_query
+                # self.set_query_list_dropdown()
+                # self.new_diff_query_name.setText(query_id)
             else:
                 self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
                 self.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
