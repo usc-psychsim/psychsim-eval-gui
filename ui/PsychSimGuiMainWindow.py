@@ -125,6 +125,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.diff_query_button.clicked.connect(self.diff_query)
         self.query_doc_button.clicked.connect(self.get_query_doc)
         self.data_combo.activated.connect(self.reset_params)
+        self.agent_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_action_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
@@ -414,6 +415,25 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.agent_combo.clear()
             self.agent_combo.addItems(agents['agent'].tolist())
 
+    def set_action_dropdown(self):
+        data_id = self.data_combo.currentText()
+        if data_id:
+            selected_agent = self.agent_combo.currentText()
+            actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
+            self.action_combo.clear()
+            for index, row in actions.iterrows():
+                self.action_combo.insertItem(index, row['action'], row['step'])
+
+
+    def set_cycle_dropdown(self):
+        pass
+
+    def set_horizon_dropdown(self):
+        pass
+
+    def set_state_dropdown(self):
+        pass
+
     def reset_params(self):
         self.agent_combo.clear()
         self.action_combo.clear()
@@ -432,6 +452,21 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         for name, combo in param_combo_boxes.items():
             if name in param_list.args:
                 combo.setEnabled(True)
+                if name == "agent":
+                    print("SETTING AGENT")
+                    self.set_agent_dropdown()
+                    #Connect this to setting the action one
+                elif name == "cycle":
+                    self.set_cycle_dropdown()
+                elif name == "horizon":
+                    self.set_horizon_dropdown()
+                elif name == "state":
+                    self.set_state_dropdown()
+                elif name == "action":
+                    pass
+                else:
+                    self.reset_params()
+                #TODO: if a particular combo box is enabled - then make sure it gets populated hireachically (Agent > Action | cycle |horizon)
             else:
                 combo.setEnabled(False)
 
@@ -445,11 +480,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         param_list = inspect.getfullargspec(function)
         print(param_list)
         self.set_params(param_list)
-
-        if function_name == "get_actions": #TODO: fix this for all combo options (once we have info for how they should work)
-            self.set_agent_dropdown()
-        else:
-            self.reset_params()
 
     def update_view_query_list(self, action, button):
         selection = action.checkedAction().text()
@@ -468,10 +498,11 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def execute_query(self):
         query_function = self.function_button.text()
         agent = self.agent_combo.currentText()
+        action_step = self.action_combo.currentData() #This is actually the step value as it is easier to access the data by step rather than action
         data_id = self.data_combo.currentText()
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
-                                                                  agent=agent)
+                                                                  agent=agent, action=action_step)
             result = result.apply(pd.to_numeric, errors='ignore') #convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
