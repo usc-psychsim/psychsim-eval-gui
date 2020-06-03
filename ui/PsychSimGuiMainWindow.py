@@ -15,6 +15,7 @@ import configparser
 from datetime import datetime
 from functools import partial
 import copy
+import difflib
 
 import plotly
 import plotly.graph_objects as go
@@ -32,6 +33,7 @@ from ui.QueryDataDialog import QueryDataDialog
 from ui.SavePlotDialog import SavePlotDialog
 from ui.DocWindow import DocWindow
 from ui.PlotWindow import PlotWindow
+from ui.DiffResultsWindow import DiffResultsWindow
 from ui.PlotViewDialog import PlotViewDialog
 
 
@@ -607,12 +609,32 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 query_id = f"{q1.id}-{q2.id}_{q1.function}_diff"
                 data_id = f"{q1.data_id}-{q2.data_id}"
 
+                #--------
+                # Convert the two query results to csv
+                q1_csv = q1.results.to_csv(index=False).splitlines(keepends=False)
+                q2_csv = q2.results.to_csv(index=False).splitlines(keepends=False)
+
+                # Diff the CSVs
+                d = difflib.Differ()
+                result = list(d.compare(q1_csv, q2_csv))
+
+                # Display results
+                diff_results_window = DiffResultsWindow(parent=self)
+                diff_results_window.diff_title.setText(f"Diff Results for {q1.id} and {q2.id}")
+                diff_results_window.q1_diff_label.setText(f"{q1.id}")
+                diff_results_window.q2_diff_label.setText(f"{q2.id}")
+                diff_results_window.q2_diff_label.setText(f"{q2.id}")
+                diff_results_window.format_diff_results(q1_csv, q2_csv, result)
+                diff_results_window.show()
+
+
+
                 # create a new query object
                 new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=q1.function,
                                             results=diff_results, diff_query=True)
 
                 # create new dialog and show results + query ID
-                new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)
+                # new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)
                 self.query_data_dict[new_query.id] = new_query
                 self.set_query_list_dropdown()
                 self.new_diff_query_name.setText(query_id)
