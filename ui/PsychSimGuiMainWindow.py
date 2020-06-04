@@ -318,9 +318,17 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
         output_path = os.path.join(output_directory, f"{data_id}_{dt_string}.pickle")
-        with open(output_path, 'wb') as f:
-            pickle.dump(self.sim_data_dict[data_id], f)
-        self.print_sim_output(f"{data_id} saved to: {output_path}", "black")
+
+        output_name = QFileDialog.getSaveFileName(self,
+                                               self.tr('Save File'),
+                                               output_path,
+                                               self.tr("pickle (*.pickle)"))[0]
+        if output_name:
+            if not QFileInfo(output_name).suffix():
+                output_name += ".pickle"
+
+        pickle.dump(self.sim_data_dict[data_id], open(output_name, "wb"))
+        self.print_sim_output(f"{data_id} saved to: {output_name}", "black")
         self.update_data_table()
 
     def print_query_output(self, msg, color="black"):
