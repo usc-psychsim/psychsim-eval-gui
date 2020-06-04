@@ -105,7 +105,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                         data[self.plot_x.text()] = data.index
                         x_data = data[self.plot_x.text()].to_numpy()
                         y_data = data[self.plot_y.text()].to_numpy()
-                        name = f"{self.plot_y.text()}_{stat}"
+                        name = f"{self.plot_y.text()}_{stat}_{self.plot_query.text()}"
                         fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name, data=data, x_name=self.plot_x.text(), y_name=self.plot_y.text())
                 else:
                     if stat not in ["none", "..."]:
@@ -113,7 +113,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                         data[self.plot_x.text()] = data.index
                     x_data = data[self.plot_x.text()].to_numpy()
                     y_data = data[self.plot_y.text()].to_numpy()
-                    name = f"{self.plot_y.text()}"
+                    name = f"{self.plot_y.text()}_{self.plot_query.text()}"
                     fig = self.add_trace_to_plot(fig, plot_type, x_data, y_data, name, data=data, x_name=self.plot_x.text(), y_name=self.plot_y.text())
 
                 self.current_fig = fig
