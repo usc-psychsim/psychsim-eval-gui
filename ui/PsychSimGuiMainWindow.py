@@ -128,7 +128,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.query_doc_button.clicked.connect(self.get_query_doc)
         self.data_combo.activated.connect(self.reset_params)
         self.agent_combo.activated.connect(self.set_action_dropdown)
-        # self.data_combo.activated.connect(self.set_action_dropdown)
+        self.action_combo.activated.connect(self.set_state_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
 
@@ -419,20 +419,30 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                                    parent=self)
 
     def set_agent_dropdown(self):
-        data_id = self.data_combo.currentText()
-        if data_id:
-            agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
-            self.agent_combo.clear()
-            self.agent_combo.addItems(agents['agent'].tolist())
+        if self.agent_combo.isEnabled():
+            try:
+                data_id = self.data_combo.currentText()
+                if data_id:
+                    agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
+                    self.agent_combo.clear()
+                    self.agent_combo.addItems(agents['agent'].tolist())
+            except:
+                tb = traceback.format_exc()
+                self.print_query_output(tb, "red")
 
     def set_action_dropdown(self):
-        data_id = self.data_combo.currentText()
-        if data_id:
-            selected_agent = self.agent_combo.currentText()
-            actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
-            self.action_combo.clear()
-            for index, row in actions.iterrows():
-                self.action_combo.insertItem(index, row['action'], row['step'])
+        if self.action_combo.isEnabled():
+            try:
+                data_id = self.data_combo.currentText()
+                if data_id:
+                    selected_agent = self.agent_combo.currentText()
+                    actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
+                    self.action_combo.clear()
+                    for index, row in actions.iterrows():
+                        self.action_combo.insertItem(index, row['action'], row['step'])
+            except:
+                tb = traceback.format_exc()
+                self.print_query_output(tb, "red")
 
 
     def set_cycle_dropdown(self):
@@ -442,7 +452,20 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         pass
 
     def set_state_dropdown(self):
-        pass
+        if self.state_combo.isEnabled():
+            try:
+                data_id = self.data_combo.currentText()
+                action_id = self.action_combo.currentData()
+                if data_id:
+                    selected_agent = self.agent_combo.currentText()
+                    predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id], agent=selected_agent, action=action_id)
+                    self.state_combo.clear()
+                    self.state_combo.addItems(predicted_actions['base_action'].unique().tolist())
+                    # for index, row in predicted_actions.unique().iterrows():
+                    #     self.state_combo.insertItem(index, row['base_action'], index)
+            except:
+                tb = traceback.format_exc()
+                self.print_query_output(tb, "red")
 
     def reset_params(self):
         self.agent_combo.clear()
@@ -508,11 +531,12 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def execute_query(self):
         query_function = self.function_button.text()
         agent = self.agent_combo.currentText()
+        state = self.state_combo.currentText()
         action_step = self.action_combo.currentData() #This is actually the step value as it is easier to access the data by step rather than action
         data_id = self.data_combo.currentText()
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
-                                                                  agent=agent, action=action_step)
+                                                                  agent=agent, action=action_step, state=state)
             result = result.apply(pd.to_numeric, errors='ignore') #convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))

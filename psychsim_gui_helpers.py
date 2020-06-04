@@ -147,6 +147,13 @@ def dataframe_difference(df1, df2, which=None):
         diff_df = comparison_df[comparison_df['_merge'] == which]
     return diff_df
 
+def dataframe_columns_equal(df1, df2):
+    for col in df1.columns:
+        if col not in df2.columns:
+            return False
+        else:
+            return True
+
 if __name__ == "__main__":
     df = pd.DataFrame()
     test_data = PsychSimRun(id="test_id", run_date="date", data=df, sim_file="simfile", steps=9)
