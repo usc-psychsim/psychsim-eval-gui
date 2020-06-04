@@ -426,6 +426,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                     agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
                     self.agent_combo.clear()
                     self.agent_combo.addItems(agents['agent'].tolist())
+                self.set_action_dropdown()
             except:
                 tb = traceback.format_exc()
                 self.print_query_output(tb, "red")
@@ -440,6 +441,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                     self.action_combo.clear()
                     for index, row in actions.iterrows():
                         self.action_combo.insertItem(index, row['action'], row['step'])
+                self.set_state_dropdown()
             except:
                 tb = traceback.format_exc()
                 self.print_query_output(tb, "red")
@@ -456,7 +458,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             try:
                 data_id = self.data_combo.currentText()
                 action_id = self.action_combo.currentData()
-                if data_id:
+                if data_id is not None and action_id is not None:
                     selected_agent = self.agent_combo.currentText()
                     predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id], agent=selected_agent, action=action_id)
                     self.state_combo.clear()
@@ -494,7 +496,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 elif name == "horizon":
                     self.set_horizon_dropdown()
                 elif name == "state":
-                    self.set_state_dropdown()
+                    pass
+                    # self.set_state_dropdown()
                 elif name == "action":
                     pass
                 else:
