@@ -4,10 +4,10 @@ Created on Wed Feb 19 14:35:40 2020
 
 @author: mostafh
 """
-# import sys
-# print(sys.path)
-# sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic")
-# sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions")
+import sys
+print(sys.path)
+sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic")
+sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions")
 
 from psychsim.agent import ValueFunction
 from psychsim.world import World, WORLD
@@ -80,7 +80,7 @@ class GuiTestSim:
         ## Set players horizons
         self.horizon = 4
         self.triageAgent.setAttribute('horizon', self.horizon)
-        self.triageAgent.setAttribute('selection', 'random')
+        # self.triageAgent.setAttribute('selection', 'random')
         self.triageAgent2.setAttribute('horizon', 4)
 
         ## Set uncertain beliefs
@@ -120,7 +120,7 @@ class GuiTestSim:
         print()
         # world.printBeliefs(self.triageAgent.name)
         print('Triage Agent Reward: ', self.triageAgent.reward())
-        result0 = {'TriageAg1': {}}
+
         # result1 = {'TriageAg2': {}, 'TriageAg1': {}}
         # result2= {'TriageAg2': {}}
         # resultA = {'ATOMIC': {}}
@@ -133,7 +133,19 @@ class GuiTestSim:
         # valuefn.set("TriageAg1", self.triageAgent.world.state, "TriageAg1-move-E", self.horizon, 0)#THIS DOESNT WORK - how do you do this????
         # predicted_actions = self.triageAgent.predict(self.world.state,"TriageAg1",legalActions,horizon=0)#THIS DOESNT WORK - how do you do this????
 
+        result0 = {'TriageAg1': {}}
+        # result0 = {'TriageAg1':{'TriageAg1':{}}}
         self.world.step(debug=result0)
+        intermediate_results = result0['TriageAg1']
+
+        # for la_key, legal_action in intermediate_results["__decision__"]["TriageAg10"]["V"].items():
+        #     for idx, hyp_action_set in enumerate(legal_action['__S__']):
+        #         # print(f"KEYS: {hyp_action_set.keyMap}")
+        #         hyp_action = hyp_action_set.marginal("TriageAg1's __ACTION__")
+        #         print(f"HYP_ACTION FOR {la_key}_{idx}: {hyp_action}")
+        #         hyp_act_name = Distribution({next(iter(hyp_action)): 1.})
+
+
         #TODO: see what is in things like triageAgent.reward - see what the legal actionsa re after the move, what the state is etc
         legalActions_after = self.triageAgent.getActions()
         agent_state_after = self.triageAgent.getState('loc')
@@ -141,8 +153,13 @@ class GuiTestSim:
         other_after = self.triageAgent.getAttribute('R',model='TriageAg10')
 
         # world.printBeliefs(self.triageAgent.name)
+
+
         print('Triage Agent Reward: ', self.triageAgent.reward())
-        return result0
+
+        return_result = {"WORLD_STATE": self.world.state,
+                         "AGENT_BELIEFS": result0}
+        return return_result
 
 
 if __name__ == "__main__":

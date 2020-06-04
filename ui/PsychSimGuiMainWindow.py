@@ -327,9 +327,9 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             if not QFileInfo(output_name).suffix():
                 output_name += ".pickle"
 
-        pickle.dump(self.sim_data_dict[data_id], open(output_name, "wb"))
-        self.print_sim_output(f"{data_id} saved to: {output_name}", "black")
-        self.update_data_table()
+            pickle.dump(self.sim_data_dict[data_id], open(output_name, "wb"))
+            self.print_sim_output(f"{data_id} saved to: {output_name}", "black")
+            self.update_data_table()
 
     def print_query_output(self, msg, color="black"):
         pgh.print_output(self.query_output, msg, color)
@@ -597,8 +597,10 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             q1 = self.query_data_dict[self.query_diff_1.text()]
             q2 = self.query_data_dict[self.query_diff_2.text()]
 
+            # check that the columns match regardless of order
+            if pgh.dataframe_columns_equal(q1.results, q2.results):
             # check that they are the same type
-            if q1.function == q2.function:
+            # if q1.function == q2.function:
                 self.print_query_output(f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}") #TODO: be consistant with colour coding of text
                 # Diff the data ID
                 pgh.print_diff(self.query_output, q1.data_id, q2.data_id, f"{q1.id} data_id", f"{q2.id} data_id", "data_id")

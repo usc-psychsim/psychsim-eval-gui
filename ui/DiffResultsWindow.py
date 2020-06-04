@@ -15,13 +15,26 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         self.setWindowTitle("Diff Results")
 
     def format_diff_results(self, q1, q2, diff):
+        for line_no, line in enumerate(q1):
+            line_elements = line.split(',')
+            if line_no == 0:
+                self.q1_table.setColumnCount(len(line_elements))
+                self.q1_table.setHorizontalHeaderLabels(line_elements)
+
+        for line_no, line in enumerate(q2):
+            line_elements = line.split(',')
+            if line_no == 0:
+                self.q2_table.setColumnCount(len(line_elements))
+                self.q2_table.setHorizontalHeaderLabels(line_elements)
+
         for line_no, line in enumerate(diff):
             line_elements = line.split(',')
             if line_no == 0: # set the header with the first line (because queries always have to be the same, there will never be a difference here
-                self.q1_table.setColumnCount(len(line_elements))
-                self.q1_table.setHorizontalHeaderLabels(line_elements)
-                self.q2_table.setColumnCount(len(line_elements))
-                self.q2_table.setHorizontalHeaderLabels(line_elements)
+                pass
+                # self.q1_table.setColumnCount(len(line_elements))
+                # self.q1_table.setHorizontalHeaderLabels(line_elements)
+                # self.q2_table.setColumnCount(len(line_elements))
+                # self.q2_table.setHorizontalHeaderLabels(line_elements)
             else:
                 for element_no, element in enumerate(line_elements):
                     if element_no == 0 and element.startswith(" "):
