@@ -34,6 +34,8 @@ from ui.SavePlotDialog import SavePlotDialog
 from ui.DocWindow import DocWindow
 from ui.PlotWindow import PlotWindow
 from ui.DiffResultsWindow import DiffResultsWindow
+from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
+from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
 from ui.PlotViewDialog import PlotViewDialog
 
 
@@ -131,6 +133,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.action_combo.activated.connect(self.set_state_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
+        self.set_sample_function_dropdown()
+        self.sample_function_combo.activated.connect(self.show_sample_dialog)
 
         # SET UP PLOT WINDOW ----------------
         self.current_plot = None
@@ -679,6 +683,20 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+    def set_sample_function_dropdown(self):
+        functions = ["range", "category"]
+        self.sample_function_combo.clear()
+        self.sample_function_combo.addItems(functions)
+
+    def show_sample_dialog(self):
+        sample_dialog = QuerySampleRangeDialog() #default is the range dialog
+        if self.sample_function_combo.currentText() == "category":
+            sample_dialog = QuerySampleCategoryDialog()
+        result = sample_dialog.exec_()
+        if result:
+            #get the range values
+            pass
 
     # PLOT FUNCTIONS -------------------------------------------
     def setup_test_plot(self):
