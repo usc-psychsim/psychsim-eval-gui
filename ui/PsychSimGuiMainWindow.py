@@ -106,7 +106,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.actionrun_sim.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.actionquery.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
-        self.actionsample_data.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3))
+        # self.actionsample_data.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3)) #TODO: fix sample from data functionality (mostly moved to sampling at query level)
         self.actionmanual.triggered.connect(lambda: self.show_doc_window("index.html"))
 
         #help buttons
@@ -733,6 +733,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sample_function_combo.addItems(functions)
 
     def show_sample_dialog(self):
+        #TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
         result = None
         query_selection = self.sample_query_list.text()
         variable_selection = self.sample_variable_combo.currentText()
