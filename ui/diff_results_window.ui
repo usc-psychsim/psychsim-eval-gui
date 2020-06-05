@@ -60,13 +60,6 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="1" column="0">
-           <widget class="QLabel" name="unique_t1_label">
-            <property name="text">
-             <string>Unique in table1</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
            <widget class="QLabel" name="label_3">
             <property name="text">
              <string>Common to table1 and table2</string>
@@ -114,13 +107,6 @@
             </property>
             <property name="textFormat">
              <enum>Qt::PlainText</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="unique_t2_label">
-            <property name="text">
-             <string>Unique in table2</string>
             </property>
            </widget>
           </item>

@@ -677,12 +677,12 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 # Diff length
                 pgh.print_diff(self.query_output, len(q1.results.index), len(q2.results.index), f"{q1.id} steps", f"{q2.id} steps", "steps")
 
-                # Diff the results
-                diff_results = pgh.dataframe_difference(q1.results, q2.results)
-                if len(diff_results.index) > 0:
-                    self.query_output.append(f"{pgh._red_str('DIFF IN')}: {pgh._red_str('query results')}")
-                else:
-                    self.query_output.append(f"{pgh._green_str('NO DIFF IN')}: {pgh._green_str('query results')}")
+                # # Diff the results
+                # diff_results = pgh.dataframe_difference(q1.results, q2.results)
+                # if len(diff_results.index) > 0:
+                #     self.query_output.append(f"{pgh._red_str('DIFF IN')}: {pgh._red_str('query results')}")
+                # else:
+                #     self.query_output.append(f"{pgh._green_str('NO DIFF IN')}: {pgh._green_str('query results')}")
                 now = datetime.now()
                 dt_string = now.strftime("%Y%m%d_%H%M%S")
                 query_id = f"{q1.id}-{q2.id}_{q1.function}_diff"
