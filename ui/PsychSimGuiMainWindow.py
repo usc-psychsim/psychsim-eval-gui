@@ -724,8 +724,10 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                         filt_max = sample_dialog.max_spin.value()
 
                         # apply the sampling
-                        sampled_query = selected_query.results.loc[selected_query.results[variable_selection] <= filt_max]
-                        sampled_query = sampled_query.loc[selected_query.results[variable_selection] >= filt_min]
+                        sampled_query = copy.deepcopy(selected_query.results)
+                        sampled_query = sampled_query.loc[sampled_query[variable_selection] <= filt_max]
+                        # sampled_query.reset_index()
+                        sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
 
                         # save the new query as a sample
                         sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{filt_min}-{filt_max}"
@@ -734,6 +736,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                                                                     params=[],
                                                                     function="test",
                                                                     results=sampled_query)
+
+                        self.print_query_output(f"sample saved as: {sample_id}", "black")
 
                         # update the query lists over the whole gui
                         self.set_query_list_dropdown()
@@ -744,7 +748,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 sample_dialog = QuerySampleCategoryDialog()
                 sample_dialog.name_label.setText(f"{query_selection}")
                 sample_dialog.value_label.setText(f"{variable_selection}")
-                values_raw = selected_query.results[variable_selection].to_list()
+                values_raw = selected_query.results[variable_selection].unique()
                 values_string = [str(i) for i in values_raw]
                 print("STRINGGG", values_string)
                 sample_dialog.sample_combo_mult.clear()
@@ -757,7 +761,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                     #convert the row to strings for sampling
                     sampled_query = copy.deepcopy(selected_query.results)
                     sampled_query[variable_selection] = sampled_query[variable_selection].astype(str)
-                    
+
                     # apply the sampling
                     sampled_query = pd.concat([sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
 
@@ -772,6 +776,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                                                                       function="test",
                                                                       results=sampled_query)
 
+                    self.print_query_output(f"sample saved as: {sample_id}", "black")
                     # update the query lists over the whole gui
                     self.set_query_list_dropdown()
         except:
