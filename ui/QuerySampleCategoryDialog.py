@@ -18,8 +18,10 @@ class QuerySampleCategoryDialog(QDialog, ui_querySampleCategory):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-        self.category_combo = CheckableComboBox()
-
+        self.sample_combo_mult = CheckableComboBox()
+        vbox_layout = QVBoxLayout()
+        vbox_layout.addWidget(self.sample_combo_mult)
+        self.multi_select_widget.setLayout(vbox_layout)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

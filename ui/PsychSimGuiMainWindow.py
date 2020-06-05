@@ -9,6 +9,7 @@ import importlib.util
 import inspect
 import sys
 import re
+import numbers
 import traceback
 import pandas as pd
 import configparser
@@ -16,7 +17,7 @@ from datetime import datetime
 from functools import partial
 import copy
 import difflib
-
+import numpy as np
 import plotly
 import plotly.graph_objects as go
 import plotly.express as px
@@ -134,7 +135,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
 
         self.set_sample_function_dropdown()
-        self.sample_function_combo.activated.connect(self.show_sample_dialog)
+        self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
         # SET UP PLOT WINDOW ----------------
         self.current_plot = None
@@ -400,8 +401,11 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
     # QUERY FUNCTIONS-------------------------------------------
     def set_query_list_dropdown(self):
+        # TODO: possibly change these to combo boxes to take out some of the unnessesary complexity
         query_items = [item for item in self.query_data_dict.keys()]
         pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.update_view_query_list,
+                                   parent=self)
+        pgh.update_toolbutton_list(list=query_items, button=self.sample_query_list, action_function=self.update_view_query_list,
                                    parent=self)
         # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
         #                            parent=self)
@@ -526,6 +530,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         button.setText(selection)
         if button == self.view_query_list:
             self.update_query_info(self.query_data_dict[selection])
+        elif button == self.sample_query_list:
+            self.set_query_sample_var_dropdown(self.query_data_dict[selection])
 
     def get_query_doc(self):
         query_function = self.function_button.text()
@@ -684,19 +690,93 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
+    def set_query_sample_var_dropdown(self, current_query):
+        vars = current_query.results.columns.to_list()
+        self.sample_variable_combo.clear()
+        self.sample_variable_combo.addItems(vars)
+
     def set_sample_function_dropdown(self):
         functions = ["range", "category"]
         self.sample_function_combo.clear()
         self.sample_function_combo.addItems(functions)
 
     def show_sample_dialog(self):
-        sample_dialog = QuerySampleRangeDialog() #default is the range dialog
-        if self.sample_function_combo.currentText() == "category":
-            sample_dialog = QuerySampleCategoryDialog()
-        result = sample_dialog.exec_()
-        if result:
-            #get the range values
-            pass
+        result = None
+        query_selection = self.sample_query_list.text()
+        variable_selection = self.sample_variable_combo.currentText()
+        selected_query = self.query_data_dict[query_selection]
+        try:
+            if self.sample_function_combo.currentText() == "range":
+                sample_dialog = QuerySampleRangeDialog()
+                current_variable_max_value = selected_query.results[variable_selection].max()
+                current_variable_min_value = selected_query.results[variable_selection].min()
+                #test to see if the max and min are numeric
+                if np.issubdtype(type(current_variable_max_value), np.number) and np.issubdtype(type(current_variable_min_value), np.number):
+                    sample_dialog.name_label.setText(f"{query_selection}")
+                    sample_dialog.value_label.setText(f"{variable_selection}")
+                    sample_dialog.range_label.setText(f"{current_variable_min_value} : {current_variable_max_value}")
+                    sample_dialog.min_spin.setRange(current_variable_min_value, current_variable_max_value)
+                    sample_dialog.max_spin.setRange(current_variable_min_value, current_variable_max_value)
+                    result = sample_dialog.exec_()
+                    if result:
+                        # get the range values if range
+                        filt_min = sample_dialog.min_spin.value()
+                        filt_max = sample_dialog.max_spin.value()
+
+                        # apply the sampling
+                        sampled_query = selected_query.results.loc[selected_query.results[variable_selection] <= filt_max]
+                        sampled_query = sampled_query.loc[selected_query.results[variable_selection] >= filt_min]
+
+                        # save the new query as a sample
+                        sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{filt_min}-{filt_max}"
+                        self.query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
+                                                                    data_id=selected_query.data_id,
+                                                                    params=[],
+                                                                    function="test",
+                                                                    results=sampled_query)
+
+                        # update the query lists over the whole gui
+                        self.set_query_list_dropdown()
+                else:
+                    #IT IS NOT NUMERIC - DISPLAY WARNING
+                    self.print_query_output("THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
+            elif self.sample_function_combo.currentText() == "category":
+                sample_dialog = QuerySampleCategoryDialog()
+                sample_dialog.name_label.setText(f"{query_selection}")
+                sample_dialog.value_label.setText(f"{variable_selection}")
+                values_raw = selected_query.results[variable_selection].to_list()
+                values_string = [str(i) for i in values_raw]
+                print("STRINGGG", values_string)
+                sample_dialog.sample_combo_mult.clear()
+                sample_dialog.sample_combo_mult.addItems(values_string)
+                result = sample_dialog.exec_()
+                if result:
+                    # get the categorical values if range
+                    cat_values =sample_dialog.sample_combo_mult.currentData()
+
+                    #convert the row to strings for sampling
+                    sampled_query = copy.deepcopy(selected_query.results)
+                    sampled_query[variable_selection] = sampled_query[variable_selection].astype(str)
+                    
+                    # apply the sampling
+                    sampled_query = pd.concat([sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
+
+                    # save the new query as a sample
+
+                    now = datetime.now()
+                    dt_string = now.strftime("%Y%m%d_%H%M%S")
+                    sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{dt_string}"
+                    self.query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
+                                                                      data_id=selected_query.data_id,
+                                                                      params=[],
+                                                                      function="test",
+                                                                      results=sampled_query)
+
+                    # update the query lists over the whole gui
+                    self.set_query_list_dropdown()
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
     # PLOT FUNCTIONS -------------------------------------------
     def setup_test_plot(self):
