@@ -37,6 +37,7 @@ from ui.PlotWindow import PlotWindow
 from ui.DiffResultsWindow import DiffResultsWindow
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
 from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
+from ui.DeleteAreYouSureDialog import DeleteAreYouSure
 from ui.PlotViewDialog import PlotViewDialog
 
 
@@ -133,6 +134,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.agent_combo.activated.connect(self.set_action_dropdown)
         self.action_combo.activated.connect(self.set_state_dropdown)
         # self.data_combo.activated.connect(self.set_cycle_dropdown)
+        self.delete_query_buton.clicked.connect(self.delete_query)
 
         self.set_sample_function_dropdown()
         self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
@@ -589,6 +591,24 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         query_id = self.new_diff_query_name.text()
         self.display_query(query_id)
 
+    def delete_query(self):
+        query_id = self.view_query_list.text()
+        try:
+            if query_id in self.query_data_dict.keys():
+                are_you_sure_dialog = DeleteAreYouSure()
+                are_you_sure_dialog.query_name.setText(query_id)
+
+                result = are_you_sure_dialog.exec_()
+                if result:
+                    #delete the query
+                    self.query_data_dict.pop(query_id)
+                    self.set_query_list_dropdown()
+                    self.clear_query_info()
+
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
     def display_query(self, query_id):
         try:
             if query_id in self.query_data_dict.keys():
@@ -612,6 +632,18 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.data_id_label.setText(selected_query.data_id)
             self.function_label.setText(selected_query.function)
             self.is_diff_label.setText(str(selected_query.diff_query))
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
+    def clear_query_info(self):
+        try:
+            self.view_query_list.setText("...")
+            self.sim_file_label.setText("...")
+            self.query_name_label.setText("...")
+            self.data_id_label.setText("...")
+            self.function_label.setText("...")
+            self.is_diff_label.setText("...")
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
