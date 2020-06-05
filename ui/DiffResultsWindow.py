@@ -4,7 +4,8 @@ from PyQt5 import uic
 import sys
 import os
 
-diff_results_window_file = os.path.join("ui", "diff_results_window.ui")
+# diff_results_window_file = os.path.join("ui", "diff_results_window.ui")
+diff_results_window_file = os.path.join("diff_results_window.ui")
 ui_diffResultsWindow, QtBaseClass = uic.loadUiType(diff_results_window_file)
 
 
@@ -13,6 +14,11 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         super(DiffResultsWindow, self).__init__(parent)
         self.setupUi(self)
         self.setWindowTitle("Diff Results")
+
+        self.changed_t1_label.setStyleSheet("color: red")
+        self.unique_t1_label.setStyleSheet("background-color : pink")
+        self.changed_t2_label.setStyleSheet("color: blue")
+        self.unique_t2_label.setStyleSheet("background-color : lightblue")
 
     def format_diff_results(self, q1, q2, diff):
         for line_no, line in enumerate(q1):
@@ -45,10 +51,12 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
                         # The row contains an element that is unique to q1
                         # pass the following line_no (containing the change) and formatt the row accordingly
                         self.set_table_row(self.q1_table, line_elements, color="red")
+                        self.q1_table.verticalHeader().setStyleSheet("color: red")
                     if element_no == 0 and element.startswith("+"):
                         # The row contains an element that is unique to q2
                         # pass the following line_no (containing the change) and formatt the row accordingly
                         self.set_table_row(self.q2_table, line_elements, color="blue")
+                        self.q2_table.verticalHeader().setStyleSheet("color: blue")
 
     def set_table_row(self, table, line_items, color="black"):
         #TODO: highlight the specific charachters that are different rather than the whole row
