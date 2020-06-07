@@ -2,8 +2,8 @@
 
 # import sys
 # print(sys.path)
-# psychsim_path = "/home/chris/Documents/GLASGOW_MARSELLA/atomic"
-# definitions_path = "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions"
+# psychsim_path = "../../atomic"
+# definitions_path = "../../atomic_domain_definitions"
 # sys.path.insert(1, psychsim_path)
 # sys.path.insert(1, definitions_path)
 

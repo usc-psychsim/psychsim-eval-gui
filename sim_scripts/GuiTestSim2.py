@@ -1,7 +1,7 @@
 import sys
 print(sys.path)
-sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic")
-sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/atomic_domain_definitions")
+sys.path.insert(1, "../../atomic")
+sys.path.insert(1, "../../atomic_domain_definitions")
 
 from psychsim.world import World, WORLD
 from psychsim.pwl import stateKey, actionKey
