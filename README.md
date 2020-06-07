@@ -5,7 +5,7 @@
 1. install pipenv using instructions [here](https://pipenv-fork.readthedocs.io/en/latest/install.html#installing-pipenv)
 2. cd to the root directory
 
-    `$ cd psychsim-gui-qt`
+    `$ cd GUI`
 3. install from the Pipfile
 
     `$ pipenv install`
