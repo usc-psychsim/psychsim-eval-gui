@@ -33,12 +33,12 @@ class GenericSim:
         output_data["ch1"]["x"] = self.current_step
 
         #channel 2
-        y = np.sin(5*self.current_step)
+        y = np.sin(0.25*self.current_step)
         output_data["ch2"]["y"] = y
         output_data["ch2"]["x"] = self.current_step
 
         #channel 3
-        y = 3 * np.sin(2*self.current_step)
+        y = 3 * np.sin(0.125*self.current_step)
         output_data["ch3"]["y"] = y
         output_data["ch3"]["x"] = self.current_step
 
