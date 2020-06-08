@@ -28,7 +28,7 @@ import psychsim_gui_helpers as pgh
 from CheckableComboBox import CheckableComboBox
 from functions.query_functions import PsychSimQuery
 
-from SimulationInfoPage import SimulationInfoPage
+from ui.SimulationInfoPage import SimulationInfoPage
 
 from ui.LoadedDataWindow import LoadedDataWindow
 from ui.RenameDataDialog import RenameDataDialog
