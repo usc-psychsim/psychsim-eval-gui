@@ -117,12 +117,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         """
         try:
             self.add_psychsim_to_sys_path()
-
-            # import the psychsim module
-            # import psychsim
-            # psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
-            # self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
-            # psychsim_spec.loader.exec_module(self.psychsim_module)
             self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
         except:
             tb = traceback.format_exc()
