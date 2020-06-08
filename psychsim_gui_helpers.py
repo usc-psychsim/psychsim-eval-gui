@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from dataclasses import dataclass, asdict, field
 import pandas as pd
+from datetime import datetime
 
 
 @dataclass
@@ -65,6 +66,16 @@ def get_file_path(path_label, file_type="Python Files (*.py)"):
         path_label.setText(str(fileName).split('/')[-1])
     return fileName
 
+
+def get_time_stamp():
+    """
+    get formatted time stamp
+    :return: dt_string: nicely formatted string for uniquely identifying data; run_date: nicely formatted date for display purposes
+    """
+    now = datetime.now()
+    dt_string = now.strftime("%Y%m%d_%H%M%S")
+    run_date = now.strftime("%Y-%m-%d %H:%M:%S")
+    return dt_string, run_date
 
 def update_toolbutton_list(button, list, action_function, parent=None):
     toolmenu = QMenu(parent)

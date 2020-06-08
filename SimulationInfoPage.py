@@ -5,12 +5,11 @@ from PyQt5 import uic
 import importlib.util
 import traceback
 import configparser
-from datetime import datetime
 import os
 import sys
 import re
 
-from gui_threading import Worker, WorkerSignals
+from gui_threading import Worker
 import psychsim_gui_helpers as pgh
 
 sim_info_page_file = os.path.join("ui", "sim_info_page.ui")
@@ -53,11 +52,11 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.save_run_input.setEnabled(False)
 
         self.sel_psychsim_dir.clicked.connect(lambda: pgh.set_directory(path_label=self.psychsim_dir_path,
-                                                                         path_var=self.psychsim_path,
-                                                                         caption="Select Psychsim Directory"))
+                                                                        path_var=self.psychsim_path,
+                                                                        caption="Select Psychsim Directory"))
         self.sel_def_dir.clicked.connect(lambda: pgh.set_directory(path_label=self.def_dir_path,
-                                                                    path_var=self.definitions_path,
-                                                                    caption="Select Definitions Directory"))
+                                                                   path_var=self.definitions_path,
+                                                                   caption="Select Definitions Directory"))
 
         self.select_sim.clicked.connect(self.set_file_path)
         self.load_sim_button.clicked.connect(self.load_sim)
@@ -118,6 +117,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             # import the sim module
             self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
             self.sim_module = importlib.util.module_from_spec(self.sim_spec)
+            self.sim_spec.loader.exec_module(self.sim_module)
             # update buttons and print output
             self.sim_loaded_state.setText("LOADED")
             self.run_sim_button.setEnabled(True)
@@ -137,16 +137,15 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         sys.path.insert(1, self.definitions_path)
 
     def start_sim_thread(self):
+        """
+        Set up thread for executing simulation
+        """
         try:
-            self.sim_spec.loader.exec_module(self.sim_module)
-
-            # Pass the function to execute
             self.thread_running = True
-            worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
+            worker = Worker(self.simulation_thread)
             worker.signals.result.connect(self.handle_output)
             worker.signals.finished.connect(self.thread_complete)
             worker.signals.progress.connect(self.progress_fn)
-
             # Execute
             self.threadpool.start(worker)
         except:
@@ -154,26 +153,29 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             self.print_sim_output(tb, "red")
 
     def simulation_thread(self, progress_callback):
-        # initialise the sim class
-        tester = getattr(self.sim_module, self.sim_name)()
-
-        # initialise local vars
+        """
+        Execute the run_sim() function of the simulation module and store the data in a dictionary
+        :param progress_callback: callback signal to display progress of thread
+        :return: dictionary with keys as step numbers and corresponding values as data from each step
+        """
+        simulation = getattr(self.sim_module, self.sim_name)()  # initialise the sim class
         step = 0
         output = dict()
         while self.thread_running:
-            result = tester.run_sim()
+            result = simulation.run_sim()
             output[step] = result
             step = step + 1
-            progress_callback.emit(step, tester.sim_steps)
-            if step == tester.sim_steps:
+            progress_callback.emit(step, simulation.sim_steps)
+            if step == simulation.sim_steps:
                 break
         return output
 
-    def handle_output(self, output):
-        # get timestamp
-        now = datetime.now()
-        dt_string = now.strftime("%Y%m%d_%H%M%S")
-        run_date = now.strftime("%Y-%m-%d %H:%M:%S")
+    def handle_output(self, sim_output):
+        """
+        Update the gui and store data from sim once sim thread has finished
+        :param sim_output: data from simulation
+        """
+        dt_string, run_date = pgh.get_time_stamp()
 
         # set the current run name settings
         self.previous_run_id.setText(dt_string)
@@ -182,28 +184,47 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.save_run_input.setText(dt_string)
 
         # store the data as a PsySimObject in the main dict
-        output = pgh.PsychSimRun(id=dt_string,
-                                 data=output,
-                                 sim_file=self.sim_name,
-                                 steps=len(output),
-                                 run_date=run_date)
+        sim_output = pgh.PsychSimRun(id=dt_string,
+                                     data=sim_output,
+                                     sim_file=self.sim_name,
+                                     steps=len(sim_output),
+                                     run_date=run_date)
 
         # emit the signal with the dataid and data
-        self.output_changed_signal.emit(dt_string, output)
+        self.output_changed_signal.emit(dt_string, sim_output)
 
     def progress_fn(self, step, max_step):
+        """
+        Print the progress of the simulation thread to the gui
+        :param step: current step the simulation is on
+        :param max_step: the mamimum number of steps the simulation has
+        """
         self.print_sim_output(f"{step}/{max_step} steps completed", "black")
 
     def thread_complete(self):
+        """
+        Print to gui when simulation has finished
+        """
         self.print_sim_output("SIMULATION FINISHED!", "black")
 
     def stop_thread(self):
+        """
+        Sets the thread_running flag to false, stopping the simulation thread
+        """
         self.thread_running = False
 
     def print_sim_output(self, msg, color="black"):
+        """
+        Print messages to the sim_output text area
+        :param msg: message to print
+        :param color: color of the string to be displayed
+        """
         pgh.print_output(self.simulation_output, msg, color)
 
     def emit_rename_signal(self):
+        """
+        Emits the rename signal if user has attempted to rename data via the gui
+        """
         if not self.save_run_input.text():
             self.print_sim_output("NO NEW NAME ENTERED", "red")
         else:
