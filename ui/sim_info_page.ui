@@ -104,13 +104,13 @@
       <item row="1" column="1">
        <widget class="QPushButton" name="sel_def_dir">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Select Definitions Dir</string>
+         <string>Select Sim Model Dir</string>
         </property>
        </widget>
       </item>

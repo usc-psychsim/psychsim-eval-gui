@@ -158,7 +158,7 @@ class GuiTestSim:
         print('Triage Agent Reward: ', self.triageAgent.reward())
 
         return_result = {"WORLD_STATE": self.world.state,
-                         "AGENT_BELIEFS": result0}
+                         "AGENT_STATE": result0}
         return return_result
 
 
