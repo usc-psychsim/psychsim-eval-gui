@@ -277,3 +277,27 @@ class PsychSimQuery:
         output_data = pd.DataFrame.from_dict(data_dict)
         return output_data
 
+    def get_disaster_data(self, *args, **kwargs):
+        """
+        get the data for all agents
+        :return: Dataframe containing the actions and beliefs for the selected agent
+        """
+        try:
+            data = kwargs['data']
+            output_data = pd.DataFrame()
+            steps = []
+            actors = []
+            for step, step_data in data.data.items():
+                for actor, actor_data in step_data['AGENT_BELIEFS'].items():
+                    for k, v in actor_data.items():
+                        if v.__class__.__name__ == "VectorDistributionSet":
+                            output_data = output_data.append(self.__extract_values_fromVectorDistributionSet(v))
+                            steps.append(step)
+                            actors.append(actor)
+
+            output_data.insert(loc=0, column='step', value=pd.Series(steps, index=output_data.index))
+            output_data.insert(loc=0, column='actor', value=pd.Series(actors, index=output_data.index))
+            return output_data
+        except:
+            tb = traceback.format_exc()
+            print(tb)
