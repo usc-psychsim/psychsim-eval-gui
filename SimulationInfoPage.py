@@ -39,7 +39,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.sim_spec = None
         self.psysim_spec = None
         self.sim_module = None
-        self.psychsim_module = None
+        # self.psychsim_module = None
 
         # SET UP VARS
         self.thread_running = False
@@ -54,10 +54,10 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
 
-        self.sel_psychsim_dir.clicked.connect(lambda: self.set_directory(path_label=self.psychsim_dir_path,
+        self.sel_psychsim_dir.clicked.connect(lambda: pgh.set_directory(path_label=self.psychsim_dir_path,
                                                                          path_var=self.psychsim_path,
                                                                          caption="Select Psychsim Directory"))
-        self.sel_def_dir.clicked.connect(lambda: self.set_directory(path_label=self.def_dir_path,
+        self.sel_def_dir.clicked.connect(lambda: pgh.set_directory(path_label=self.def_dir_path,
                                                                     path_var=self.definitions_path,
                                                                     caption="Select Definitions Directory"))
 
@@ -74,54 +74,55 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         # LOAD CONFIG
         self.load_config()
 
-    def load_config(self):
+    def load_config(self, path=None):
         """
         Load the config file and set the paths for psychsim and the sim file
+        :param path: (str) path to config file
         """
         config = configparser.ConfigParser()
+
         try:
+            # read in the config in path if it exists, otherwise read the default
             if path:
                 config.read(path)
             else:
-                # read the default
                 config.read('config.ini')
 
             # set the path variables
             self.psychsim_path = config['PATHS']['psychsim']
             self.definitions_path = config['PATHS']['definitions']
             self.sim_path = config['PATHS']['simulation']
+            # set the paths on the gui
             self.psychsim_dir_path.setText(self.psychsim_path)
             self.def_dir_path.setText(self.definitions_path)
             self.sim_path_label.setText(str(self.sim_path).split('/')[-1])
             self.print_sim_output("config loaded", "green")
         except:
-            self.print_sim_output("INVALID CONFIG", "red")
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
 
-    def set_directory(self, path_label, path_var, caption="Select directory"):
-        new_path = pgh.get_directory(path_label, caption)
-        if new_path:
-            path_var = new_path
-
     def set_file_path(self):
+        """
+        Set the path to the simulation script (self.sim_path) and update the gui labels
+        """
         new_path = pgh.get_file_path(path_label=self.sim_path_label)
         if new_path:
             self.sim_path = new_path
             self.sim_loaded_state.setText("...")
 
     def load_sim(self):
+        """
+        import psychsim and the sim files
+        :return:
+        """
         try:
-            # add the psychsim paths to the sys PATH environment var
-            self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-            sys.path.insert(1, self.psychsim_path)
-            sys.path.insert(1, self.definitions_path)
+            self.add_psychsim_to_sys_path()
 
             # import the psychsim module
-            import psychsim
-            psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
-            self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
-            psychsim_spec.loader.exec_module(self.psychsim_module)
+            # import psychsim
+            # psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
+            # self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
+            # psychsim_spec.loader.exec_module(self.psychsim_module)
             self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
         except:
             tb = traceback.format_exc()
@@ -139,6 +140,15 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
             self.sim_loaded_state.setText("ERROR")
+
+    def add_psychsim_to_sys_path(self):
+        """
+        Add the selected psychsim and definitions path to the sym path variable
+        This enables psychsim to be found by required elements of the gui
+        """
+        self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
+        sys.path.insert(1, self.psychsim_path)
+        sys.path.insert(1, self.definitions_path)
 
     def start_sim_thread(self):
         try:
@@ -195,7 +205,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         # emit the signal with the dataid and data
         self.output_changed_signal.emit(dt_string, output)
 
-
     def progress_fn(self, step, max_step):
         self.print_sim_output(f"{step}/{max_step} steps completed", "black")
 
@@ -215,7 +224,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             old_key = self.previous_run_id.text()
             new_key = self.save_run_input.text()
             self.rename_data_signal.emit(old_key, new_key)
-
 
 
 if __name__ == "__main__":

@@ -39,21 +39,28 @@ class PsySimPlot:
     y_name: str
 
 
-def get_directory(path_label, caption):
-    options = QFileDialog.Options()
-    options |= QFileDialog.ShowDirsOnly
-    options |= QFileDialog.DontResolveSymlinks
+def set_directory(path_label, path_var, caption):
+    """
+    Set the directory passed in path_var if a directory is selected
+    :param path_label: (Qlabel) displays path string on GUI
+    :param path_var: (str) class variable to hold the set path
+    :param caption: (str) caption to display on path selection dialog
+    """
     psychsim_path = QFileDialog.getExistingDirectory(None, caption)
-    path_var = f"{str(psychsim_path)}"
+    new_path = f"{str(psychsim_path)}"
     if psychsim_path:
-        path_label.setText(path_var)
-    return path_var
+        path_label.setText(new_path)
+        path_var = new_path
 
 
-def get_file_path(path_label, file_type="Python Files (*.py)", parent=None):
-    options = QFileDialog.Options()
-    # options |= QFileDialog.DontUseNativeDialog
-    fileName, _ = QFileDialog.getOpenFileName(parent, "Select Sim", "", file_type, options=options)
+def get_file_path(path_label, file_type="Python Files (*.py)"):
+    """
+    Get the path to a file from the native file selection dialog
+    :param path_label: (Qlabel) displays path string on GUI
+    :param file_type: (str) type of files to be selected
+    :return: (str) selected file name
+    """
+    fileName, _ = QFileDialog.getOpenFileName(None, "Select Sim", "", file_type)
     if fileName:
         path_label.setText(str(fileName).split('/')[-1])
     return fileName

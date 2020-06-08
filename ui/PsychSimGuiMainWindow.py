@@ -84,7 +84,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
         self.main_window_stack_widget.setCurrentIndex(0)
 
-
+        # set up dropdown menu
         self.actionview_data.triggered.connect(self.loaded_data_window.show)
         self.actionrun_sim.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(0))
         self.actionquery.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(1))
@@ -100,8 +100,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
         self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
 
-        # LOAD CONFIG
-        # self.load_config()
+
 
         # SET UP QUERY WINDOW --------------
         self.psychsim_query = PsychSimQuery()
