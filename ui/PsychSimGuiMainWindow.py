@@ -28,6 +28,8 @@ import psychsim_gui_helpers as pgh
 from CheckableComboBox import CheckableComboBox
 from functions.query_functions import PsychSimQuery
 
+from SimulationInfoPage import SimulationInfoPage
+
 from ui.LoadedDataWindow import LoadedDataWindow
 from ui.RenameDataDialog import RenameDataDialog
 from ui.QueryDataDialog import QueryDataDialog
@@ -52,6 +54,11 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
 
 class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
+    """
+    This class is responsible for initialising child widgets and windows, and creating connections between signals and slots between these
+    Internal signal and slots for each page is maintained by the respective classes
+    It also initialises variables for use between each of the sections e.g. for storing data
+    """
     def __init__(self):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -64,61 +71,37 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.loaded_data_window.load_data_button.clicked.connect(self.load_data_from_file)
         self.doc_window = DocWindow()
 
-        # SET UP THREADING
-        self.threadpool = QThreadPool()
-        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
-
-        # VARS FOR SIM MODULE AND PSYCHSIM
-        self.sim_spec = None
-        self.psysim_spec = None
-        self.sim_module = None
-        self.psychsim_module = None
-
-        # SET UP MAIN WINDOW VARS
-        self.run_thread = False
-        self.run_sim = False
-        self.psychsim_path = ""
-        self.definitions_path = ""
-        self.sim_path = ""
-        self.sim_name = ""
+        # set up the containers for storing data
         self.sim_data_dict = dict()
         self.query_data_dict = dict()
         self.plot_data_dict = dict()
 
-        # SET UP MAIN WINDOW BUTTONS
-        self.sim_info_button.setToolTip('Click for how to write simulation files')
-        self.run_sim_button.setEnabled(True)
-        self.rename_run_button.setEnabled(False)
-        self.save_run_input.setEnabled(False)
+        # Set up the sim info page
+        self.sim_info_page = SimulationInfoPage()
+        self.sim_info_page.output_changed_signal.connect(self.update_data_info)
+        self.sim_info_page.rename_data_signal.connect(self.rename_data_from_input)
 
-        self.sel_psychsim_dir.clicked.connect(self.set_psychsim_path)
-        self.sel_def_dir.clicked.connect(self.set_definitions_path)
-        self.select_sim.clicked.connect(self.set_sim_path)
-        self.load_sim_button.clicked.connect(self.load_sim)
+        self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
+        self.main_window_stack_widget.setCurrentIndex(0)
 
-        self.run_sim_button.pressed.connect(self.start_sim_thread)
-        self.stop_sim_button.pressed.connect(self.stop_thread)
-
-        self.rename_run_button.clicked.connect(self.rename_data_from_input)
-        self.save_run_input.returnPressed.connect(self.rename_data_from_input)
 
         self.actionview_data.triggered.connect(self.loaded_data_window.show)
-        self.actionrun_sim.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
-        self.actionquery.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
-        self.actionplot.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(2))
-        # self.actionsample_data.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(3)) #TODO: fix sample from data functionality (mostly moved to sampling at query level)
+        self.actionrun_sim.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(0))
+        self.actionquery.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(1))
+        self.actionplot.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(2))
+        # self.actionsample_data.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(3)) #TODO: fix sample from data functionality (mostly moved to sampling at query level)
         self.actionmanual.triggered.connect(lambda: self.show_doc_window("index.html"))
 
         #help buttons
-        self.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
-        self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
+        # self.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
+        # self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
         self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
         self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
         self.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
         self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
 
         # LOAD CONFIG
-        self.load_config()
+        # self.load_config()
 
         # SET UP QUERY WINDOW --------------
         self.psychsim_query = PsychSimQuery()
@@ -170,44 +153,14 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sample_step_check.stateChanged.connect(self.enable_step_sample)
         self.sample_agents_check.stateChanged.connect(self.enable_agent_sample)
 
-    def simulation_thread(self, progress_callback):
-        # initialise the sim class
-        tester = getattr(self.sim_module, self.sim_name)()
-
-        # initialise local vars
-        step = 0
-        output = dict()
-        while self.run_thread:
-            result = tester.run_sim()
-            output[step] = result
-            step = step + 1
-            progress_callback.emit(step, tester.sim_steps)
-            if step == tester.sim_steps:
-                break
-        return output
-
-    def handle_output(self, output):
-        # get timestamp
-        now = datetime.now()
-        dt_string = now.strftime("%Y%m%d_%H%M%S")
-        run_date = now.strftime("%Y-%m-%d %H:%M:%S")
-
-        # set the current run name settings
-        self.previous_run_id.setText(dt_string)
-        self.rename_run_button.setEnabled(True)
-        self.save_run_input.setEnabled(True)
-        self.save_run_input.setText(dt_string)
-
-        # store the data as a PsySimObject in the main dict
-        self.sim_data_dict[dt_string] = pgh.PsychSimRun(id=dt_string,
-                                                        data=output,
-                                                        sim_file=self.sim_name,
-                                                        steps=len(output),
-                                                        run_date=run_date)
-        # Update appropriate places
+    def update_data_info(self, data_id, data):
+        #APPEND THE DATA DICT
+        self.sim_data_dict[data_id] = data
+        # Update appropriate places #TODO: LINK THESE APPROPRIATELY
         self.set_data_dropdown(self.data_combo)
         self.set_data_dropdown(self.sample_data_combo)
         self.update_data_table()
+
 
     def update_data_table(self):
         self.loaded_data_window.clear_table()
@@ -226,97 +179,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             new_row = [data.run_date, data.id, data.sim_file, str(data.steps), btn, btn2]
             self.loaded_data_window.add_row_to_table(new_row)
 
-    def progress_fn(self, step, max_step):
-        self.print_sim_output(f"{step}/{max_step} steps completed", "black")
-
-    def thread_complete(self):
-        self.print_sim_output("SIMULATION FINISHED!", "black")
-
-    def stop_thread(self):
-        self.run_thread = False
-
-    def start_sim_thread(self):
-        try:
-            self.sim_spec.loader.exec_module(self.sim_module)
-
-            # Pass the function to execute
-            self.run_thread = True
-            worker = Worker(self.simulation_thread)  # Any other args, kwargs are passed to the run function
-            worker.signals.result.connect(self.handle_output)
-            worker.signals.finished.connect(self.thread_complete)
-            worker.signals.progress.connect(self.progress_fn)
-
-            # Execute
-            self.threadpool.start(worker)
-        except:
-            tb = traceback.format_exc()
-            self.print_sim_output(tb, "red")
-
-    def load_config(self, path=None):
-        config = configparser.ConfigParser()
-        try:
-            if path:
-                config.read(path)
-            else:
-                # read the default
-                config.read('config.ini')
-
-            # set the path variables
-            self.psychsim_path = config['PATHS']['psychsim']
-            self.definitions_path = config['PATHS']['definitions']
-            self.sim_path = config['PATHS']['simulation']
-            self.psychsim_dir_path.setText(self.psychsim_path)
-            self.def_dir_path.setText(self.definitions_path)
-            self.sim_path_label.setText(str(self.sim_path).split('/')[-1])
-            self.print_sim_output("config loaded", "green")
-        except:
-            self.print_sim_output("INVALID CONFIG", "red")
-            tb = traceback.format_exc()
-            self.print_sim_output(tb, "red")
-
-    def set_psychsim_path(self):
-        self.psychsim_path = pgh.get_directory(self.psychsim_dir_path, "Select Psychsim Directory")
-
-    def set_definitions_path(self):
-        new_path = pgh.get_directory(self.def_dir_path, "Select Definitions Directory")
-        if new_path:
-            self.definitions_path = new_path
-
-    def set_sim_path(self):
-        new_path = pgh.get_file_path(path_label=self.sim_path_label)
-        if new_path:
-            self.sim_path = new_path
-            self.sim_loaded_state.setText("...")
-
-    def load_sim(self):
-        try:
-            # add the psychsim paths to the sys PATH environment var
-            self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-            sys.path.insert(1, self.psychsim_path)
-            sys.path.insert(1, self.definitions_path)
-
-            # import the psychsim module
-            import psychsim
-            psychsim_spec = importlib.util.spec_from_file_location("psychsim.pwl", self.sim_path)
-            self.psychsim_module = importlib.util.module_from_spec(psychsim_spec)
-            psychsim_spec.loader.exec_module(self.psychsim_module)
-            self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
-        except:
-            tb = traceback.format_exc()
-            self.print_sim_output(tb, "red")
-            self.sim_loaded_state.setText("ERROR")
-
-        try:
-            # import the sim module
-            self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
-            self.sim_module = importlib.util.module_from_spec(self.sim_spec)
-            self.sim_loaded_state.setText("LOADED")
-            self.run_sim_button.setEnabled(True)
-            self.print_sim_output(f"sim loaded: {self.sim_path}", "green")
-        except:
-            tb = traceback.format_exc()
-            self.print_sim_output(tb, "red")
-            self.sim_loaded_state.setText("ERROR")
 
     def save_data_window(self, data_id):
         now = datetime.now()
@@ -341,8 +203,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def print_query_output(self, msg, color="black"):
         pgh.print_output(self.query_output, msg, color)
 
-    def print_sim_output(self, msg, color="black"):
-        pgh.print_output(self.simulation_output, msg, color)
+    # def print_sim_output(self, msg, color="black"):
+    #     pgh.print_output(self.simulation_output, msg, color)
 
     def print_sample_output(self, msg, color="black"):
         pgh.print_output(self.sample_output, msg, color)
@@ -388,18 +250,14 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             if query.data_id == old_key:
                 self.query_data_dict[query_id].data_id = new_key
 
-    def rename_data_from_input(self):
-        old_key = self.previous_run_id.text()
-        if self.save_run_input.text():
-            new_key = self.save_run_input.text()
-            if new_key in self.sim_data_dict.keys():
-                self.print_sim_output(f"{new_key} ALREADY EXISTS", "red")
-            else:
-                self.rename_data_id(new_key, old_key)
-                self.previous_run_id.setText(new_key)
-                self.print_sim_output(f"{old_key} renamed to {new_key}", "green")
+    def rename_data_from_input(self, old_key, new_key):
+        if new_key in self.sim_data_dict.keys():
+            self.sim_info_page.print_sim_output(f"{new_key} ALREADY EXISTS", "red")
         else:
-            self.print_sim_output("NO NEW NAME ENTERED", "red")
+            self.rename_data_id(new_key, old_key)
+            self.sim_info_page.previous_run_id.setText(new_key)
+            self.sim_info_page.print_sim_output(f"{old_key} renamed to {new_key}", "green")
+
 
     # QUERY FUNCTIONS-------------------------------------------
     def set_query_list_dropdown(self):
