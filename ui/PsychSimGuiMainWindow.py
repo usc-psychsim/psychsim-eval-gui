@@ -29,10 +29,10 @@ from CheckableComboBox import CheckableComboBox
 from functions.query_functions import PsychSimQuery
 
 from ui.SimulationInfoPage import SimulationInfoPage
+from ui.QueryDataPage import QueryDataPage
 
 from ui.LoadedDataWindow import LoadedDataWindow
 from ui.RenameDataDialog import RenameDataDialog
-from ui.QueryDataDialog import QueryDataDialog
 from ui.SavePlotDialog import SavePlotDialog
 from ui.DocWindow import DocWindow
 from ui.PlotWindow import PlotWindow
@@ -81,10 +81,17 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sim_info_page.output_changed_signal.connect(self.update_data_info)
         self.sim_info_page.rename_data_signal.connect(self.rename_data_from_input)
 
+        # Set up the query data page
+        self.query_data_page = QueryDataPage()
+        self.query_data_page.new_query_signal.connect(self.update_query_data)
+        self.query_data_page.execute_query_button.clicked.connect(lambda: self.query_data_page.execute_query(self.sim_data_dict))
+
+        # Set up the main window stacked widget
         self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
+        self.main_window_stack_widget.insertWidget(1, self.query_data_page)
         self.main_window_stack_widget.setCurrentIndex(0)
 
-        # set up dropdown menu
+        # set up dropdown menus
         self.actionview_data.triggered.connect(self.loaded_data_window.show)
         self.actionrun_sim.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(0))
         self.actionquery.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(1))
@@ -95,31 +102,31 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         #help buttons
         # self.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
         # self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
-        self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
-        self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
+        # self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
+        # self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
         self.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
         self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
 
 
 
         # SET UP QUERY WINDOW --------------
-        self.psychsim_query = PsychSimQuery()
-        self.set_function_dropdown()
-        self.function_info_button.setToolTip('Click for how to write custom query functions')
-
-        self.execute_query_button.clicked.connect(self.execute_query)
-        self.view_query_button.clicked.connect(self.view_query)
-        self.save_csv_query_button.clicked.connect(self.save_csv_query)
-        self.diff_query_button.clicked.connect(self.diff_query)
-        self.query_doc_button.clicked.connect(self.get_query_doc)
-        self.data_combo.activated.connect(self.reset_params)
-        self.agent_combo.activated.connect(self.set_action_dropdown)
-        self.action_combo.activated.connect(self.set_state_dropdown)
-        # self.data_combo.activated.connect(self.set_cycle_dropdown)
-        self.delete_query_buton.clicked.connect(self.delete_query)
-
-        self.set_sample_function_dropdown()
-        self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
+        # self.psychsim_query = PsychSimQuery()
+        # self.set_function_dropdown()
+        # self.function_info_button.setToolTip('Click for how to write custom query functions')
+        #
+        # self.execute_query_button.clicked.connect(self.execute_query)
+        # self.view_query_button.clicked.connect(self.view_query)
+        # self.save_csv_query_button.clicked.connect(self.save_csv_query)
+        # self.diff_query_button.clicked.connect(self.diff_query)
+        # self.query_doc_button.clicked.connect(self.get_query_doc)
+        # self.data_combo.activated.connect(self.reset_params)
+        # self.agent_combo.activated.connect(self.set_action_dropdown)
+        # self.action_combo.activated.connect(self.set_state_dropdown)
+        # # self.data_combo.activated.connect(self.set_cycle_dropdown)
+        # self.delete_query_buton.clicked.connect(self.delete_query)
+        #
+        # self.set_sample_function_dropdown()
+        # self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
         # SET UP PLOT WINDOW ----------------
         self.current_plot = None
@@ -155,8 +162,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def update_data_info(self, data_id, data):
         #APPEND THE DATA DICT
         self.sim_data_dict[data_id] = data
-        # Update appropriate places #TODO: LINK THESE APPROPRIATELY
-        self.set_data_dropdown(self.data_combo)
+        # Update appropriate places
+        self.set_data_dropdown(self.query_data_page.data_combo)
         self.set_data_dropdown(self.sample_data_combo)
         self.update_data_table()
 
@@ -199,8 +206,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.print_sim_output(f"{data_id} saved to: {output_name}", "black")
             self.update_data_table()
 
-    def print_query_output(self, msg, color="black"):
-        pgh.print_output(self.query_output, msg, color)
+
 
     # def print_sim_output(self, msg, color="black"):
     #     pgh.print_output(self.simulation_output, msg, color)
@@ -262,127 +268,30 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def set_query_list_dropdown(self):
         # TODO: possibly change these to combo boxes to take out some of the unnessesary complexity
         query_items = [item for item in self.query_data_dict.keys()]
-        pgh.update_toolbutton_list(list=query_items, button=self.view_query_list, action_function=self.update_view_query_list,
+        pgh.update_toolbutton_list(list=query_items, button=self.query_data_page.view_query_list, action_function=self.update_view_query_list,
                                    parent=self)
-        pgh.update_toolbutton_list(list=query_items, button=self.sample_query_list, action_function=self.update_view_query_list,
+        pgh.update_toolbutton_list(list=query_items, button=self.query_data_page.sample_query_list, action_function=self.update_view_query_list,
                                    parent=self)
         # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
         #                            parent=self)
 
         non_diff_query_items = [item for item in self.query_data_dict.keys() if not self.query_data_dict[item].diff_query]
-        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_1, action_function=pgh.set_toolbutton_text, parent=self)
-        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_diff_2, action_function=pgh.set_toolbutton_text, parent=self)
+        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_data_page.query_diff_1, action_function=pgh.set_toolbutton_text, parent=self)
+        pgh.update_toolbutton_list(list=non_diff_query_items, button=self.query_data_page.query_diff_2, action_function=pgh.set_toolbutton_text, parent=self)
 
     def set_data_dropdown(self, combo_box):
         combo_box.clear()
         new_items = [item for item in self.sim_data_dict.keys()]
         combo_box.addItems(new_items)
 
-    def set_function_dropdown(self):
-        query_methods = [method_name for method_name in dir(self.psychsim_query)
-                         if callable(getattr(self.psychsim_query, method_name))
-                         and '__' not in method_name]
-        pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate,
-                                   parent=self)
 
-    def set_agent_dropdown(self):
-        if self.agent_combo.isEnabled():
-            try:
-                data_id = self.data_combo.currentText()
-                if data_id:
-                    agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
-                    self.agent_combo.clear()
-                    self.agent_combo.addItems(agents['agent'].tolist())
-                self.set_action_dropdown()
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
-
-    def set_action_dropdown(self):
-        if self.action_combo.isEnabled():
-            try:
-                data_id = self.data_combo.currentText()
-                if data_id:
-                    selected_agent = self.agent_combo.currentText()
-                    actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
-                    self.action_combo.clear()
-                    for index, row in actions.iterrows():
-                        self.action_combo.insertItem(index, row['action'], row['step'])
-                self.set_state_dropdown()
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
+    def update_query_data(self, query_id, query_data):
+        self.query_data_dict[query_id] = query_data
+        self.set_query_list_dropdown()
 
 
-    def set_cycle_dropdown(self):
-        pass
 
-    def set_horizon_dropdown(self):
-        pass
 
-    def set_state_dropdown(self):
-        if self.state_combo.isEnabled():
-            try:
-                data_id = self.data_combo.currentText()
-                action_id = self.action_combo.currentData()
-                if data_id is not None and action_id is not None:
-                    selected_agent = self.agent_combo.currentText()
-                    predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id], agent=selected_agent, action=action_id)
-                    self.state_combo.clear()
-                    self.state_combo.addItems(predicted_actions['base_action'].unique().tolist())
-                    # for index, row in predicted_actions.unique().iterrows():
-                    #     self.state_combo.insertItem(index, row['base_action'], index)
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
-
-    def reset_params(self):
-        self.agent_combo.clear()
-        self.action_combo.clear()
-        self.cycle_combo.clear()
-        self.horizon_combo.clear()
-        self.state_combo.clear()
-        # Todo: populate combo boxes based on the function that is selected
-
-    def set_params(self, param_list):
-        param_combo_boxes = dict(agent=self.agent_combo,
-                                 action=self.action_combo,
-                                 cycle=self.cycle_combo,
-                                 horizon=self.horizon_combo,
-                                 state=self.state_combo)
-
-        for name, combo in param_combo_boxes.items():
-            if name in param_list.args:
-                combo.setEnabled(True)
-                if name == "agent":
-                    print("SETTING AGENT")
-                    self.set_agent_dropdown()
-                    #Connect this to setting the action one
-                elif name == "cycle":
-                    self.set_cycle_dropdown()
-                elif name == "horizon":
-                    self.set_horizon_dropdown()
-                elif name == "state":
-                    pass
-                    # self.set_state_dropdown()
-                elif name == "action":
-                    pass
-                else:
-                    self.reset_params()
-                #TODO: if a particular combo box is enabled - then make sure it gets populated hireachically (Agent > Action | cycle |horizon)
-            else:
-                combo.setEnabled(False)
-
-    def btnstate(self, action, button):
-        selection = action.checkedAction().text()
-        button.setText(selection)
-        self.handle_params(selection)
-
-    def handle_params(self, function_name):
-        function = getattr(self.psychsim_query, function_name)
-        param_list = inspect.getfullargspec(function)
-        print(param_list)
-        self.set_params(param_list)
 
     def update_view_query_list(self, action, button):
         selection = action.checkedAction().text()
@@ -390,63 +299,12 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         if button == self.view_query_list:
             self.update_query_info(self.query_data_dict[selection])
         elif button == self.sample_query_list:
-            self.set_query_sample_var_dropdown(self.query_data_dict[selection])
+            self.query_data_page.set_query_sample_var_dropdown(self.query_data_dict[selection])
 
-    def get_query_doc(self):
-        query_function = self.function_button.text()
-        try:
-            self.print_query_output(f"{query_function}: {getattr(self.psychsim_query, query_function).__doc__}")
-        except:
-            tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
 
-    def execute_query(self):
-        query_function = self.function_button.text()
-        agent = self.agent_combo.currentText()
-        state = self.state_combo.currentText()
-        action_step = self.action_combo.currentData() #This is actually the step value as it is easier to access the data by step rather than action
-        data_id = self.data_combo.currentText()
-        try:
-            result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
-                                                                  agent=agent, action=action_step, state=state)
-            result = result.apply(pd.to_numeric, errors='ignore') #convert the resulting dataframe to numeric where possible
-            self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
-            self.print_query_output(str(result))
 
-            # create query ID
-            #TODO: refactor this as create_new() in the query class?
-            now = datetime.now()
-            dt_string = now.strftime("%Y%m%d_%H%M%S")
-            query_id = f"{query_function}_{data_id}_{dt_string}"
 
-            # create a new query object
-            new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
-                                        results=result)
 
-            # create new dialog and show results + query ID
-            new_query = self.show_query_dialog(model=PandasModel(result), query=new_query)
-            self.query_data_dict[new_query.id] = new_query
-            self.set_query_list_dropdown()
-
-        except:
-            tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
-
-    def show_query_dialog(self, model, query):
-        query_dialog = QueryDataDialog(query, model)
-        result = query_dialog.exec_()
-        query = query_dialog.query_data
-        if result:
-            query.id = query_dialog.query_id_input.text()
-        return query
-
-    def view_query(self):
-        query_id = self.view_query_list.text()
-        self.display_query(query_id)
-
-    def view_diff_query(self):
-        query_id = self.new_diff_query_name.text()
-        self.display_query(query_id)
 
     def delete_query(self):
         query_id = self.view_query_list.text()
@@ -579,15 +437,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def set_query_sample_var_dropdown(self, current_query):
-        vars = current_query.results.columns.to_list()
-        self.sample_variable_combo.clear()
-        self.sample_variable_combo.addItems(vars)
 
-    def set_sample_function_dropdown(self):
-        functions = ["range", "category"]
-        self.sample_function_combo.clear()
-        self.sample_function_combo.addItems(functions)
 
     def show_sample_dialog(self):
         #TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
