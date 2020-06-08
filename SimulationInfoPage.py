@@ -47,6 +47,15 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.sim_name = ""
 
         # SET UP BUTTONS
+        self.setup_buttons()
+
+        # LOAD CONFIG
+        self.load_config()
+
+    def setup_buttons(self):
+        """
+        Set up page buttons
+        """
         self.run_sim_button.setEnabled(True)
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
@@ -67,9 +76,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.sim_info_button.setToolTip('Click for how to write simulation files')
         # self.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
         # self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
-
-        # LOAD CONFIG
-        self.load_config()
 
     def load_config(self, path=None):
         """
