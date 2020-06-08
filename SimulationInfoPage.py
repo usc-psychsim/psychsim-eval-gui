@@ -37,9 +37,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
 
         # SET UP VARS FOR SIM MODULE AND PSYCHSIM
         self.sim_spec = None
-        self.psysim_spec = None
         self.sim_module = None
-        # self.psychsim_module = None
 
         # SET UP VARS
         self.thread_running = False
@@ -112,21 +110,15 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
 
     def load_sim(self):
         """
-        import psychsim and the sim files
-        :return:
+        import the simulation script
         """
-        try:
-            self.add_psychsim_to_sys_path()
-            self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
-        except:
-            tb = traceback.format_exc()
-            self.print_sim_output(tb, "red")
-            self.sim_loaded_state.setText("ERROR")
-
+        self.add_psychsim_to_sys_path()
+        self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
         try:
             # import the sim module
             self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
             self.sim_module = importlib.util.module_from_spec(self.sim_spec)
+            # update buttons and print output
             self.sim_loaded_state.setText("LOADED")
             self.run_sim_button.setEnabled(True)
             self.print_sim_output(f"sim loaded: {self.sim_path}", "green")
