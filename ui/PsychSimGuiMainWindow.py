@@ -30,12 +30,11 @@ from functions.query_functions import PsychSimQuery
 
 from ui.SimulationInfoPage import SimulationInfoPage
 from ui.QueryDataPage import QueryDataPage
+from ui.PlotQueryPage import PlotQueryPage
 
 from ui.LoadedDataWindow import LoadedDataWindow
 from ui.RenameDataDialog import RenameDataDialog
-from ui.SavePlotDialog import SavePlotDialog
 from ui.DocWindow import DocWindow
-from ui.PlotWindow import PlotWindow
 from ui.DiffResultsWindow import DiffResultsWindow
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
 from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
@@ -47,8 +46,6 @@ qtCreatorFile = os.path.join("ui", "psychsim-gui-main.ui")
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
 
-# TODO: split generic gui stuff to other files
-# TODO: try to get rid of class variables and use passed variables where possible (for readability)
 # TODO: remove functions that aren't used
 # TODO: final refactor to make sure code is readable
 # TODO: add docstrings
@@ -86,9 +83,13 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # Set up the query data page
         self.query_data_page = QueryDataPage(self.sim_data_dict, self.query_data_dict)
 
+        # Set up the plot page
+        self.plot_query_page = PlotQueryPage(self.sim_data_dict, self.query_data_dict, self.plot_data_dict)
+
         # Set up the main window stacked widget
         self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
         self.main_window_stack_widget.insertWidget(1, self.query_data_page)
+        self.main_window_stack_widget.insertWidget(2, self.plot_query_page)
         self.main_window_stack_widget.setCurrentIndex(0)
 
         # set up dropdown menus
@@ -104,28 +105,10 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
         # self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
         # self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
-        self.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
-        self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
+        # self.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
+        # self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
 
 
-
-        # SET UP PLOT WINDOW ----------------
-        self.current_plot = None
-
-        self.create_new_plot_button.clicked.connect(lambda: self.create_new_plot())#self.plot_data)
-        # self.add_plot_button.clicked.connect(self.plot_data)
-        # self.clear_plot_button.clicked.connect(self.clear_plot) #TODO: remove associated function
-        self.test_check.stateChanged.connect(self.setup_test_plot)
-        # self.save_plot_button.clicked.connect(self.save_plot)
-        self.plot_listwidget.itemClicked.connect(self.add_plot_from_list)
-        self.remove_plot_button.clicked.connect(self.remove_plot)
-
-        # self.set_type_dropdown()
-        # self.set_stat_dropdown()
-
-        # self.setup_plot_widget()
-
-        self.current_fig = None
 
         # SET UP SAMPLE WINDOW ----------------
         self.sample_agent_combo_mult = CheckableComboBox()
@@ -251,66 +234,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         new_items = [item for item in self.sim_data_dict.keys()]
         combo_box.addItems(new_items)
 
-    # QUERY FUNCTIONS-------------------------------------------
-
-
-
-
-    # PLOT FUNCTIONS -------------------------------------------
-    def setup_test_plot(self):
-        #TODO: remove this if this is unchecked
-        if self.test_check.isChecked():
-            data_id = "test_query"
-            xx = px.data
-            self.test_data_dict = dict(iris=px.data.iris(), wind=px.data.wind(), gapminder=px.data.gapminder())
-
-            for key, data in self.test_data_dict.items():
-                self.query_data_dict[key] = pgh.PsySimQuery(id=key,
-                                                                    data_id=key,
-                                                                    params=[],
-                                                                    function="test",
-                                                                    results=data)
-            # pgh.update_toolbutton_list(list=self.query_data_dict.keys(), button=self.plot_query, action_function=self.set_axis_dropdowns, parent=self)
-
-    def create_new_plot(self, plot_name="New plot"):
-        plot_window = PlotWindow(query_data_dict=self.query_data_dict, window_name=plot_name, parent=self)
-        #connect the save figure
-        plot_window.save_plot_button.clicked.connect(lambda: self.save_plot(plot_window.current_plot))
-        #set the query dropdown
-        pgh.update_toolbutton_list(list=self.query_data_dict.keys(), button=plot_window.plot_query,
-                                   action_function=plot_window.set_axis_dropdowns, parent=self)
-        plot_window.show()
-        return plot_window
-
-    def save_plot(self, plot=None):
-        #populate the list view with saved plots
-        sending_window = self.sender().window()
-        if plot:
-            new_key, accepted = SavePlotDialog.get_new_name()
-            if accepted:
-                self.plot_data_dict[new_key] = copy.deepcopy(plot)
-                item = QListWidgetItem(f"{new_key}")
-                self.plot_listwidget.addItem(item)
-                sending_window.close()
-
-
-    def add_plot_from_list(self, item):
-        #TODO: fix updating old saved plts
-        if item.text() in self.plot_data_dict.keys():
-            selected_plot = self.plot_data_dict[item.text()]
-            if selected_plot:
-                new_plot = self.create_new_plot(plot_name=item.text())
-                new_plot.add_new_plot(fig=selected_plot.fig,
-                                  title=selected_plot.title,
-                                  x_name=selected_plot.x_name,
-                                  y_name=selected_plot.y_name)
-
-    def remove_plot(self):
-        listItems = self.plot_listwidget.selectedItems()
-        if not listItems: return
-        for item in listItems:
-            self.plot_listwidget.takeItem(self.plot_listwidget.row(item))
-            self.plot_data_dict.pop(item.text())
 
 
     # SAMPLE FUNCTIONS -------------------------------------------
