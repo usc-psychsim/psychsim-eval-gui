@@ -3,7 +3,7 @@ from PyQt5 import uic
 import sys
 import os
 
-from CheckableComboBox import CheckableComboBox
+from ui.CheckableComboBox import CheckableComboBox
 
 
 query_sample_category_file = os.path.join("ui", "query_sample_category_dialog.ui")
