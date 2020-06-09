@@ -60,6 +60,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     Internal signal and slots for each page is maintained by the respective classes
     It also initialises variables for use between each of the sections e.g. for storing data
     """
+
     def __init__(self):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -86,14 +87,17 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.query_data_page = QueryDataPage()
         self.query_data_page.new_query_signal.connect(self.update_query_data)
         self.query_data_page.show_query_signal.connect(self.display_query)
-        #todo: the following functions all access the query_data_dict - they need to be fixed
+
+        # Connect query buttons to query functions with data dictionaries
         self.query_data_page.execute_query_button.clicked.connect(lambda: self.query_data_page.execute_query(self.sim_data_dict))
-        self.query_data_page.view_query_combo.activated.connect(self.update_query_info)
-        self.query_data_page.save_csv_query_button.clicked.connect(self.save_csv_query)
-        self.query_data_page.delete_query_buton.clicked.connect(self.delete_query)
-        self.query_data_page.diff_query_button.clicked.connect(self.diff_query)
-        self.query_data_page.sample_query_combo.activated.connect(self.handle_sample_query_dropdown)
-        self.query_data_page.select_query_sample_button.clicked.connect(self.show_sample_dialog)
+        self.query_data_page.view_query_combo.activated.connect(lambda: self.query_data_page.update_query_info(self.query_data_dict, self.sim_data_dict))
+        self.query_data_page.save_csv_query_button.clicked.connect(lambda: self.query_data_page.save_csv_query(self.query_data_dict))
+        self.query_data_page.delete_query_buton.clicked.connect(lambda: self.query_data_page.delete_query(self.query_data_dict))
+        self.query_data_page.diff_query_button.clicked.connect(lambda: self.query_data_page.diff_query(self.query_data_dict))
+        self.query_data_page.sample_query_combo.activated.connect(lambda: self.query_data_page.handle_sample_query_dropdown(self.query_data_dict))
+        self.query_data_page.select_query_sample_button.clicked.connect(lambda: self.query_data_page.show_sample_dialog(self.query_data_dict))
+
+
 
         # Set up the main window stacked widget
         self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
@@ -148,6 +152,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.save_sample_button.clicked.connect(self.save_sample)
         self.sample_step_check.stateChanged.connect(self.enable_step_sample)
         self.sample_agents_check.stateChanged.connect(self.enable_agent_sample)
+
 
     def update_data_info(self, data_id, data):
         #APPEND THE DATA DICT
@@ -254,57 +259,16 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.sim_info_page.print_sim_output(f"{old_key} renamed to {new_key}", "green")
 
 
-    # QUERY FUNCTIONS-------------------------------------------
-    def set_query_list_dropdown(self):
-        self.update_query_combo(self.query_data_page.view_query_combo)
-        self.update_query_combo(self.query_data_page.sample_query_combo)
-        self.update_query_diff_combo(self.query_data_page.query_diff_1)
-        self.update_query_diff_combo(self.query_data_page.query_diff_2)
-        #todo: connect plot query with self.set_axis_dropdowns function (parent = self) ??
-        # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
-        #                            parent=self)
-
-
     def set_data_dropdown(self, combo_box):
         combo_box.clear()
         new_items = [item for item in self.sim_data_dict.keys()]
         combo_box.addItems(new_items)
 
-    def update_query_combo(self, combo_box):
-        combo_box.clear()
-        new_items = [item for item in self.query_data_dict.keys()]
-        combo_box.addItems(new_items)
-
-    def update_query_diff_combo(self, combo_box):
-        combo_box.clear()
-        new_items = [item for item in self.query_data_dict.keys() if not self.query_data_dict[item].diff_query]
-        combo_box.addItems(new_items)
-
-
+    # QUERY FUNCTIONS-------------------------------------------
     def update_query_data(self, query_id, query_data):
-        self.query_data_dict[query_id] = query_data
-        self.set_query_list_dropdown()
-
-
-
-    def delete_query(self):
         #TODO: move this to query_data_page
-        query_id = self.query_data_page.view_query_combo.currentText()
-        try:
-            if query_id in self.query_data_dict.keys():
-                are_you_sure_dialog = DeleteAreYouSure()
-                are_you_sure_dialog.query_name.setText(query_id)
-
-                result = are_you_sure_dialog.exec_()
-                if result:
-                    #delete the query
-                    self.query_data_dict.pop(query_id)
-                    self.set_query_list_dropdown()
-                    self.query_data_page.clear_query_info()
-
-        except:
-            tb = traceback.format_exc()
-            self.query_data_page.print_query_output(tb, "red")
+        self.query_data_dict[query_id] = query_data
+        self.query_data_page.set_query_list_dropdown(self.query_data_dict)
 
     def display_query(self, query_id):
         #TODO: move this to query_data_page
@@ -313,197 +277,13 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 selected_query = self.query_data_dict[query_id]
                 selected_query = self.query_data_page.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
                 self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
-                self.set_query_list_dropdown()
-                self.update_query_info()
+                #TODO: fix bug that updates query list even if viewed
+                self.query_data_page.set_query_list_dropdown(self.query_data_dict)
+                self.query_data_page.update_query_info(self.query_data_dict, self.sim_data_dict)
         except:
             tb = traceback.format_exc()
             self.query_data_page.print_query_output(tb, "red")
 
-    def update_query_info(self):
-        #TODO: move this to query_data_page
-        selected_query_id = self.query_data_page.view_query_combo.currentText()
-        selected_query = self.query_data_dict[selected_query_id]
-        try:
-            if selected_query.data_id in self.sim_data_dict.keys():
-                selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
-                self.query_data_page.sim_file_label.setText(selected_query_asc_data.sim_file)
-            else:
-                self.query_data_page.sim_file_label.setText("...")
-            self.query_data_page.query_name_label.setText(selected_query.id)
-            self.query_data_page.data_id_label.setText(selected_query.data_id)
-            self.query_data_page.function_label.setText(selected_query.function)
-            self.query_data_page.is_diff_label.setText(str(selected_query.diff_query))
-        except:
-            tb = traceback.format_exc()
-            self.query_data_page.print_query_output(tb, "red")
-
-
-
-    def save_csv_query(self):
-        #todo: move to querydatapage.py
-        query_id = self.query_data_page.view_query_combo.currentText()
-        if query_id in self.query_data_dict.keys():
-            now = datetime.now()
-            dt_string = now.strftime("%Y%m%d_%H%M%S")
-            output_directory = 'sim_output'
-            if not os.path.exists(output_directory):
-                os.makedirs(output_directory)
-            output_path = os.path.join(output_directory, f"{query_id}_{dt_string}.csv")
-            self.query_data_dict[query_id].results.to_csv(output_path)
-            self.query_data_page.print_query_output(f"{query_id} saved to: {output_path}", "black")
-
-    def diff_query(self):
-        #todo move this to queryDataPage.py
-        try:
-            # get the two queries
-            q1 = self.query_data_dict[self.query_data_page.query_diff_1.currentText()]
-            q2 = self.query_data_dict[self.query_data_page.query_diff_2.currentText()]
-
-            # check that the columns match regardless of order
-            if pgh.dataframe_columns_equal(q1.results, q2.results):
-            # check that they are the same type
-            # if q1.function == q2.function:
-                self.query_data_page.print_query_output(f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}") #TODO: be consistant with colour coding of text
-                # Diff the data ID
-                pgh.print_diff(self.query_data_page.query_output, q1.data_id, q2.data_id, f"{q1.id} data_id", f"{q2.id} data_id", "data_id")
-
-                # Diff length
-                pgh.print_diff(self.query_data_page.query_output, len(q1.results.index), len(q2.results.index), f"{q1.id} steps", f"{q2.id} steps", "steps")
-
-                # # Diff the results
-                # diff_results = pgh.dataframe_difference(q1.results, q2.results)
-                # if len(diff_results.index) > 0:
-                #     self.query_output.append(f"{pgh._red_str('DIFF IN')}: {pgh._red_str('query results')}")
-                # else:
-                #     self.query_output.append(f"{pgh._green_str('NO DIFF IN')}: {pgh._green_str('query results')}")
-                now = datetime.now()
-                dt_string = now.strftime("%Y%m%d_%H%M%S")
-                query_id = f"{q1.id}-{q2.id}_{q1.function}_diff"
-                data_id = f"{q1.data_id}-{q2.data_id}"
-
-                #--------
-                # Convert the two query results to csv
-                q1_csv = q1.results.to_csv(index=False).splitlines(keepends=False)
-                q2_csv = q2.results.to_csv(index=False).splitlines(keepends=False)
-
-                # Diff the CSVs
-                d = difflib.Differ()
-                result = list(d.compare(q1_csv, q2_csv))
-
-                # Display results
-                diff_results_window = DiffResultsWindow(parent=self)
-                diff_results_window.diff_title.setText(f"Diff Results for {q1.id} and {q2.id}")
-                diff_results_window.q1_diff_label.setText(f"{q1.id}")
-                diff_results_window.q2_diff_label.setText(f"{q2.id}")
-                diff_results_window.q2_diff_label.setText(f"{q2.id}")
-                diff_results_window.format_diff_results(q1_csv, q2_csv, result)
-                diff_results_window.show()
-
-                # create a new query object #TODO: rethink if an object with differences is really needed.
-                # new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=q1.function,
-                #                             results=diff_results, diff_query=True)
-                #
-                # # create new dialog and show results + query ID
-                # # new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)
-                # self.query_data_dict[new_query.id] = new_query
-                # self.set_query_list_dropdown()
-                # self.new_diff_query_name.setText(query_id)
-            else:
-                self.query_data_page.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
-                self.query_data_page.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
-        except:
-            tb = traceback.format_exc()
-            self.query_data_page.print_query_output(tb, "red")
-
-    def handle_sample_query_dropdown(self):
-        # TODO: move this to QueryDataPage.py
-        selection = self.query_data_page.sample_query_combo.currentText()
-        self.query_data_page.set_query_sample_var_dropdown(self.query_data_dict[selection])
-
-    def show_sample_dialog(self):
-        # TODO: move this to QueryDataPage.py
-        #TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
-        result = None
-        query_selection = self.query_data_page.sample_query_combo.currentText()
-        variable_selection = self.query_data_page.sample_variable_combo.currentText()
-        selected_query = self.query_data_dict[query_selection]
-        try:
-            if self.query_data_page.sample_function_combo.currentText() == "range":
-                sample_dialog = QuerySampleRangeDialog()
-                current_variable_max_value = selected_query.results[variable_selection].max()
-                current_variable_min_value = selected_query.results[variable_selection].min()
-                #test to see if the max and min are numeric
-                if np.issubdtype(type(current_variable_max_value), np.number) and np.issubdtype(type(current_variable_min_value), np.number):
-                    sample_dialog.name_label.setText(f"{query_selection}")
-                    sample_dialog.value_label.setText(f"{variable_selection}")
-                    sample_dialog.range_label.setText(f"{current_variable_min_value} : {current_variable_max_value}")
-                    sample_dialog.min_spin.setRange(current_variable_min_value, current_variable_max_value)
-                    sample_dialog.max_spin.setRange(current_variable_min_value, current_variable_max_value)
-                    result = sample_dialog.exec_()
-                    if result:
-                        # get the range values if range
-                        filt_min = sample_dialog.min_spin.value()
-                        filt_max = sample_dialog.max_spin.value()
-
-                        # apply the sampling
-                        sampled_query = copy.deepcopy(selected_query.results)
-                        sampled_query = sampled_query.loc[sampled_query[variable_selection] <= filt_max]
-                        # sampled_query.reset_index()
-                        sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
-
-                        # save the new query as a sample
-                        sample_id = f"{query_selection}_{variable_selection}_{self.query_data_page.sample_function_combo.currentText()}_{filt_min}-{filt_max}"
-                        self.query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
-                                                                    data_id=selected_query.data_id,
-                                                                    params=[],
-                                                                    function="test",
-                                                                    results=sampled_query)
-
-                        self.query_data_page.print_query_output(f"sample saved as: {sample_id}", "black")
-
-                        # update the query lists over the whole gui
-                        self.set_query_list_dropdown()
-                else:
-                    #IT IS NOT NUMERIC - DISPLAY WARNING
-                    self.query_data_page.print_query_output("THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
-            elif self.query_data_page.sample_function_combo.currentText() == "category":
-                sample_dialog = QuerySampleCategoryDialog()
-                sample_dialog.name_label.setText(f"{query_selection}")
-                sample_dialog.value_label.setText(f"{variable_selection}")
-                values_raw = selected_query.results[variable_selection].unique()
-                values_string = [str(i) for i in values_raw]
-                print("STRINGGG", values_string)
-                sample_dialog.sample_combo_mult.clear()
-                sample_dialog.sample_combo_mult.addItems(values_string)
-                result = sample_dialog.exec_()
-                if result:
-                    # get the categorical values if range
-                    cat_values =sample_dialog.sample_combo_mult.currentData()
-
-                    #convert the row to strings for sampling
-                    sampled_query = copy.deepcopy(selected_query.results)
-                    sampled_query[variable_selection] = sampled_query[variable_selection].astype(str)
-
-                    # apply the sampling
-                    sampled_query = pd.concat([sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
-
-                    # save the new query as a sample
-
-                    now = datetime.now()
-                    dt_string = now.strftime("%Y%m%d_%H%M%S")
-                    sample_id = f"{query_selection}_{variable_selection}_{self.query_data_page.sample_function_combo.currentText()}_{dt_string}"
-                    self.query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
-                                                                      data_id=selected_query.data_id,
-                                                                      params=[],
-                                                                      function="test",
-                                                                      results=sampled_query)
-
-                    self.query_data_page.print_query_output(f"sample saved as: {sample_id}", "black")
-                    # update the query lists over the whole gui
-                    self.set_query_list_dropdown()
-        except:
-            tb = traceback.format_exc()
-            self.query_data_page.print_query_output(tb, "red")
 
     # PLOT FUNCTIONS -------------------------------------------
     def setup_test_plot(self):
