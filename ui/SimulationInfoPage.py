@@ -74,8 +74,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.rename_run_button.clicked.connect(self.emit_rename_signal)
         self.save_run_input.returnPressed.connect(self.emit_rename_signal)
         self.sim_info_button.setToolTip('Click for how to write simulation files')
-        # self.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
-        # self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
 
     def load_config(self, path=None):
         """

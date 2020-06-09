@@ -54,9 +54,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_doc_button.clicked.connect(self.get_query_doc)
         self.query_doc_button.clicked.connect(self.get_query_doc)
 
-        # self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
-        # self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
-
         self.set_sample_function_dropdown(["range", "category"])
 
     def execute_query(self):
