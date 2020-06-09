@@ -1,32 +1,12 @@
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 import os
 import pickle
-import importlib.util
-import inspect
 import sys
-import re
-import numbers
-import traceback
-import pandas as pd
-import configparser
-from datetime import datetime
 from functools import partial
-import copy
-import difflib
-import numpy as np
-import plotly
-import plotly.graph_objects as go
-import plotly.express as px
 
-from gui_threading import Worker, WorkerSignals
-from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
-from CheckableComboBox import CheckableComboBox
-from functions.query_functions import PsychSimQuery
 
 from ui.SimulationInfoPage import SimulationInfoPage
 from ui.QueryDataPage import QueryDataPage
@@ -35,21 +15,9 @@ from ui.PlotQueryPage import PlotQueryPage
 from ui.LoadedDataWindow import LoadedDataWindow
 from ui.RenameDataDialog import RenameDataDialog
 from ui.DocWindow import DocWindow
-from ui.DiffResultsWindow import DiffResultsWindow
-from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
-from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
-from ui.DeleteAreYouSureDialog import DeleteAreYouSure
-from ui.PlotViewDialog import PlotViewDialog
-
 
 qtCreatorFile = os.path.join("ui", "psychsim-gui-main.ui")
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
-
-
-# TODO: remove functions that aren't used
-# TODO: final refactor to make sure code is readable
-# TODO: add docstrings
-
 
 class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     """
@@ -84,7 +52,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.query_data_page = QueryDataPage(self.sim_data_dict, self.query_data_dict)
 
         # Set up the plot page
-        self.plot_query_page = PlotQueryPage(self.sim_data_dict, self.query_data_dict, self.plot_data_dict)
+        self.plot_query_page = PlotQueryPage(self.query_data_dict, self.plot_data_dict)
 
         # Set up the main window stacked widget
         self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
@@ -99,7 +67,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.actionplot.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(2))
         self.actionmanual.triggered.connect(lambda: self.show_doc_window("index.html"))
 
-        #help buttons
+        # help buttons
         # self.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
         # self.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
         # self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
@@ -107,66 +75,63 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # self.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
         # self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
 
-
-
     def update_data_info(self, data_id, data):
-        #APPEND THE DATA DICT
+        """
+        Update data dropdowns over the whole gui
+        :param data_id: id of data
+        :param data: PsychSimRun object
+        """
         self.sim_data_dict[data_id] = data
-        # Update appropriate places
-        self.set_data_dropdown(self.query_data_page.data_combo)
+        pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
         self.update_data_table()
 
-
     def update_data_table(self):
+        """
+        Populate the data window with rows including a button to rename and save
+        """
         self.loaded_data_window.clear_table()
         for data_id, data in self.sim_data_dict.items():
-            # create the button to rename the data
-            btn = QPushButton(self.loaded_data_window.loaded_data_table)
-            btn.setText('RENAME')
-            btn.clicked.connect(partial(self.show_rename_dialog, data_id))
-
-            # create the button to save the data to csv
-            btn2 = QPushButton(self.loaded_data_window.loaded_data_table)
-            btn2.setText('save')
-            btn2.clicked.connect(partial(self.save_data_window, data_id))
-
-            # update the loaded data table
+            btn = self.create_data_table_button(data_id, "RENAME", self.show_rename_dialog)
+            btn2 = self.create_data_table_button(data_id, "save", self.save_data_window)
             new_row = [data.run_date, data.id, data.sim_file, str(data.steps), btn, btn2]
             self.loaded_data_window.add_row_to_table(new_row)
 
+    def create_data_table_button(self, data_id, button_label, button_function):
+        """
+        Create the button to save data in the data table
+        :param data_id:
+        :return:
+        """
+        btn = QPushButton(self.loaded_data_window.loaded_data_table)
+        btn.setText(button_label)
+        btn.clicked.connect(partial(button_function, data_id))
+        return btn
 
     def save_data_window(self, data_id):
-        now = datetime.now()
-        dt_string = now.strftime("%Y%m%d_%H%M%S")
+        """
+        Show the save data window (when save buttin in data table is clicked
+        :param data_id: id of data to save
+        """
+        dt_string, _ = pgh.get_time_stamp()
         output_directory = 'sim_output'
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
         output_path = os.path.join(output_directory, f"{data_id}_{dt_string}.pickle")
-
         output_name = QFileDialog.getSaveFileName(self,
-                                               self.tr('Save File'),
-                                               output_path,
-                                               self.tr("pickle (*.pickle)"))[0]
+                                                  self.tr('Save File'),
+                                                  output_path,
+                                                  self.tr("pickle (*.pickle)"))[0]
         if output_name:
             if not QFileInfo(output_name).suffix():
                 output_name += ".pickle"
-
             pickle.dump(self.sim_data_dict[data_id], open(output_name, "wb"))
-            self.print_sim_output(f"{data_id} saved to: {output_name}", "black")
+            self.sim_info_page.print_sim_output(f"{data_id} saved to: {output_name}", "black")
             self.update_data_table()
 
-
-
-    # def print_sim_output(self, msg, color="black"):
-    #     pgh.print_output(self.simulation_output, msg, color)
-
-    def print_sample_output(self, msg, color="black"):
-        pgh.print_output(self.sample_output, msg, color)
-
-    def print_plot_output(self, msg, color="black"):
-        pgh.print_output(self.plot_output, msg, color)
-
     def load_data_from_file(self):
+        """
+        load previously saved pickle data
+        """
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self,
                                                   "Select data file",
@@ -175,36 +140,51 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                                                   options=options)
         if fileName:
             # load the psychsim libs to read the pickle objects
-            self.load_sim()
+            self.sim_info_page.load_sim()
             with open(fileName, 'rb') as f:
                 data = pickle.load(f)
-
-                # update the data #todo: refactor these 3 lines (they appear in some form together)
                 self.sim_data_dict[data.id] = data
                 self.update_data_table()
-                self.set_data_dropdown(self.data_combo)
-                self.set_data_dropdown(self.sample_data_combo)
+                pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
 
     def show_rename_dialog(self, old_key):
-        # show the rename dialog and get the new name
+        """
+        Show the rename dialog to rename data
+        :param old_key: Old data id
+        """
         new_key, accepted = RenameDataDialog.get_new_name(old_name=old_key)
         if accepted:
             self.rename_data_id(new_key, old_key)
 
     def rename_data_id(self, new_key, old_key):
+        """
+        Rename data
+        :param new_key: new data id
+        :param old_key: old data id
+        """
         self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
         self.sim_data_dict[new_key].id = new_key
         self.update_data_table()
-        self.set_data_dropdown(self.data_combo)
-        self.set_data_dropdown(self.sample_data_combo)
+        pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
         self.update_query_dataid(old_key=old_key, new_key=new_key)
 
-    def update_query_dataid(self, old_key,  new_key):
+    def update_query_dataid(self, old_key, new_key):
+        """
+        update the data id in the query data dict to match the new key
+        :param old_key: old data id
+        :param new_key: new data id
+        """
         for query_id, query in self.query_data_dict.items():
             if query.data_id == old_key:
                 self.query_data_dict[query_id].data_id = new_key
 
     def rename_data_from_input(self, old_key, new_key):
+        """
+        Rename data from input on sim info page (just after a sim is run)
+        :param old_key: old data id
+        :param new_key: new data id
+        :return:
+        """
         if new_key in self.sim_data_dict.keys():
             self.sim_info_page.print_sim_output(f"{new_key} ALREADY EXISTS", "red")
         else:
@@ -212,14 +192,13 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.sim_info_page.previous_run_id.setText(new_key)
             self.sim_info_page.print_sim_output(f"{old_key} renamed to {new_key}", "green")
 
-
-    def set_data_dropdown(self, combo_box):
-        combo_box.clear()
-        new_items = [item for item in self.sim_data_dict.keys()]
-        combo_box.addItems(new_items)
-
-
     def show_doc_window(self, doc_file, doc_section=""):
+        """
+        Show the documentation window (to display the manual)
+        :param doc_file:
+        :param doc_section:
+        :return:
+        """
         file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "static_html", f"{doc_file}"))
         local_url = QUrl.fromLocalFile(file_path)
         local_url.setFragment(f"{doc_section}")

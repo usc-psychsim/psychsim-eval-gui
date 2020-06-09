@@ -21,10 +21,9 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
     This includes:
     """
 
-    def __init__(self, sim_data_dict, query_data_dict, plot_data_dict, parent=None):
+    def __init__(self, query_data_dict, plot_data_dict, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.sim_data_dict = sim_data_dict  # todo: is this needed?
         self.query_data_dict = query_data_dict
         self.plot_data_dict = plot_data_dict
 
@@ -33,7 +32,7 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
 
         self.create_new_plot_button.clicked.connect(lambda: self.create_new_plot())
         self.test_check.stateChanged.connect(self.setup_test_plot)
-        self.plot_listwidget.itemDoubleClicked .connect(self.add_plot_from_list)
+        self.plot_listwidget.itemDoubleClicked.connect(self.add_plot_from_list)
         self.remove_plot_button.clicked.connect(self.remove_plot)
 
     def create_new_plot(self, plot_name="New plot"):
@@ -92,9 +91,9 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
             if selected_plot:
                 new_plot = self.create_new_plot(plot_name=item.text())
                 new_plot.add_new_plot(fig=selected_plot.fig,
-                                  title=selected_plot.title,
-                                  x_name=selected_plot.x_name,
-                                  y_name=selected_plot.y_name)
+                                      title=selected_plot.title,
+                                      x_name=selected_plot.x_name,
+                                      y_name=selected_plot.y_name)
 
     def remove_plot(self):
         """
