@@ -39,7 +39,7 @@ class PsychSimQuery:
         :return:
         """
         try:
-            action_of_interest = data.data[action]["AGENT_BELIEFS"][agent]
+            action_of_interest = data.data[action]["AGENT_STATE"][agent]
             output_data = pd.DataFrame()
             for la_key, legal_action in action_of_interest["__decision__"]["TriageAg10"]["V"].items():
                 for idx, hyp_action_set in enumerate(legal_action['__S__']):
@@ -72,7 +72,7 @@ class PsychSimQuery:
             horizon = {}
             for step, step_data in data.data.items():
                 if step == action_id:
-                    for agent, agent_data in step_data["AGENT_BELIEFS"].items():
+                    for agent, agent_data in step_data["AGENT_STATE"].items():
                         if agent == agent_id:
                             for decision, decision_data in agent_data["__decision__"].items():
                                 if type(decision_data) == dict:
@@ -110,8 +110,8 @@ class PsychSimQuery:
         for key, value in kwargs.items():
             if key == "data":
                 for step_data in value.data.values():
-                    if type(step_data['AGENT_BELIEFS']) == dict:
-                        for agent in list(step_data['AGENT_BELIEFS'].keys()):
+                    if type(step_data['AGENT_STATE']) == dict:
+                        for agent in list(step_data['AGENT_STATE'].keys()):
                             if agent not in agent_dict['agent']:
                                 agent_dict['agent'].append(agent)
 
@@ -128,7 +128,7 @@ class PsychSimQuery:
         actions_dict = dict(step=[], action=[])
         try:
             for step, step_data in data.data.items():
-                for agent_i, agent_data in step_data['AGENT_BELIEFS'].items():
+                for agent_i, agent_data in step_data['AGENT_STATE'].items():
                     if agent_i == agent:
                         for d in agent_data['__decision__'].values():
                             if type(d) == dict:
@@ -153,7 +153,7 @@ class PsychSimQuery:
             agent_id = agent
             steps = {}
             for step, step_data in data.data.items():
-                for agent, agent_data in step_data["AGENT_BELIEFS"].items():
+                for agent, agent_data in step_data["AGENT_STATE"].items():
                     if agent == agent_id:
                         for decision, decision_data in agent_data["__decision__"].items():
                             if type(decision_data) == dict and "V" in decision_data.keys():
@@ -179,7 +179,7 @@ class PsychSimQuery:
             agent_id = kwargs['agent']
             output_data = pd.DataFrame()
             for step, step_data in data.data.items():
-                output_data = output_data.append(self.__get_debug_data(debug=step_data['AGENT_BELIEFS'], step=step))
+                output_data = output_data.append(self.__get_debug_data(debug=step_data['AGENT_STATE'], step=step))
             return output_data
         except:
             tb = traceback.format_exc()
@@ -288,7 +288,7 @@ class PsychSimQuery:
             steps = []
             actors = []
             for step, step_data in data.data.items():
-                for actor, actor_data in step_data['AGENT_BELIEFS'].items():
+                for actor, actor_data in step_data['AGENT_STATE'].items():
                     for k, v in actor_data.items():
                         if v.__class__.__name__ == "VectorDistributionSet":
                             output_data = output_data.append(self.__extract_values_fromVectorDistributionSet(v))
