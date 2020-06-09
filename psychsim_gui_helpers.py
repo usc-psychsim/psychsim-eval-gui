@@ -178,6 +178,17 @@ def dataframe_columns_equal(df1, df2):
         else:
             return True
 
+def update_combo(combo_box, item_list):
+    """
+    Generic combo box update function
+    :param combo_box: qcomboBox to be updated
+    :param data_dict: dictionary containg data to populate the combo box with
+    :return:
+    """
+    combo_box.clear()
+    new_items = [item for item in item_list]
+    combo_box.addItems(new_items)
+
 if __name__ == "__main__":
     df = pd.DataFrame()
     test_data = PsychSimRun(id="test_id", run_date="date", data=df, sim_file="simfile", steps=9)

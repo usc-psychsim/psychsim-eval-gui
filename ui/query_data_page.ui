@@ -180,17 +180,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QToolButton" name="function_button">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>...</string>
-               </property>
-              </widget>
+              <widget class="QComboBox" name="function_combo"/>
              </item>
              <item>
               <widget class="QPushButton" name="query_doc_button">

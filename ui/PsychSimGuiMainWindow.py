@@ -86,8 +86,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # Set up the query data page
         self.query_data_page = QueryDataPage(self.sim_data_dict, self.query_data_dict)
 
-
-
         # Set up the main window stacked widget
         self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
         self.main_window_stack_widget.insertWidget(1, self.query_data_page)

@@ -61,14 +61,14 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         # self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
         # self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
 
-        self.set_sample_function_dropdown()
+        self.set_sample_function_dropdown(["range", "category"])
 
     def execute_query(self):
         """
         Execute the query with the given params. The query function is defined in functions/query_functions.py
         """
         # get the query function
-        query_function = self.function_button.text()
+        query_function = self.function_combo.currentText()
         # get the params
         agent = self.agent_combo.currentText()
         state = self.state_combo.currentText()
@@ -356,37 +356,31 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         return sample_dialog
 
     def set_query_list_dropdown(self):
-        self.update_query_combo(self.view_query_combo, self.query_data_dict)
-        self.update_query_combo(self.sample_query_combo, self.query_data_dict)
-        self.update_query_diff_combo(self.query_diff_1, self.query_data_dict)
-        self.update_query_diff_combo(self.query_diff_2, self.query_data_dict)
+        """
+        Update the query lists across the whole gui
+        """
+        pgh.update_combo(self.view_query_combo, self.query_data_dict.keys())
+        pgh.update_combo(self.sample_query_combo, self.query_data_dict.keys())
+        pgh.update_combo(self.query_diff_1, self.query_data_dict.keys())
+        pgh.update_combo(self.query_diff_2, self.query_data_dict.keys())
         # todo: connect plot query with self.set_axis_dropdowns function (parent = self) ??
         # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
         #                            parent=self)
 
-    def update_query_combo(self, combo_box, query_data_dict):
-        combo_box.clear()
-        new_items = [item for item in query_data_dict.keys()]
-        combo_box.addItems(new_items)
-
-    def update_query_diff_combo(self, combo_box, query_data_dict):
-        combo_box.clear()
-        new_items = [item for item in query_data_dict.keys() if not query_data_dict[item].diff_query]
-        combo_box.addItems(new_items)
-
     def set_function_dropdown(self):
-        # TODO: refactor these dropdowns so they are all combo boxes
+        """
+        Populate the query function dropdown with functions from functions/query_functions.py
+        """
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
                          and '__' not in method_name]
-        pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate,
-                                   parent=self)
+        pgh.update_combo(self.function_combo, query_methods)
 
-    def set_sample_function_dropdown(self):
-        # TODO: refactor
-        functions = ["range", "category"]
-        self.sample_function_combo.clear()
-        self.sample_function_combo.addItems(functions)
+    def set_sample_function_dropdown(self, function_list):
+        """
+        Populate the sample function dropdown with "range" and "category"
+        """
+        pgh.update_combo(self.sample_function_combo, function_list)
 
     def set_agent_dropdown(self):
         # TODO: refactor
@@ -444,10 +438,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 tb = traceback.format_exc()
                 self.print_query_output(tb, "red")
 
-    def btnstate(self, action, button):
-        selection = action.checkedAction().text()
-        button.setText(selection)
-        self.handle_params(selection)
 
     def handle_params(self, function_name):
         function = getattr(self.psychsim_query, function_name)
@@ -501,7 +491,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         return query
 
     def get_query_doc(self):
-        query_function = self.function_button.text()
+        query_function = self.function_combo.currentText()
         try:
             self.print_query_output(f"{query_function}: {getattr(self.psychsim_query, query_function).__doc__}")
         except:
