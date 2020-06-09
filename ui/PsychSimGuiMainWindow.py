@@ -84,16 +84,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sim_info_page.rename_data_signal.connect(self.rename_data_from_input)
 
         # Set up the query data page
-        self.query_data_page = QueryDataPage() #TODO: can I just pass the sim_data_dict and query_data_dict as pointers to the constructor instead of each function?
-        # Connect query buttons to query functions with data dictionaries
-        self.query_data_page.execute_query_button.clicked.connect(lambda: self.query_data_page.execute_query(self.sim_data_dict, self.query_data_dict))
-        self.query_data_page.view_query_button.clicked.connect(lambda: self.query_data_page.view_query(self.query_data_dict, self.sim_data_dict))
-        self.query_data_page.view_query_combo.activated.connect(lambda: self.query_data_page.update_query_info(self.query_data_dict, self.sim_data_dict))
-        self.query_data_page.save_csv_query_button.clicked.connect(lambda: self.query_data_page.save_csv_query(self.query_data_dict))
-        self.query_data_page.delete_query_buton.clicked.connect(lambda: self.query_data_page.delete_query(self.query_data_dict))
-        self.query_data_page.diff_query_button.clicked.connect(lambda: self.query_data_page.diff_query(self.query_data_dict))
-        self.query_data_page.sample_query_combo.activated.connect(lambda: self.query_data_page.handle_sample_query_dropdown(self.query_data_dict))
-        self.query_data_page.select_query_sample_button.clicked.connect(lambda: self.query_data_page.show_sample_dialog(self.query_data_dict))
+        self.query_data_page = QueryDataPage(self.sim_data_dict, self.query_data_dict)
 
 
 

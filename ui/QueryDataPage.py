@@ -1,10 +1,8 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 from PyQt5 import uic
 
 import traceback
 import inspect
-import difflib
 import os
 import sys
 import copy
@@ -31,17 +29,27 @@ class QueryDataPage(QWidget, ui_queryDataPage):
     This includes:
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, sim_data_dict, query_data_dict, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        self.sim_data_dict = sim_data_dict
+        self.query_data_dict = query_data_dict
 
         self.psychsim_query = PsychSimQuery()
 
         self.set_function_dropdown()
 
         # Setup buttons
-        self.function_info_button.setToolTip('Click for how to write custom query functions')
+        self.execute_query_button.clicked.connect(self.execute_query)
+        self.view_query_button.clicked.connect(self.view_query)
+        self.view_query_combo.activated.connect(self.update_query_info)
+        self.save_csv_query_button.clicked.connect(self.save_csv_query)
+        self.delete_query_buton.clicked.connect(self.delete_query)
+        self.diff_query_button.clicked.connect(self.diff_query)
+        self.sample_query_combo.activated.connect(self.handle_sample_query_dropdown)
+        self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
+        self.function_info_button.setToolTip('Click for how to write custom query functions')
         self.query_doc_button.clicked.connect(self.get_query_doc)
         self.query_doc_button.clicked.connect(self.get_query_doc)
 
@@ -55,10 +63,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
         self.set_sample_function_dropdown()
 
-    def execute_query(self, sim_data_dict, query_data_dict):
+    def execute_query(self):
         """
         Execute the query with the given params. The query function is defined in functions/query_functions.py
-        :param sim_data_dict: dictionarly containing the stored sim run data in the main window
         """
         # get the query function
         query_function = self.function_button.text()
@@ -68,28 +75,27 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         action_step = self.action_combo.currentData()  # This is actually the step value as it is easier to access the data by step rather than action
         data_id = self.data_combo.currentText()
         try:
-            result = getattr(self.psychsim_query, query_function)(data=sim_data_dict[data_id], data_id=data_id,
+            result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
                                                                   agent=agent, action=action_step, state=state)
             result = result.apply(pd.to_numeric,
                                   errors='ignore')  # convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
             new_query = self.create_new_query_object(query_function, data_id, result)
-            self.update_query_data(new_query.id, new_query, query_data_dict)
-            self.display_query(new_query.id, query_data_dict, sim_data_dict)
+            self.update_query_data(new_query.id, new_query)
+            self.display_query(new_query.id)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def update_query_data(self, query_id, query_data, query_data_dict):
+    def update_query_data(self, query_id, query_data):
         """
         Update the query data dictionary with new data, and update the query lists across the entire gui
         :param query_id: ID of new query
         :param query_data: new query data
-        :param query_data_dict: dictionary holidng query data
         """
-        query_data_dict[query_id] = query_data
-        self.set_query_list_dropdown(query_data_dict)
+        self.query_data_dict[query_id] = query_data
+        self.set_query_list_dropdown()
 
     def create_new_query_object(self, query_function, data_id, query_data, query_id=None):
         """
@@ -119,17 +125,15 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def update_query_info(self, query_data_dict, sim_data_dict):
+    def update_query_info(self):
         """
         Update the query info on the gui with appropriate values
-        :param query_data_dict: dictionary of query data from main gui
-        :param sim_data_dict: dictionary of sim data from main gui
         """
         selected_query_id = self.view_query_combo.currentText()
-        selected_query = query_data_dict[selected_query_id]
+        selected_query = self.query_data_dict[selected_query_id]
         try:
-            if selected_query.data_id in sim_data_dict.keys():
-                selected_query_asc_data = sim_data_dict[selected_query.data_id]
+            if selected_query.data_id in self.sim_data_dict.keys():
+                selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
                 self.sim_file_label.setText(selected_query_asc_data.sim_file)
             else:
                 self.sim_file_label.setText("...")
@@ -141,56 +145,52 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def save_csv_query(self, query_data_dict):
+    def save_csv_query(self):
         """
         Write the query results as a csv file to disk
-        :param query_data_dict: dictionary of query data from main gui
         """
         query_id = self.view_query_combo.currentText()
-        if query_id in query_data_dict.keys():
+        if query_id in self.query_data_dict.keys():
             dt_string, _ = pgh.get_time_stamp()
             output_directory = 'sim_output'
             if not os.path.exists(output_directory):
                 os.makedirs(output_directory)
             output_path = os.path.join(output_directory, f"{query_id}_{dt_string}.csv")
-            query_data_dict[query_id].results.to_csv(output_path)
+            self.query_data_dict[query_id].results.to_csv(output_path)
             self.print_query_output(f"{query_id} saved to: {output_path}", "black")
 
-    def delete_query(self, query_data_dict):
+    def delete_query(self):
         """
         Show dialog and remove the selected query from the main window query data dictionary if selected
-        :param query_data_dict: dictionary of query data from main gui
         """
         query_id = self.view_query_combo.currentText()
         try:
-            if query_id in query_data_dict.keys():
+            if query_id in self.query_data_dict.keys():
                 are_you_sure_dialog = DeleteAreYouSure()
                 are_you_sure_dialog.query_name.setText(query_id)
                 result = are_you_sure_dialog.exec_()
                 if result:
-                    self.remove_query_from_dict(query_id, query_data_dict)
+                    self.remove_query_from_dict(query_id)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def remove_query_from_dict(self, query_id, query_data_dict):
+    def remove_query_from_dict(self, query_id):
         """
         Remove an selected item from the main query_data_dict
         :param query_id: ID of query to remove
-        :param query_data_dict: dict holding query objects from main window
         """
-        query_data_dict.pop(query_id)
+        self.query_data_dict.pop(query_id)
         self.clear_query_info()
-        self.set_query_list_dropdown(query_data_dict)  # update the query lists across the gui
+        self.set_query_list_dropdown()  # update the query lists across the gui
 
-    def diff_query(self, query_data_dict):
+    def diff_query(self):
         """
         Execute the diff between selected queries
-        :param query_data_dict: dictionary containing query objects from main window
         """
         try:
-            q1 = query_data_dict[self.query_diff_1.currentText()]
-            q2 = query_data_dict[self.query_diff_2.currentText()]
+            q1 = self.query_data_dict[self.query_diff_1.currentText()]
+            q2 = self.query_data_dict[self.query_diff_2.currentText()]
 
             # check that the columns match regardless of order
             if pgh.dataframe_columns_equal(q1.results, q2.results):
@@ -231,42 +231,38 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         diff_results_window.format_diff_results(q1, q2)
         diff_results_window.show()
 
-    def handle_sample_query_dropdown(self, query_data_dict):
+    def handle_sample_query_dropdown(self):
         """
         Used to dete sample variable list depending on which data source is selected
-        :param query_data_dict:
         """
         selection = self.sample_query_combo.currentText()
-        current_query = query_data_dict[selection]
+        current_query = self.query_data_dict[selection]
         vars = current_query.results.columns.to_list()
         self.sample_variable_combo.clear()
         self.sample_variable_combo.addItems(vars)
 
-    def show_sample_dialog(self, query_data_dict):
+    def show_sample_dialog(self):
         """
         Open the sample dialog and do the sampling depending on if range or category is selected
-        :param query_data_dict: dict containing all query objects
         :return:
         """
         query_selection = self.sample_query_combo.currentText()
-        selected_query = query_data_dict[query_selection]
+        selected_query = self.query_data_dict[query_selection]
         variable_selection = self.sample_variable_combo.currentText()
         try:
             if self.sample_function_combo.currentText() == "range":
-                self.sample_by_range(selected_query, variable_selection, query_data_dict)
+                self.sample_by_range(selected_query, variable_selection)
             elif self.sample_function_combo.currentText() == "category":
-                self.sample_by_category(selected_query, variable_selection, query_data_dict)
+                self.sample_by_category(selected_query, variable_selection)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-
-    def sample_by_range(self, selected_query, variable_selection, query_data_dict):
+    def sample_by_range(self, selected_query, variable_selection):
         """
         Sample the query results by a numeric range
         :param selected_query: queryobject to apply sampling to
         :param variable_selection: variable of query results to sample over
-        :param query_data_dict: dict containing all query objects
         """
         # get max and min values for specific variable
         range_max = selected_query.results[variable_selection].max()
@@ -286,20 +282,23 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
 
                 # save the new sample as a query
-                sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_{filt_min}-{filt_max} "
-                new_query = self.create_new_query_object(selected_query.function, selected_query.data_id, sampled_query, sample_id)
-                self.update_query_data(new_query.id, new_query, query_data_dict)
+                sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
+                            f"{filt_min}-{filt_max} "
+                new_query = self.create_new_query_object(selected_query.function,
+                                                         selected_query.data_id,
+                                                         sampled_query,
+                                                         sample_id)
+                self.update_query_data(new_query.id, new_query)
                 self.print_query_output(f"sample saved as: {sample_id}", "black")
         else:
             self.print_query_output(
                 "THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
 
-    def sample_by_category(self, selected_query, variable_selection, query_data_dict):
+    def sample_by_category(self, selected_query, variable_selection):
         """
         Sample the query results by a string category
         :param selected_query: queryobject to apply sampling to
         :param variable_selection: variable of query results to sample over
-        :param query_data_dict: dict containing all query objects
         """
         sample_dialog = self.setup_category_sample_dialog(selected_query, variable_selection)
         result = sample_dialog.exec_()
@@ -317,10 +316,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
             # save the new sample as a query
             dt_string, _ = pgh.get_time_stamp()
-            sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_{dt_string}"
+            sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
+                        f"{dt_string}"
             new_query = self.create_new_query_object(selected_query.function, selected_query.data_id, sampled_query,
                                                      sample_id)
-            self.update_query_data(new_query.id, new_query, query_data_dict)
+            self.update_query_data(new_query.id, new_query)
             self.print_query_output(f"sample saved as: {sample_id}", "black")
 
     def setup_range_sample_dialog(self, range_min, range_max, query_selection, variable_selection):
@@ -355,11 +355,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         sample_dialog.sample_combo_mult.addItems(values_string)
         return sample_dialog
 
-    def set_query_list_dropdown(self, query_data_dict):
-        self.update_query_combo(self.view_query_combo, query_data_dict)
-        self.update_query_combo(self.sample_query_combo, query_data_dict)
-        self.update_query_diff_combo(self.query_diff_1, query_data_dict)
-        self.update_query_diff_combo(self.query_diff_2, query_data_dict)
+    def set_query_list_dropdown(self):
+        self.update_query_combo(self.view_query_combo, self.query_data_dict)
+        self.update_query_combo(self.sample_query_combo, self.query_data_dict)
+        self.update_query_diff_combo(self.query_diff_1, self.query_data_dict)
+        self.update_query_diff_combo(self.query_diff_2, self.query_data_dict)
         # todo: connect plot query with self.set_axis_dropdowns function (parent = self) ??
         # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
         #                            parent=self)
@@ -508,24 +508,23 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def view_query(self, query_data_dict, sim_data_dict):
+    def view_query(self):
         query_id = self.view_query_combo.currentText()
-        self.display_query(query_id, query_data_dict, sim_data_dict)
+        self.display_query(query_id)
 
-    def display_query(self, query_id, query_data_dict, sim_data_dict):
+    def display_query(self, query_id):
         """
         Display the query in a dialog and rename if necessesary
         :param query_id: id of query to display
-        :param query_data_dict:
         """
         try:
-            if query_id in query_data_dict.keys():
-                selected_query = query_data_dict[query_id]
+            if query_id in self.query_data_dict.keys():
+                selected_query = self.query_data_dict[query_id]
                 selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
-                query_data_dict[selected_query.id] = query_data_dict.pop(query_id)
+                self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
                 # TODO: fix bug that updates query list even if viewed
-                self.set_query_list_dropdown(query_data_dict)
-                self.update_query_info(query_data_dict, sim_data_dict)
+                self.set_query_list_dropdown()
+                self.update_query_info()
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
