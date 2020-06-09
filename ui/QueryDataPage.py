@@ -10,10 +10,10 @@ import copy
 import pandas as pd
 import numpy as np
 
-from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
 from functions.query_functions import PsychSimQuery
 
+from ui.PandasModel import PandasModel
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
 from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
 from ui.DiffResultsWindow import DiffResultsWindow
