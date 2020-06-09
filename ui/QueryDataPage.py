@@ -30,9 +30,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
     This class is for all functions relating to the query data page of the GUI
     This includes:
     """
-    # SET UP SIGNALS
-    new_query_signal = pyqtSignal(str, pgh.PsySimQuery)
-    show_query_signal = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -77,19 +74,24 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                                   errors='ignore')  # convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
-            new_query = self.create_new_query(query_function, data_id, result)
+            new_query = self.create_new_query_object(query_function, data_id, result)
             self.update_query_data(new_query.id, new_query, query_data_dict)
             self.display_query(new_query.id, query_data_dict, sim_data_dict)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-
     def update_query_data(self, query_id, query_data, query_data_dict):
+        """
+        Update the query data dictionary with new data, and update the query lists across the entire gui
+        :param query_id: ID of new query
+        :param query_data: new query data
+        :param query_data_dict: dictionary holidng query data
+        """
         query_data_dict[query_id] = query_data
         self.set_query_list_dropdown(query_data_dict)
 
-    def create_new_query(self, query_function, data_id, query_data):
+    def create_new_query_object(self, query_function, data_id, query_data, query_id=None):
         """
         Create a new query object
         :param query_function: (str) name of query function
@@ -98,10 +100,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :return: PsySimQuery object
         """
         dt_string, run_date = pgh.get_time_stamp()
-        query_id = f"{query_function}_{data_id}_{dt_string}"
+        if not query_id:
+            query_id = f"{query_function}_{data_id}_{dt_string}"
         return pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
                                results=query_data)
-
 
     def clear_query_info(self):
         """
@@ -210,7 +212,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param q1: object to diff
         :param q2: object to diff
         """
-        for member in [i for i in dir(q1) if not i.startswith("_") and not i.startswith("get") and not i.startswith("results")]:
+        for member in [i for i in dir(q1) if not i.startswith("_") and
+                                             not i.startswith("get") and
+                                             not i.startswith("results")]:
             pgh.print_diff(self.query_output, q1, q2, member)
 
     def diff_query_results(self, q1, q2):
@@ -239,90 +243,117 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.sample_variable_combo.addItems(vars)
 
     def show_sample_dialog(self, query_data_dict):
-        # TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
-        result = None
+        """
+        Open the sample dialog and do the sampling depending on if range or category is selected
+        :param query_data_dict: dict containing all query objects
+        :return:
+        """
         query_selection = self.sample_query_combo.currentText()
-        variable_selection = self.sample_variable_combo.currentText()
         selected_query = query_data_dict[query_selection]
+        variable_selection = self.sample_variable_combo.currentText()
         try:
             if self.sample_function_combo.currentText() == "range":
-                sample_dialog = QuerySampleRangeDialog()
-                current_variable_max_value = selected_query.results[variable_selection].max()
-                current_variable_min_value = selected_query.results[variable_selection].min()
-                # test to see if the max and min are numeric
-                if np.issubdtype(type(current_variable_max_value), np.number) and np.issubdtype(
-                        type(current_variable_min_value), np.number):
-                    sample_dialog.name_label.setText(f"{query_selection}")
-                    sample_dialog.value_label.setText(f"{variable_selection}")
-                    sample_dialog.range_label.setText(f"{current_variable_min_value} : {current_variable_max_value}")
-                    sample_dialog.min_spin.setRange(current_variable_min_value, current_variable_max_value)
-                    sample_dialog.max_spin.setRange(current_variable_min_value, current_variable_max_value)
-                    result = sample_dialog.exec_()
-                    if result:
-                        # get the range values if range
-                        filt_min = sample_dialog.min_spin.value()
-                        filt_max = sample_dialog.max_spin.value()
-
-                        # apply the sampling
-                        sampled_query = copy.deepcopy(selected_query.results)
-                        sampled_query = sampled_query.loc[sampled_query[variable_selection] <= filt_max]
-                        # sampled_query.reset_index()
-                        sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
-
-                        # save the new query as a sample
-                        sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{filt_min}-{filt_max}"
-                        query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
-                                                                     data_id=selected_query.data_id,
-                                                                     params=[],
-                                                                     function="test",
-                                                                     results=sampled_query)
-
-                        self.print_query_output(f"sample saved as: {sample_id}", "black")
-
-                        # update the query lists over the whole gui
-                        self.set_query_list_dropdown(query_data_dict)
-                else:
-                    # IT IS NOT NUMERIC - DISPLAY WARNING
-                    self.print_query_output(
-                        "THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
+                self.sample_by_range(selected_query, variable_selection, query_data_dict)
             elif self.sample_function_combo.currentText() == "category":
-                sample_dialog = QuerySampleCategoryDialog()
-                sample_dialog.name_label.setText(f"{query_selection}")
-                sample_dialog.value_label.setText(f"{variable_selection}")
-                values_raw = selected_query.results[variable_selection].unique()
-                values_string = [str(i) for i in values_raw]
-                print("STRINGGG", values_string)
-                sample_dialog.sample_combo_mult.clear()
-                sample_dialog.sample_combo_mult.addItems(values_string)
-                result = sample_dialog.exec_()
-                if result:
-                    # get the categorical values if range
-                    cat_values = sample_dialog.sample_combo_mult.currentData()
-
-                    # convert the row to strings for sampling
-                    sampled_query = copy.deepcopy(selected_query.results)
-                    sampled_query[variable_selection] = sampled_query[variable_selection].astype(str)
-
-                    # apply the sampling
-                    sampled_query = pd.concat(
-                        [sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
-
-                    # save the new query as a sample
-
-                    dt_string, _ = pgh.get_time_stamp()
-                    sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{dt_string}"
-                    query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
-                                                                 data_id=selected_query.data_id,
-                                                                 params=[],
-                                                                 function="test",
-                                                                 results=sampled_query)
-
-                    self.print_query_output(f"sample saved as: {sample_id}", "black")
-                    # update the query lists over the whole gui
-                    self.set_query_list_dropdown(query_data_dict)
+                self.sample_by_category(selected_query, variable_selection, query_data_dict)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+
+    def sample_by_range(self, selected_query, variable_selection, query_data_dict):
+        """
+        Sample the query results by a numeric range
+        :param selected_query: queryobject to apply sampling to
+        :param variable_selection: variable of query results to sample over
+        :param query_data_dict: dict containing all query objects
+        """
+        # get max and min values for specific variable
+        range_max = selected_query.results[variable_selection].max()
+        range_min = selected_query.results[variable_selection].min()
+        # test to see if the max and min are numeric
+        if np.issubdtype(type(range_max), np.number) and np.issubdtype(type(range_min), np.number):
+            sample_dialog = self.setup_range_sample_dialog(range_min, range_max, selected_query.id, variable_selection)
+            result = sample_dialog.exec_()
+            if result:
+                filt_min = sample_dialog.min_spin.value()
+                filt_max = sample_dialog.max_spin.value()
+
+                # apply the sampling
+                # TODO: make this more sophisiticated to enable sampling of only first step (if selected)
+                sampled_query = copy.deepcopy(selected_query.results)
+                sampled_query = sampled_query.loc[sampled_query[variable_selection] <= filt_max]
+                sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
+
+                # save the new sample as a query
+                sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_{filt_min}-{filt_max} "
+                new_query = self.create_new_query_object(selected_query.function, selected_query.data_id, sampled_query, sample_id)
+                self.update_query_data(new_query.id, new_query, query_data_dict)
+                self.print_query_output(f"sample saved as: {sample_id}", "black")
+        else:
+            self.print_query_output(
+                "THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
+
+    def sample_by_category(self, selected_query, variable_selection, query_data_dict):
+        """
+        Sample the query results by a string category
+        :param selected_query: queryobject to apply sampling to
+        :param variable_selection: variable of query results to sample over
+        :param query_data_dict: dict containing all query objects
+        """
+        sample_dialog = self.setup_category_sample_dialog(selected_query, variable_selection)
+        result = sample_dialog.exec_()
+        if result:
+            cat_values = sample_dialog.sample_combo_mult.currentData()
+
+            # convert the column (variable to sample) to string types to enable sampling
+            sampled_query = copy.deepcopy(selected_query.results)
+            sampled_query[variable_selection] = sampled_query[variable_selection].astype(str)
+
+            # apply the sampling
+            # TODO: make this more sophisiticated to enable sampling of only first step (if selected)
+            sampled_query = pd.concat(
+                [sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
+
+            # save the new sample as a query
+            dt_string, _ = pgh.get_time_stamp()
+            sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_{dt_string}"
+            new_query = self.create_new_query_object(selected_query.function, selected_query.data_id, sampled_query,
+                                                     sample_id)
+            self.update_query_data(new_query.id, new_query, query_data_dict)
+            self.print_query_output(f"sample saved as: {sample_id}", "black")
+
+    def setup_range_sample_dialog(self, range_min, range_max, query_selection, variable_selection):
+        """
+        Set up the range dialog for sampling
+        :param range_min: min value for range selection
+        :param range_max: max value for range selection
+        :param query_selection: id of selected query to sample
+        :param variable_selection: name of variable to sample over in selected query
+        :return: the setup sample range dialog
+        """
+        sample_dialog = QuerySampleRangeDialog()
+        sample_dialog.name_label.setText(f"{query_selection}")
+        sample_dialog.value_label.setText(f"{variable_selection}")
+        sample_dialog.range_label.setText(f"{range_min} : {range_max}")
+        sample_dialog.min_spin.setRange(range_min, range_max)
+        sample_dialog.max_spin.setRange(range_min, range_max)
+        return sample_dialog
+
+    def setup_category_sample_dialog(self, selected_query, variable_selection):
+        """
+        Set up the range dialog for sampling
+        :param selected_query: query object to sample over
+        :param variable_selection: name of variable to sample over in selected query
+        :return: the setup sample category dialog
+        """
+        sample_dialog = QuerySampleCategoryDialog()
+        sample_dialog.name_label.setText(f"{selected_query.id}")
+        sample_dialog.value_label.setText(f"{variable_selection}")
+        values_raw = selected_query.results[variable_selection].unique()
+        values_string = [str(i) for i in values_raw]
+        sample_dialog.sample_combo_mult.addItems(values_string)
+        return sample_dialog
 
     def set_query_list_dropdown(self, query_data_dict):
         self.update_query_combo(self.view_query_combo, query_data_dict)
@@ -492,7 +523,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 selected_query = query_data_dict[query_id]
                 selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
                 query_data_dict[selected_query.id] = query_data_dict.pop(query_id)
-                #TODO: fix bug that updates query list even if viewed
+                # TODO: fix bug that updates query list even if viewed
                 self.set_query_list_dropdown(query_data_dict)
                 self.update_query_info(query_data_dict, sim_data_dict)
         except:
@@ -501,6 +532,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def print_query_output(self, msg, color="black"):
         pgh.print_output(self.query_output, msg, color)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
