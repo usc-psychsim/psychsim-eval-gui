@@ -90,16 +90,22 @@ def update_toolbutton_list(button, list, action_function, parent=None):
     button.setPopupMode(QToolButton.InstantPopup)
 
 
-#todo: fix to base on d1, d2 objects (name, function, etc) rather than d1, d2 results
-def print_diff(text_output_obj, d1, d2, diff_name1, diff_name2, diff_type):
-    if d1 == d2:
-        text_output_obj.append(f"{_green_str('NO DIFF IN')}: {_green_str(diff_type)}")
-        text_output_obj.append(f"{diff_name1}: {_green_str(d1)}")
-        text_output_obj.append(f"{diff_name2}: {_green_str(d2)}")
+def print_diff(text_output_obj, d1, d2, diff_var):
+    """
+    Nicely print the difference between two query objects
+    :param text_output_obj: qtextarea object to print to
+    :param d1: query object to diff
+    :param d2: query object to diff
+    :param diff_var: member of query object to diff over
+    """
+    if getattr(d1, diff_var) == getattr(d2, diff_var):
+        text_output_obj.append(f"{_green_str('NO DIFF IN')}: {_green_str(diff_var)}")
+        text_output_obj.append(f"{d1.id}: {_green_str(getattr(d1, diff_var))}")
+        text_output_obj.append(f"{d2.id}: {_green_str(getattr(d2, diff_var))}")
     else:
-        text_output_obj.append(f"{_red_str('DIFF IN')}: {_red_str(diff_type)}")
-        text_output_obj.append(f"{diff_name1}: {_red_str(d1)}")
-        text_output_obj.append(f"{diff_name2}: {_red_str(d2)}")
+        text_output_obj.append(f"{_red_str('DIFF IN')}: {_red_str(diff_var)}")
+        text_output_obj.append(f"{d1.id}: {_red_str(getattr(d1, diff_var))}")
+        text_output_obj.append(f"{d2.id}: {_red_str(getattr(d2, diff_var))}")
 
 
 #Todo: fix these output functinos for a more generic formatting

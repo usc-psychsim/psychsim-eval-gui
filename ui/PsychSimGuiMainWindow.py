@@ -87,7 +87,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.query_data_page = QueryDataPage()
         self.query_data_page.new_query_signal.connect(self.update_query_data)
         self.query_data_page.show_query_signal.connect(self.display_query)
-
         # Connect query buttons to query functions with data dictionaries
         self.query_data_page.execute_query_button.clicked.connect(lambda: self.query_data_page.execute_query(self.sim_data_dict))
         self.query_data_page.view_query_combo.activated.connect(lambda: self.query_data_page.update_query_info(self.query_data_dict, self.sim_data_dict))

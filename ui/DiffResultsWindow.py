@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
 import os
+import difflib
 from dataclasses import dataclass, asdict, field
 
 diff_results_window_file = os.path.join("ui", "diff_results_window.ui")
@@ -20,15 +21,20 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         self.changed_t2_label.setStyleSheet("color: blue")
         # self.unique_t2_label.setStyleSheet("background-color : lightblue")
 
-    def format_diff_results(self, q1, q2, diff):
+    def format_diff_results(self, q1, q2):
+        q1_csv = q1.results.to_csv(index=False).splitlines(keepends=False)
+        q2_csv = q2.results.to_csv(index=False).splitlines(keepends=False)
+        d = difflib.Differ()
+        diff = list(d.compare(q1_csv, q2_csv))
+
         fixed_diff = self.get_diff_as_vector(diff)
-        for line_no, line in enumerate(q1):
+        for line_no, line in enumerate(q1_csv):
             line_elements = line.split(',')
             if line_no == 0:
                 self.q1_table.setColumnCount(len(line_elements))
                 self.q1_table.setHorizontalHeaderLabels(line_elements)
 
-        for line_no, line in enumerate(q2):
+        for line_no, line in enumerate(q2_csv):
             line_elements = line.split(',')
             if line_no == 0:
                 self.q2_table.setColumnCount(len(line_elements))

@@ -4,18 +4,16 @@ from PyQt5 import uic
 
 import traceback
 import inspect
+import difflib
 import os
 import sys
 import copy
 import pandas as pd
 import numpy as np
 
-import difflib
-
 from PandasModel import PandasModel
 import psychsim_gui_helpers as pgh
 from functions.query_functions import PsychSimQuery
-
 
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
 from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
@@ -61,79 +59,52 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
         self.set_sample_function_dropdown()
 
-    def set_function_dropdown(self):
-        # TODO: refactor these dropdowns so they are all combo boxes
-        query_methods = [method_name for method_name in dir(self.psychsim_query)
-                         if callable(getattr(self.psychsim_query, method_name))
-                         and '__' not in method_name]
-        pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate,
-                                   parent=self)
+    def execute_query(self, sim_data_dict):
+        """
+        Execute the query with the given params. The query function is defined in functions/query_functions.py
+        :param sim_data_dict: dictionarly containing the stored sim run data in the main window
+        """
+        # get the query function
+        query_function = self.function_button.text()
+        # get the params
+        agent = self.agent_combo.currentText()
+        state = self.state_combo.currentText()
+        action_step = self.action_combo.currentData()  # This is actually the step value as it is easier to access the data by step rather than action
+        data_id = self.data_combo.currentText()
+        try:
+            result = getattr(self.psychsim_query, query_function)(data=sim_data_dict[data_id], data_id=data_id,
+                                                                  agent=agent, action=action_step, state=state)
+            result = result.apply(pd.to_numeric,
+                                  errors='ignore')  # convert the resulting dataframe to numeric where possible
+            self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
+            self.print_query_output(str(result))
+            new_query = self.create_new_query(query_function, data_id, result)
 
-    def set_sample_function_dropdown(self):
-        functions = ["range", "category"]
-        self.sample_function_combo.clear()
-        self.sample_function_combo.addItems(functions)
+            new_query = self.show_query_dialog(model=PandasModel(result), query=new_query)
+            # TODO: fix update of names (renaming) here - atm doesn't work
+            # emit the new query signal
+            self.new_query_signal.emit(new_query.id, new_query)
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
-    def set_agent_dropdown(self):
-        if self.agent_combo.isEnabled():
-            try:
-                data_id = self.data_combo.currentText()
-                if data_id:
-                    agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
-                    self.agent_combo.clear()
-                    self.agent_combo.addItems(agents['agent'].tolist())
-                self.set_action_dropdown()
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
-
-    def set_action_dropdown(self):
-        if self.action_combo.isEnabled():
-            try:
-                data_id = self.data_combo.currentText()
-                if data_id:
-                    selected_agent = self.agent_combo.currentText()
-                    actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
-                    self.action_combo.clear()
-                    for index, row in actions.iterrows():
-                        self.action_combo.insertItem(index, row['action'], row['step'])
-                self.set_state_dropdown()
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
-
-    def set_cycle_dropdown(self):
-        pass
-
-    def set_horizon_dropdown(self):
-        pass
-
-    def set_state_dropdown(self):
-        if self.state_combo.isEnabled():
-            try:
-                data_id = self.data_combo.currentText()
-                action_id = self.action_combo.currentData()
-                if data_id is not None and action_id is not None:
-                    selected_agent = self.agent_combo.currentText()
-                    predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id],
-                                                                         agent=selected_agent, action=action_id)
-                    self.state_combo.clear()
-                    self.state_combo.addItems(predicted_actions['base_action'].unique().tolist())
-                    # for index, row in predicted_actions.unique().iterrows():
-                    #     self.state_combo.insertItem(index, row['base_action'], index)
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
+    def create_new_query(self, query_function, data_id, query_data):
+        """
+        Create a new query object
+        :param query_function: (str) name of query function
+        :param data_id: (str) id of data used
+        :param query_data: (DataFrame) results of query
+        :return: PsySimQuery object
+        """
+        dt_string, run_date = pgh.get_time_stamp()
+        query_id = f"{query_function}_{data_id}_{dt_string}"
+        return pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
+                               results=query_data)
 
     def set_query_sample_var_dropdown(self, current_query):
         vars = current_query.results.columns.to_list()
         self.sample_variable_combo.clear()
         self.sample_variable_combo.addItems(vars)
-
-    def btnstate(self, action, button):
-        selection = action.checkedAction().text()
-        button.setText(selection)
-        self.handle_params(selection)
 
     def handle_params(self, function_name):
         function = getattr(self.psychsim_query, function_name)
@@ -154,7 +125,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 if name == "agent":
                     print("SETTING AGENT")
                     self.set_agent_dropdown()
-                    #Connect this to setting the action one
+                    # Connect this to setting the action one
                 elif name == "cycle":
                     self.set_cycle_dropdown()
                 elif name == "horizon":
@@ -166,7 +137,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     pass
                 else:
                     self.reset_params()
-                #TODO: if a particular combo box is enabled - then make sure it gets populated hireachically (Agent > Action | cycle |horizon)
+                # TODO: if a particular combo box is enabled - then make sure it gets populated hireachically (Agent > Action | cycle |horizon)
             else:
                 combo.setEnabled(False)
 
@@ -178,40 +149,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.state_combo.clear()
         # Todo: populate combo boxes based on the function that is selected
 
-
-    def execute_query(self, sim_data_dict):
-        query_function = self.function_button.text()
-        agent = self.agent_combo.currentText()
-        state = self.state_combo.currentText()
-        action_step = self.action_combo.currentData() #This is actually the step value as it is easier to access the data by step rather than action
-        data_id = self.data_combo.currentText()
-        try:
-            result = getattr(self.psychsim_query, query_function)(data=sim_data_dict[data_id], data_id=data_id,
-                                                                  agent=agent, action=action_step, state=state)
-            result = result.apply(pd.to_numeric, errors='ignore') #convert the resulting dataframe to numeric where possible
-            self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
-            self.print_query_output(str(result))
-
-            # create query ID
-            #TODO: refactor this as create_new() in the query class?
-            dt_string, run_date = pgh.get_time_stamp()
-            query_id = f"{query_function}_{data_id}_{dt_string}"
-
-            # create a new query object
-            new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
-                                        results=result)
-
-            # create new dialog and show results + query ID
-            new_query = self.show_query_dialog(model=PandasModel(result), query=new_query)
-            #TODO: fix update of names (renaming) here - atm doesn't work
-
-            # emit the new query signal
-            self.new_query_signal.emit(query_id, new_query)
-
-        except:
-            tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
-
     def show_query_dialog(self, model, query):
         query_dialog = QueryDataDialog(query, model)
         result = query_dialog.exec_()
@@ -219,8 +156,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         if result:
             query.id = query_dialog.query_id_input.text()
         return query
-
-
 
     def get_query_doc(self):
         query_function = self.function_button.text()
@@ -242,6 +177,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         pgh.print_output(self.query_output, msg, color)
 
     def clear_query_info(self):
+        """
+        Clear the query info on the gui
+        """
         try:
             self.sim_file_label.setText("...")
             self.query_name_label.setText("...")
@@ -252,8 +190,12 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-
     def update_query_info(self, query_data_dict, sim_data_dict):
+        """
+        Update the query info on the gui with appropriate values
+        :param query_data_dict: dictionary of query data from main gui
+        :param sim_data_dict: dictionary of sim data from main gui
+        """
         selected_query_id = self.view_query_combo.currentText()
         selected_query = query_data_dict[selected_query_id]
         try:
@@ -271,6 +213,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             self.print_query_output(tb, "red")
 
     def save_csv_query(self, query_data_dict):
+        """
+        Write the query results as a csv file to disk
+        :param query_data_dict: dictionary of query data from main gui
+        """
         query_id = self.view_query_combo.currentText()
         if query_id in query_data_dict.keys():
             dt_string, _ = pgh.get_time_stamp()
@@ -282,78 +228,40 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             self.print_query_output(f"{query_id} saved to: {output_path}", "black")
 
     def delete_query(self, query_data_dict):
+        """
+        Show dialog and remove the selected query from the main window query data dictionary if selected
+        :param query_data_dict: dictionary of query data from main gui
+        """
         query_id = self.view_query_combo.currentText()
         try:
             if query_id in query_data_dict.keys():
                 are_you_sure_dialog = DeleteAreYouSure()
                 are_you_sure_dialog.query_name.setText(query_id)
-
                 result = are_you_sure_dialog.exec_()
                 if result:
-                    #delete the query
+                    # delete the query if the users clicks 'OK'
                     query_data_dict.pop(query_id)
-                    self.set_query_list_dropdown(query_data_dict)
                     self.clear_query_info()
-
+                    self.set_query_list_dropdown(query_data_dict)  # update the query lists across the gui
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
     def diff_query(self, query_data_dict):
+        """
+        Execute the diff between selected queries
+        :param query_data_dict: dictionary containing query objects from main window
+        """
         try:
-            # get the two queries
             q1 = query_data_dict[self.query_diff_1.currentText()]
             q2 = query_data_dict[self.query_diff_2.currentText()]
 
             # check that the columns match regardless of order
             if pgh.dataframe_columns_equal(q1.results, q2.results):
-            # check that they are the same type
-            # if q1.function == q2.function:
-                self.print_query_output(f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}") #TODO: be consistant with colour coding of text
-                # Diff the data ID
-                pgh.print_diff(self.query_output, q1.data_id, q2.data_id, f"{q1.id} data_id", f"{q2.id} data_id", "data_id")
-
-                # Diff length
-                pgh.print_diff(self.query_output, len(q1.results.index), len(q2.results.index), f"{q1.id} steps", f"{q2.id} steps", "steps")
-
-                # # Diff the results
-                # diff_results = pgh.dataframe_difference(q1.results, q2.results)
-                # if len(diff_results.index) > 0:
-                #     self.query_output.append(f"{pgh._red_str('DIFF IN')}: {pgh._red_str('query results')}")
-                # else:
-                #     self.query_output.append(f"{pgh._green_str('NO DIFF IN')}: {pgh._green_str('query results')}")
-
-                dt_string, _ = pgh.get_time_stamp()
-                query_id = f"{q1.id}-{q2.id}_{q1.function}_diff"
-                data_id = f"{q1.data_id}-{q2.data_id}"
-
-                #--------
-                # Convert the two query results to csv
-                q1_csv = q1.results.to_csv(index=False).splitlines(keepends=False)
-                q2_csv = q2.results.to_csv(index=False).splitlines(keepends=False)
-
-                # Diff the CSVs
-                d = difflib.Differ()
-                result = list(d.compare(q1_csv, q2_csv))
-
-                # Display results
-                diff_results_window = DiffResultsWindow(parent=self)
-                diff_results_window.diff_title.setText(f"Diff Results for {q1.id} and {q2.id}")
-                diff_results_window.q1_diff_label.setText(f"{q1.id}")
-                diff_results_window.q2_diff_label.setText(f"{q2.id}")
-                diff_results_window.q2_diff_label.setText(f"{q2.id}")
-                diff_results_window.format_diff_results(q1_csv, q2_csv, result)
-                diff_results_window.show()
-
-                # create a new query object #TODO: rethink if an object with differences is really needed.
-                # new_query = pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=q1.function,
-                #                             results=diff_results, diff_query=True)
-                #
-                # # create new dialog and show results + query ID
-                # # new_query = self.show_query_dialog(model=PandasModel(diff_results), query=new_query)
-                # self.query_data_dict[new_query.id] = new_query
-                # self.set_query_list_dropdown()
-                # self.new_diff_query_name.setText(query_id)
+                self.print_query_output(
+                    f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}")
+                self.diff_query_objects(q1, q2)
+                self.diff_query_results(q1, q2)
             else:
                 self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
                 self.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
@@ -361,12 +269,36 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
+    def diff_query_objects(self, q1, q2):
+        """
+        Diff the members belonging to the query objects (except the get_ functions and results)
+        Print the results to the GUI
+        :param q1: object to diff
+        :param q2: object to diff
+        """
+        for member in [i for i in dir(q1) if not i.startswith("_") and not i.startswith("get") and not i.startswith("results")]:
+            pgh.print_diff(self.query_output, q1, q2, member)
+
+    def diff_query_results(self, q1, q2):
+        """
+        Setup the DiffResultsWindow to display the diff results of the pandas dataframes
+        :param q1: object to diff
+        :param q2: object to diff
+        """
+        diff_results_window = DiffResultsWindow(parent=self)
+        diff_results_window.diff_title.setText(f"Diff Results for {q1.id} and {q2.id}")
+        diff_results_window.q1_diff_label.setText(f"{q1.id}")
+        diff_results_window.q2_diff_label.setText(f"{q2.id}")
+        diff_results_window.q2_diff_label.setText(f"{q2.id}")
+        diff_results_window.format_diff_results(q1, q2)
+        diff_results_window.show()
+
     def handle_sample_query_dropdown(self, query_data_dict):
         selection = self.sample_query_combo.currentText()
         self.set_query_sample_var_dropdown(query_data_dict[selection])
 
     def show_sample_dialog(self, query_data_dict):
-        #TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
+        # TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
         result = None
         query_selection = self.sample_query_combo.currentText()
         variable_selection = self.sample_variable_combo.currentText()
@@ -376,8 +308,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 sample_dialog = QuerySampleRangeDialog()
                 current_variable_max_value = selected_query.results[variable_selection].max()
                 current_variable_min_value = selected_query.results[variable_selection].min()
-                #test to see if the max and min are numeric
-                if np.issubdtype(type(current_variable_max_value), np.number) and np.issubdtype(type(current_variable_min_value), np.number):
+                # test to see if the max and min are numeric
+                if np.issubdtype(type(current_variable_max_value), np.number) and np.issubdtype(
+                        type(current_variable_min_value), np.number):
                     sample_dialog.name_label.setText(f"{query_selection}")
                     sample_dialog.value_label.setText(f"{variable_selection}")
                     sample_dialog.range_label.setText(f"{current_variable_min_value} : {current_variable_max_value}")
@@ -398,18 +331,19 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                         # save the new query as a sample
                         sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{filt_min}-{filt_max}"
                         query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
-                                                                    data_id=selected_query.data_id,
-                                                                    params=[],
-                                                                    function="test",
-                                                                    results=sampled_query)
+                                                                     data_id=selected_query.data_id,
+                                                                     params=[],
+                                                                     function="test",
+                                                                     results=sampled_query)
 
                         self.print_query_output(f"sample saved as: {sample_id}", "black")
 
                         # update the query lists over the whole gui
                         self.set_query_list_dropdown(query_data_dict)
                 else:
-                    #IT IS NOT NUMERIC - DISPLAY WARNING
-                    self.print_query_output("THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
+                    # IT IS NOT NUMERIC - DISPLAY WARNING
+                    self.print_query_output(
+                        "THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
             elif self.sample_function_combo.currentText() == "category":
                 sample_dialog = QuerySampleCategoryDialog()
                 sample_dialog.name_label.setText(f"{query_selection}")
@@ -422,24 +356,25 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 result = sample_dialog.exec_()
                 if result:
                     # get the categorical values if range
-                    cat_values =sample_dialog.sample_combo_mult.currentData()
+                    cat_values = sample_dialog.sample_combo_mult.currentData()
 
-                    #convert the row to strings for sampling
+                    # convert the row to strings for sampling
                     sampled_query = copy.deepcopy(selected_query.results)
                     sampled_query[variable_selection] = sampled_query[variable_selection].astype(str)
 
                     # apply the sampling
-                    sampled_query = pd.concat([sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
+                    sampled_query = pd.concat(
+                        [sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
 
                     # save the new query as a sample
 
                     dt_string, _ = pgh.get_time_stamp()
                     sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{dt_string}"
                     query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
-                                                                      data_id=selected_query.data_id,
-                                                                      params=[],
-                                                                      function="test",
-                                                                      results=sampled_query)
+                                                                 data_id=selected_query.data_id,
+                                                                 params=[],
+                                                                 function="test",
+                                                                 results=sampled_query)
 
                     self.print_query_output(f"sample saved as: {sample_id}", "black")
                     # update the query lists over the whole gui
@@ -453,7 +388,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.update_query_combo(self.sample_query_combo, query_data_dict)
         self.update_query_diff_combo(self.query_diff_1, query_data_dict)
         self.update_query_diff_combo(self.query_diff_2, query_data_dict)
-        #todo: connect plot query with self.set_axis_dropdowns function (parent = self) ??
+        # todo: connect plot query with self.set_axis_dropdowns function (parent = self) ??
         # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
         #                            parent=self)
 
@@ -466,6 +401,82 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         combo_box.clear()
         new_items = [item for item in query_data_dict.keys() if not query_data_dict[item].diff_query]
         combo_box.addItems(new_items)
+
+    def set_function_dropdown(self):
+        # TODO: refactor these dropdowns so they are all combo boxes
+        query_methods = [method_name for method_name in dir(self.psychsim_query)
+                         if callable(getattr(self.psychsim_query, method_name))
+                         and '__' not in method_name]
+        pgh.update_toolbutton_list(list=query_methods, button=self.function_button, action_function=self.btnstate,
+                                   parent=self)
+
+    def set_sample_function_dropdown(self):
+        # TODO: refactor
+        functions = ["range", "category"]
+        self.sample_function_combo.clear()
+        self.sample_function_combo.addItems(functions)
+
+    def set_agent_dropdown(self):
+        # TODO: refactor
+        if self.agent_combo.isEnabled():
+            try:
+                data_id = self.data_combo.currentText()
+                if data_id:
+                    agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
+                    self.agent_combo.clear()
+                    self.agent_combo.addItems(agents['agent'].tolist())
+                self.set_action_dropdown()
+            except:
+                tb = traceback.format_exc()
+                self.print_query_output(tb, "red")
+
+    def set_action_dropdown(self):
+        # TODO: refactor
+        if self.action_combo.isEnabled():
+            try:
+                data_id = self.data_combo.currentText()
+                if data_id:
+                    selected_agent = self.agent_combo.currentText()
+                    actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
+                    self.action_combo.clear()
+                    for index, row in actions.iterrows():
+                        self.action_combo.insertItem(index, row['action'], row['step'])
+                self.set_state_dropdown()
+            except:
+                tb = traceback.format_exc()
+                self.print_query_output(tb, "red")
+
+    def set_cycle_dropdown(self):
+        # TODO: refactor
+        pass
+
+    def set_horizon_dropdown(self):
+        # TODO: refactor
+        pass
+
+    def set_state_dropdown(self):
+        # TODO: refactor
+        if self.state_combo.isEnabled():
+            try:
+                data_id = self.data_combo.currentText()
+                action_id = self.action_combo.currentData()
+                if data_id is not None and action_id is not None:
+                    selected_agent = self.agent_combo.currentText()
+                    predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id],
+                                                                         agent=selected_agent, action=action_id)
+                    self.state_combo.clear()
+                    self.state_combo.addItems(predicted_actions['base_action'].unique().tolist())
+                    # for index, row in predicted_actions.unique().iterrows():
+                    #     self.state_combo.insertItem(index, row['base_action'], index)
+            except:
+                tb = traceback.format_exc()
+                self.print_query_output(tb, "red")
+
+    def btnstate(self, action, button):
+        selection = action.checkedAction().text()
+        button.setText(selection)
+        self.handle_params(selection)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
