@@ -86,8 +86,14 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.query_data_page = QueryDataPage()
         self.query_data_page.new_query_signal.connect(self.update_query_data)
         self.query_data_page.show_query_signal.connect(self.display_query)
+        #todo: the following functions all access the query_data_dict - they need to be fixed
         self.query_data_page.execute_query_button.clicked.connect(lambda: self.query_data_page.execute_query(self.sim_data_dict))
         self.query_data_page.view_query_combo.activated.connect(self.update_query_info)
+        self.query_data_page.save_csv_query_button.clicked.connect(self.save_csv_query)
+        self.query_data_page.delete_query_buton.clicked.connect(self.delete_query)
+        self.query_data_page.diff_query_button.clicked.connect(self.diff_query)
+        self.query_data_page.sample_query_combo.activated.connect(self.handle_sample_query_dropdown)
+        self.query_data_page.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
         # Set up the main window stacked widget
         self.main_window_stack_widget.insertWidget(0, self.sim_info_page)
@@ -111,25 +117,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sample_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "sample"))
 
 
-
-        # SET UP QUERY WINDOW --------------
-        # self.psychsim_query = PsychSimQuery()
-        # self.set_function_dropdown()
-        # self.function_info_button.setToolTip('Click for how to write custom query functions')
-        #
-        # self.execute_query_button.clicked.connect(self.execute_query)
-        # self.view_query_button.clicked.connect(self.view_query)
-        # self.save_csv_query_button.clicked.connect(self.save_csv_query)
-        # self.diff_query_button.clicked.connect(self.diff_query)
-        # self.query_doc_button.clicked.connect(self.get_query_doc)
-        # self.data_combo.activated.connect(self.reset_params)
-        # self.agent_combo.activated.connect(self.set_action_dropdown)
-        # self.action_combo.activated.connect(self.set_state_dropdown)
-        # # self.data_combo.activated.connect(self.set_cycle_dropdown)
-        # self.delete_query_buton.clicked.connect(self.delete_query)
-        #
-        # self.set_sample_function_dropdown()
-        # self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
         # SET UP PLOT WINDOW ----------------
         self.current_plot = None
@@ -277,7 +264,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
         #                            parent=self)
 
-        
+
     def set_data_dropdown(self, combo_box):
         combo_box.clear()
         new_items = [item for item in self.sim_data_dict.keys()]
@@ -300,11 +287,9 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
 
 
-
-
-
     def delete_query(self):
-        query_id = self.view_query_list.text()
+        #TODO: move this to query_data_page
+        query_id = self.query_data_page.view_query_combo.currentText()
         try:
             if query_id in self.query_data_dict.keys():
                 are_you_sure_dialog = DeleteAreYouSure()
@@ -315,11 +300,11 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                     #delete the query
                     self.query_data_dict.pop(query_id)
                     self.set_query_list_dropdown()
-                    self.clear_query_info()
+                    self.query_data_page.clear_query_info()
 
         except:
             tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
+            self.query_data_page.print_query_output(tb, "red")
 
     def display_query(self, query_id):
         #TODO: move this to query_data_page
@@ -352,20 +337,11 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             tb = traceback.format_exc()
             self.query_data_page.print_query_output(tb, "red")
 
-    def clear_query_info(self):
-        try:
-            self.view_query_list.setText("...")
-            self.sim_file_label.setText("...")
-            self.query_name_label.setText("...")
-            self.data_id_label.setText("...")
-            self.function_label.setText("...")
-            self.is_diff_label.setText("...")
-        except:
-            tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
+
 
     def save_csv_query(self):
-        query_id = self.view_query_list.text()
+        #todo: move to querydatapage.py
+        query_id = self.query_data_page.view_query_combo.currentText()
         if query_id in self.query_data_dict.keys():
             now = datetime.now()
             dt_string = now.strftime("%Y%m%d_%H%M%S")
@@ -374,24 +350,25 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 os.makedirs(output_directory)
             output_path = os.path.join(output_directory, f"{query_id}_{dt_string}.csv")
             self.query_data_dict[query_id].results.to_csv(output_path)
-            self.print_query_output(f"{query_id} saved to: {output_path}", "black")
+            self.query_data_page.print_query_output(f"{query_id} saved to: {output_path}", "black")
 
     def diff_query(self):
+        #todo move this to queryDataPage.py
         try:
             # get the two queries
-            q1 = self.query_data_dict[self.query_diff_1.text()]
-            q2 = self.query_data_dict[self.query_diff_2.text()]
+            q1 = self.query_data_dict[self.query_data_page.query_diff_1.currentText()]
+            q2 = self.query_data_dict[self.query_data_page.query_diff_2.currentText()]
 
             # check that the columns match regardless of order
             if pgh.dataframe_columns_equal(q1.results, q2.results):
             # check that they are the same type
             # if q1.function == q2.function:
-                self.print_query_output(f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}") #TODO: be consistant with colour coding of text
+                self.query_data_page.print_query_output(f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}") #TODO: be consistant with colour coding of text
                 # Diff the data ID
-                pgh.print_diff(self.query_output, q1.data_id, q2.data_id, f"{q1.id} data_id", f"{q2.id} data_id", "data_id")
+                pgh.print_diff(self.query_data_page.query_output, q1.data_id, q2.data_id, f"{q1.id} data_id", f"{q2.id} data_id", "data_id")
 
                 # Diff length
-                pgh.print_diff(self.query_output, len(q1.results.index), len(q2.results.index), f"{q1.id} steps", f"{q2.id} steps", "steps")
+                pgh.print_diff(self.query_data_page.query_output, len(q1.results.index), len(q2.results.index), f"{q1.id} steps", f"{q2.id} steps", "steps")
 
                 # # Diff the results
                 # diff_results = pgh.dataframe_difference(q1.results, q2.results)
@@ -432,22 +409,26 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 # self.set_query_list_dropdown()
                 # self.new_diff_query_name.setText(query_id)
             else:
-                self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
-                self.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
+                self.query_data_page.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
+                self.query_data_page.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
         except:
             tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
+            self.query_data_page.print_query_output(tb, "red")
 
-
+    def handle_sample_query_dropdown(self):
+        # TODO: move this to QueryDataPage.py
+        selection = self.query_data_page.sample_query_combo.currentText()
+        self.query_data_page.set_query_sample_var_dropdown(self.query_data_dict[selection])
 
     def show_sample_dialog(self):
+        # TODO: move this to QueryDataPage.py
         #TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
         result = None
-        query_selection = self.sample_query_list.text() #todo: replace with sample_query_combo
-        variable_selection = self.sample_variable_combo.currentText()
+        query_selection = self.query_data_page.sample_query_combo.currentText()
+        variable_selection = self.query_data_page.sample_variable_combo.currentText()
         selected_query = self.query_data_dict[query_selection]
         try:
-            if self.sample_function_combo.currentText() == "range":
+            if self.query_data_page.sample_function_combo.currentText() == "range":
                 sample_dialog = QuerySampleRangeDialog()
                 current_variable_max_value = selected_query.results[variable_selection].max()
                 current_variable_min_value = selected_query.results[variable_selection].min()
@@ -471,21 +452,21 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                         sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
 
                         # save the new query as a sample
-                        sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{filt_min}-{filt_max}"
+                        sample_id = f"{query_selection}_{variable_selection}_{self.query_data_page.sample_function_combo.currentText()}_{filt_min}-{filt_max}"
                         self.query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
                                                                     data_id=selected_query.data_id,
                                                                     params=[],
                                                                     function="test",
                                                                     results=sampled_query)
 
-                        self.print_query_output(f"sample saved as: {sample_id}", "black")
+                        self.query_data_page.print_query_output(f"sample saved as: {sample_id}", "black")
 
                         # update the query lists over the whole gui
                         self.set_query_list_dropdown()
                 else:
                     #IT IS NOT NUMERIC - DISPLAY WARNING
-                    self.print_query_output("THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
-            elif self.sample_function_combo.currentText() == "category":
+                    self.query_data_page.print_query_output("THE VARIABLE DOES NOT CONTAIN NUMERIC VALUES. USE THE CATEGORY FUNCTION INSTEAD", "red")
+            elif self.query_data_page.sample_function_combo.currentText() == "category":
                 sample_dialog = QuerySampleCategoryDialog()
                 sample_dialog.name_label.setText(f"{query_selection}")
                 sample_dialog.value_label.setText(f"{variable_selection}")
@@ -510,19 +491,19 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
                     now = datetime.now()
                     dt_string = now.strftime("%Y%m%d_%H%M%S")
-                    sample_id = f"{query_selection}_{variable_selection}_{self.sample_function_combo.currentText()}_{dt_string}"
+                    sample_id = f"{query_selection}_{variable_selection}_{self.query_data_page.sample_function_combo.currentText()}_{dt_string}"
                     self.query_data_dict[sample_id] = pgh.PsySimQuery(id=sample_id,
                                                                       data_id=selected_query.data_id,
                                                                       params=[],
                                                                       function="test",
                                                                       results=sampled_query)
 
-                    self.print_query_output(f"sample saved as: {sample_id}", "black")
+                    self.query_data_page.print_query_output(f"sample saved as: {sample_id}", "black")
                     # update the query lists over the whole gui
                     self.set_query_list_dropdown()
         except:
             tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
+            self.query_data_page.print_query_output(tb, "red")
 
     # PLOT FUNCTIONS -------------------------------------------
     def setup_test_plot(self):

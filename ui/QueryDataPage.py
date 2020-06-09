@@ -40,19 +40,18 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.function_info_button.setToolTip('Click for how to write custom query functions')
 
         self.view_query_button.clicked.connect(self.view_query)
-        # self.save_csv_query_button.clicked.connect(self.save_csv_query)
-        # self.diff_query_button.clicked.connect(self.diff_query)
         self.query_doc_button.clicked.connect(self.get_query_doc)
+        self.query_doc_button.clicked.connect(self.get_query_doc)
+
         # self.data_combo.activated.connect(self.reset_params)
         # self.agent_combo.activated.connect(self.set_action_dropdown)
         # self.action_combo.activated.connect(self.set_state_dropdown)
         # # self.data_combo.activated.connect(self.set_cycle_dropdown)
-        # self.delete_query_buton.clicked.connect(self.delete_query)
+
         # self.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
         # self.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
 
         self.set_sample_function_dropdown()
-        # self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
     def set_function_dropdown(self):
         # TODO: refactor these dropdowns so they are all combo boxes
@@ -228,12 +227,19 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         query_id = self.new_diff_query_name.text()
         self.show_query_signal.emit(query_id)
 
-    def handle_sample_query_dropdown(self):
-        selection = self.sample_query_combo.currentText()
-        self.set_query_sample_var_dropdown(self.query_data_dict[selection])
-
     def print_query_output(self, msg, color="black"):
         pgh.print_output(self.query_output, msg, color)
+
+    def clear_query_info(self):
+        try:
+            self.sim_file_label.setText("...")
+            self.query_name_label.setText("...")
+            self.data_id_label.setText("...")
+            self.function_label.setText("...")
+            self.is_diff_label.setText("...")
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
