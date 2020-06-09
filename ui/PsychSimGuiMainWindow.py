@@ -84,11 +84,10 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sim_info_page.rename_data_signal.connect(self.rename_data_from_input)
 
         # Set up the query data page
-        self.query_data_page = QueryDataPage()
-        self.query_data_page.new_query_signal.connect(self.update_query_data)
-        self.query_data_page.show_query_signal.connect(self.display_query)
+        self.query_data_page = QueryDataPage() #TODO: can I just pass the sim_data_dict and query_data_dict as pointers to the constructor instead of each function?
         # Connect query buttons to query functions with data dictionaries
-        self.query_data_page.execute_query_button.clicked.connect(lambda: self.query_data_page.execute_query(self.sim_data_dict))
+        self.query_data_page.execute_query_button.clicked.connect(lambda: self.query_data_page.execute_query(self.sim_data_dict, self.query_data_dict))
+        self.query_data_page.view_query_button.clicked.connect(lambda: self.query_data_page.view_query(self.query_data_dict, self.sim_data_dict))
         self.query_data_page.view_query_combo.activated.connect(lambda: self.query_data_page.update_query_info(self.query_data_dict, self.sim_data_dict))
         self.query_data_page.save_csv_query_button.clicked.connect(lambda: self.query_data_page.save_csv_query(self.query_data_dict))
         self.query_data_page.delete_query_buton.clicked.connect(lambda: self.query_data_page.delete_query(self.query_data_dict))
@@ -264,24 +263,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         combo_box.addItems(new_items)
 
     # QUERY FUNCTIONS-------------------------------------------
-    def update_query_data(self, query_id, query_data):
-        #TODO: move this to query_data_page
-        self.query_data_dict[query_id] = query_data
-        self.query_data_page.set_query_list_dropdown(self.query_data_dict)
 
-    def display_query(self, query_id):
-        #TODO: move this to query_data_page
-        try:
-            if query_id in self.query_data_dict.keys():
-                selected_query = self.query_data_dict[query_id]
-                selected_query = self.query_data_page.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
-                self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
-                #TODO: fix bug that updates query list even if viewed
-                self.query_data_page.set_query_list_dropdown(self.query_data_dict)
-                self.query_data_page.update_query_info(self.query_data_dict, self.sim_data_dict)
-        except:
-            tb = traceback.format_exc()
-            self.query_data_page.print_query_output(tb, "red")
+
 
 
     # PLOT FUNCTIONS -------------------------------------------

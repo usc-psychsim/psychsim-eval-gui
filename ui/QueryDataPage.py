@@ -45,7 +45,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         # Setup buttons
         self.function_info_button.setToolTip('Click for how to write custom query functions')
 
-        self.view_query_button.clicked.connect(self.view_query)
         self.query_doc_button.clicked.connect(self.get_query_doc)
         self.query_doc_button.clicked.connect(self.get_query_doc)
 
@@ -59,7 +58,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
         self.set_sample_function_dropdown()
 
-    def execute_query(self, sim_data_dict):
+    def execute_query(self, sim_data_dict, query_data_dict):
         """
         Execute the query with the given params. The query function is defined in functions/query_functions.py
         :param sim_data_dict: dictionarly containing the stored sim run data in the main window
@@ -79,14 +78,16 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
             new_query = self.create_new_query(query_function, data_id, result)
-
-            new_query = self.show_query_dialog(model=PandasModel(result), query=new_query)
-            # TODO: fix update of names (renaming) here - atm doesn't work
-            # emit the new query signal
-            self.new_query_signal.emit(new_query.id, new_query)
+            self.update_query_data(new_query.id, new_query, query_data_dict)
+            self.display_query(new_query.id, query_data_dict, sim_data_dict)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+
+    def update_query_data(self, query_id, query_data, query_data_dict):
+        query_data_dict[query_id] = query_data
+        self.set_query_list_dropdown(query_data_dict)
 
     def create_new_query(self, query_function, data_id, query_data):
         """
@@ -101,80 +102,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         return pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
                                results=query_data)
 
-    def set_query_sample_var_dropdown(self, current_query):
-        vars = current_query.results.columns.to_list()
-        self.sample_variable_combo.clear()
-        self.sample_variable_combo.addItems(vars)
-
-    def handle_params(self, function_name):
-        function = getattr(self.psychsim_query, function_name)
-        param_list = inspect.getfullargspec(function)
-        print(param_list)
-        self.set_params(param_list)
-
-    def set_params(self, param_list):
-        param_combo_boxes = dict(agent=self.agent_combo,
-                                 action=self.action_combo,
-                                 cycle=self.cycle_combo,
-                                 horizon=self.horizon_combo,
-                                 state=self.state_combo)
-
-        for name, combo in param_combo_boxes.items():
-            if name in param_list.args:
-                combo.setEnabled(True)
-                if name == "agent":
-                    print("SETTING AGENT")
-                    self.set_agent_dropdown()
-                    # Connect this to setting the action one
-                elif name == "cycle":
-                    self.set_cycle_dropdown()
-                elif name == "horizon":
-                    self.set_horizon_dropdown()
-                elif name == "state":
-                    pass
-                    # self.set_state_dropdown()
-                elif name == "action":
-                    pass
-                else:
-                    self.reset_params()
-                # TODO: if a particular combo box is enabled - then make sure it gets populated hireachically (Agent > Action | cycle |horizon)
-            else:
-                combo.setEnabled(False)
-
-    def reset_params(self):
-        self.agent_combo.clear()
-        self.action_combo.clear()
-        self.cycle_combo.clear()
-        self.horizon_combo.clear()
-        self.state_combo.clear()
-        # Todo: populate combo boxes based on the function that is selected
-
-    def show_query_dialog(self, model, query):
-        query_dialog = QueryDataDialog(query, model)
-        result = query_dialog.exec_()
-        query = query_dialog.query_data
-        if result:
-            query.id = query_dialog.query_id_input.text()
-        return query
-
-    def get_query_doc(self):
-        query_function = self.function_button.text()
-        try:
-            self.print_query_output(f"{query_function}: {getattr(self.psychsim_query, query_function).__doc__}")
-        except:
-            tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
-
-    def view_query(self):
-        query_id = self.view_query_combo.currentText()
-        self.show_query_signal.emit(query_id)
-
-    def view_diff_query(self):
-        query_id = self.new_diff_query_name.text()
-        self.show_query_signal.emit(query_id)
-
-    def print_query_output(self, msg, color="black"):
-        pgh.print_output(self.query_output, msg, color)
 
     def clear_query_info(self):
         """
@@ -239,13 +166,20 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 are_you_sure_dialog.query_name.setText(query_id)
                 result = are_you_sure_dialog.exec_()
                 if result:
-                    # delete the query if the users clicks 'OK'
-                    query_data_dict.pop(query_id)
-                    self.clear_query_info()
-                    self.set_query_list_dropdown(query_data_dict)  # update the query lists across the gui
+                    self.remove_query_from_dict(query_id, query_data_dict)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+    def remove_query_from_dict(self, query_id, query_data_dict):
+        """
+        Remove an selected item from the main query_data_dict
+        :param query_id: ID of query to remove
+        :param query_data_dict: dict holding query objects from main window
+        """
+        query_data_dict.pop(query_id)
+        self.clear_query_info()
+        self.set_query_list_dropdown(query_data_dict)  # update the query lists across the gui
 
     def diff_query(self, query_data_dict):
         """
@@ -294,8 +228,15 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         diff_results_window.show()
 
     def handle_sample_query_dropdown(self, query_data_dict):
+        """
+        Used to dete sample variable list depending on which data source is selected
+        :param query_data_dict:
+        """
         selection = self.sample_query_combo.currentText()
-        self.set_query_sample_var_dropdown(query_data_dict[selection])
+        current_query = query_data_dict[selection]
+        vars = current_query.results.columns.to_list()
+        self.sample_variable_combo.clear()
+        self.sample_variable_combo.addItems(vars)
 
     def show_sample_dialog(self, query_data_dict):
         # TODO: the sampling here samples across all steps. Therefore if you want to track certain actors through steps based on their initial value this needs to be fixed
@@ -477,6 +418,89 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         button.setText(selection)
         self.handle_params(selection)
 
+    def handle_params(self, function_name):
+        function = getattr(self.psychsim_query, function_name)
+        param_list = inspect.getfullargspec(function)
+        print(param_list)
+        self.set_params(param_list)
+
+    def set_params(self, param_list):
+        param_combo_boxes = dict(agent=self.agent_combo,
+                                 action=self.action_combo,
+                                 cycle=self.cycle_combo,
+                                 horizon=self.horizon_combo,
+                                 state=self.state_combo)
+
+        for name, combo in param_combo_boxes.items():
+            if name in param_list.args:
+                combo.setEnabled(True)
+                if name == "agent":
+                    print("SETTING AGENT")
+                    self.set_agent_dropdown()
+                    # Connect this to setting the action one
+                elif name == "cycle":
+                    self.set_cycle_dropdown()
+                elif name == "horizon":
+                    self.set_horizon_dropdown()
+                elif name == "state":
+                    pass
+                    # self.set_state_dropdown()
+                elif name == "action":
+                    pass
+                else:
+                    self.reset_params()
+                # TODO: if a particular combo box is enabled - then make sure it gets populated hireachically (Agent > Action | cycle |horizon)
+            else:
+                combo.setEnabled(False)
+
+    def reset_params(self):
+        self.agent_combo.clear()
+        self.action_combo.clear()
+        self.cycle_combo.clear()
+        self.horizon_combo.clear()
+        self.state_combo.clear()
+        # Todo: populate combo boxes based on the function that is selected
+
+    def show_query_dialog(self, model, query):
+        query_dialog = QueryDataDialog(query, model)
+        result = query_dialog.exec_()
+        query = query_dialog.query_data
+        if result:
+            query.id = query_dialog.query_id_input.text()
+        return query
+
+    def get_query_doc(self):
+        query_function = self.function_button.text()
+        try:
+            self.print_query_output(f"{query_function}: {getattr(self.psychsim_query, query_function).__doc__}")
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
+    def view_query(self, query_data_dict, sim_data_dict):
+        query_id = self.view_query_combo.currentText()
+        self.display_query(query_id, query_data_dict, sim_data_dict)
+
+    def display_query(self, query_id, query_data_dict, sim_data_dict):
+        """
+        Display the query in a dialog and rename if necessesary
+        :param query_id: id of query to display
+        :param query_data_dict:
+        """
+        try:
+            if query_id in query_data_dict.keys():
+                selected_query = query_data_dict[query_id]
+                selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
+                query_data_dict[selected_query.id] = query_data_dict.pop(query_id)
+                #TODO: fix bug that updates query list even if viewed
+                self.set_query_list_dropdown(query_data_dict)
+                self.update_query_info(query_data_dict, sim_data_dict)
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
+    def print_query_output(self, msg, color="black"):
+        pgh.print_output(self.query_output, msg, color)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
