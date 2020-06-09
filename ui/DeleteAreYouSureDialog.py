@@ -1,10 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 import os
-
-from CheckableComboBox import CheckableComboBox
 
 
 delete_are_you_sure_file = os.path.join("ui", "delete_are_you_sure_dialog.ui")
@@ -12,6 +9,9 @@ ui_deleteAreYouSure, QtBaseClass = uic.loadUiType(delete_are_you_sure_file)
 
 
 class DeleteAreYouSure(QDialog, ui_deleteAreYouSure):
+    """
+    Dialog to ask the user if they are sure about deleting a query
+    """
     def __init__(self):
         super(DeleteAreYouSure, self).__init__()
         self.setupUi(self)

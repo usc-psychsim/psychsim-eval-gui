@@ -6,7 +6,11 @@ import os
 rename_data_view_file = os.path.join("ui", "rename_data_dialog.ui")
 ui_renameDataView, QtBaseClass = uic.loadUiType(rename_data_view_file)
 
+
 class RenameDataDialog(QDialog, ui_renameDataView):
+    """
+    Dialog to rename PsychSimRun data
+    """
     def __init__(self, old_name):
         super(RenameDataDialog, self).__init__()
         self.setupUi(self)
@@ -15,9 +19,13 @@ class RenameDataDialog(QDialog, ui_renameDataView):
         self.new_name = ""
         self.old_data_name.setText(old_name)
 
-    # static method to create the dialog and return (date, time, accepted)
     @staticmethod
-    def get_new_name(old_name="", parent=None):
+    def get_new_name(old_name=""):
+        """
+        static method to create the dialog and return (date, time, accepted)
+        :param old_name: old data name
+        :return: the new name as a string. result as a bool (True if OK clicked, False if Cancel)
+        """
         dialog = RenameDataDialog(old_name)
         result = dialog.exec_()
         new_name = dialog.new_data_name_lineEdit.text()

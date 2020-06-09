@@ -7,7 +7,11 @@ import os
 doc_window_file = os.path.join("ui", "doc_window.ui")
 ui_docWindow, QtBaseClass = uic.loadUiType(doc_window_file)
 
+
 class DocWindow(QMainWindow, ui_docWindow):
+    """
+    Displays the html documentation (i.e. the manual)
+    """
     def __init__(self, parent=None):
         super(DocWindow, self).__init__(parent)
         self.setupUi(self)
@@ -15,12 +19,13 @@ class DocWindow(QMainWindow, ui_docWindow):
         self.setup_web_engine()
 
     def setup_web_engine(self):
-        # we create an instance of QWebEngineView and set the html code
+        """
+        create an instance of QWebEngineView and set the html code
+        """
         self.web_widget = QWebEngineView()
         vbox_layout = QVBoxLayout()
         vbox_layout.addWidget(self.web_widget)
         self.doc_frame.setLayout(vbox_layout)
-
 
 
 if __name__ == "__main__":

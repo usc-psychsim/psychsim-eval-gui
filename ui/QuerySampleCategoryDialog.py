@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 import os
 
 from CheckableComboBox import CheckableComboBox
@@ -12,6 +11,9 @@ ui_querySampleCategory, QtBaseClass = uic.loadUiType(query_sample_category_file)
 
 
 class QuerySampleCategoryDialog(QDialog, ui_querySampleCategory):
+    """
+    Dialog to select values (as categories) from a variable of a query result to filter the query result
+    """
     def __init__(self):
         super(QuerySampleCategoryDialog, self).__init__()
         self.setupUi(self)
