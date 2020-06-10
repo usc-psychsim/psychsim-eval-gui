@@ -172,6 +172,8 @@ def dataframe_difference(df1, df2, which=None):
     return diff_df
 
 def dataframe_columns_equal(df1, df2):
+    if len(df1.columns) != len(df2.columns):
+        return False
     for col in df1.columns:
         if col not in df2.columns:
             return False

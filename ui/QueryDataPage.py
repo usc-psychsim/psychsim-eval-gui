@@ -192,7 +192,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 self.diff_query_objects(q1, q2)
                 self.diff_query_results(q1, q2)
             else:
-                self.print_query_output("YOU CAN ONLY DIFF FUNCTIONS OF THE SAME TYPE", 'red')
+                self.print_query_output("YOU CAN ONLY DIFF SIMILAR QUERY RESULTS", 'red')
                 self.print_query_output(f"{q1.id} = {q1.function}, {q2.id} = {q2.function}", 'red')
         except:
             tb = traceback.format_exc()
@@ -221,7 +221,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         diff_results_window.q1_diff_label.setText(f"{q1.id}")
         diff_results_window.q2_diff_label.setText(f"{q2.id}")
         diff_results_window.q2_diff_label.setText(f"{q2.id}")
-        diff_results_window.format_diff_results(q1, q2)
+        diff_results_window.execute_diff(q1, q2)
         diff_results_window.show()
 
     def handle_sample_query_dropdown(self):
