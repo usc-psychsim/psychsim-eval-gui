@@ -25,7 +25,7 @@ class GenericSim:
         # self.output_data = dict(ch1=dict(x=[], y=[]), ch2=dict(x=[], y=[]), ch3=dict(x=[], y=[]))
         self.output_data = dict(ch1=dict(), ch2=dict(), ch3=dict())
 
-    def run_sim(self):
+    def run_step(self):
         output_data = dict(ch1=dict(), ch2=dict(), ch3=dict())
         #channel 1
         y = np.sin(0.5* self.current_step) + np.random.random_sample()

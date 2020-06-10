@@ -6,7 +6,7 @@ class SimBase:
     def __init__(self):
         self.sim_steps = 20
 
-    def run_sim(self):
+    def run_step(self):
         """
         overwrite this function
         returns dictionary e.g. self.result0 = {'TriageAg1': {}}; return self.result0

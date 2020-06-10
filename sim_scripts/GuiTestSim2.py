@@ -56,12 +56,14 @@ class GuiTestSim2():
         self.triageAgent.setAttribute('horizon', self.horizon)
         # triageAgent.setAttribute('selection', 'random')
 
-    def run_sim(self):
+    def run_step(self):
         self.result0 = {'TriageAg1': {}}
         self.result1 = {'ATOMIC': {'TriageAg1': {}}}
 
         self.world.step(debug=self.result0)
-        return self.result0
+        return_result = {"WORLD_STATE": self.world.state,
+                         "AGENT_STATE": self.result0}
+        return return_result
 
 if __name__ == "__main__":
     sim = GuiTestSim2()

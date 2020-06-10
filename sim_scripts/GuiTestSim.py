@@ -107,7 +107,7 @@ class GuiTestSim:
         # has no beliefs so far
         cmd = 'blank'
 
-    def run_sim(self):
+    def run_step(self):
         legalActions = self.triageAgent.getActions()
         agent_state = self.triageAgent.getState('loc')
         agent_belief = self.triageAgent.getBelief()

@@ -126,7 +126,7 @@
   </action>
   <action name="actionquery">
    <property name="text">
-    <string>create query from data/sample</string>
+    <string>create query from data</string>
    </property>
   </action>
   <action name="actionsample_data">

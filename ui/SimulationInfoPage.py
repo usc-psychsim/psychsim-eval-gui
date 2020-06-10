@@ -91,7 +91,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
 
             # set the path variables
             self.psychsim_path = config['PATHS']['psychsim']
-            self.definitions_path = config['PATHS']['definitions']
+            self.definitions_path = config['PATHS']['model']
             self.sim_path = config['PATHS']['simulation']
             # set the paths on the gui
             self.psychsim_dir_path.setText(self.psychsim_path)
@@ -166,7 +166,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         step = 0
         output = dict()
         while self.thread_running:
-            result = simulation.run_sim()
+            result = simulation.run_step()
             output[step] = result
             step = step + 1
             progress_callback.emit(step, simulation.sim_steps)

@@ -77,27 +77,15 @@ class GuiTestSimClean:
         print('Initial State')
         self.world.printBeliefs(self.triageAgent.name)
 
-    def run_sim(self):
+    def run_step(self):
         # get some info before the step
-        legalActions = self.triageAgent.getActions()
-        agent_state = self.triageAgent.getState('loc')
-        agent_belief = self.triageAgent.getBelief()
         result0 = {'TriageAg1': {}}
-
-        # valuefn = ValueFunction()
-        # valuefn.set("TriageAg1", self.triageAgent.world.state, "TriageAg1-move-E", self.horizon, 0)
-        # predicted_actions = self.triageAgent.predict(self.world.state,"TriageAg1",legalActions,horizon=0)#not sure if this is the correct function
-
         # step the sim
         self.world.step(debug=result0)
 
-        # Get some info after the step
-        legalActions_after = self.triageAgent.getActions()
-        agent_state_after = self.triageAgent.getState('loc')
-        reward_after = self.triageAgent.reward()
-        other_after = self.triageAgent.getAttribute('R',model='TriageAg10')
-
-        return result0
+        return_result = {"WORLD_STATE": self.world.state,
+                         "AGENT_STATE": result0}
+        return return_result
 
 
 if __name__ == "__main__":
