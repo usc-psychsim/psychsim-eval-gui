@@ -356,9 +356,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         pgh.update_combo(self.sample_query_combo, self.query_data_dict.keys())
         pgh.update_combo(self.query_diff_1, self.query_data_dict.keys())
         pgh.update_combo(self.query_diff_2, self.query_data_dict.keys())
-        # todo: connect plot query with self.set_axis_dropdowns function (parent = self) ??
-        # pgh.update_toolbutton_list(list=query_items, button=self.plot_query, action_function=self.set_axis_dropdowns,
-        #                            parent=self)
 
     def set_function_dropdown(self):
         """

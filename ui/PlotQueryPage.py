@@ -43,8 +43,7 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         """
         plot_window = PlotWindow(query_data_dict=self.query_data_dict, window_name=plot_name, parent=self)
         plot_window.save_plot_button.clicked.connect(lambda: self.save_plot(plot_window.current_plot))
-        pgh.update_toolbutton_list(list=self.query_data_dict.keys(), button=plot_window.plot_query,
-                                   action_function=plot_window.set_axis_dropdowns, parent=self)
+        pgh.update_combo(plot_window.query_combo, self.query_data_dict.keys())
         plot_window.show()
         return plot_window
 
@@ -90,21 +89,23 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
             selected_plot = self.plot_data_dict[item.text()]
             if selected_plot:
                 new_plot = self.create_new_plot(plot_name=item.text())
-                new_plot.add_new_plot(fig=selected_plot.fig,
-                                      title=selected_plot.title,
-                                      x_name=selected_plot.x_name,
-                                      y_name=selected_plot.y_name)
+                new_plot.render_plot_to_gui(fig=selected_plot.fig,
+                                            title=selected_plot.title,
+                                            x_name=selected_plot.x_name,
+                                            y_name=selected_plot.y_name)
 
     def remove_plot(self):
         """
         Remove a plot from the saved lists and from the plot_data_dict
         """
-        listItems = self.plot_listwidget.selectedItems()
-        if not listItems: return
-        for item in listItems:
-            self.plot_listwidget.takeItem(self.plot_listwidget.row(item))
-            self.plot_data_dict.pop(item.text())
-
+        try:
+            listItems = self.plot_listwidget.selectedItems()
+            if not listItems: return
+            for item in listItems:
+                self.plot_listwidget.takeItem(self.plot_listwidget.row(item))
+                self.plot_data_dict.pop(item.text())
+        except:
+            print("plot not in dict")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
