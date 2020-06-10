@@ -1,3 +1,6 @@
+"""
+Run this script to execute the GUI
+"""
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
