@@ -3,14 +3,16 @@ This file has the classes and functions that are common across the gui windows
 """
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 import pandas as pd
 from datetime import datetime
 
 
 @dataclass
 class PsychSimRun:
+    """
+    Class to hold information for each psychsim run
+    """
     id: str
     data: object
     sim_file: str
@@ -20,6 +22,9 @@ class PsychSimRun:
 
 @dataclass
 class PsySimQuery:
+    """
+    Class to hold information for each query that is created
+    """
     id: str
     data_id: str
     params: list
@@ -32,6 +37,9 @@ class PsySimQuery:
 
 @dataclass
 class PsySimPlot:
+    """
+    Class to hold information for each plot
+    """
     id: str
     fig: str
     title: str
@@ -77,18 +85,6 @@ def get_time_stamp():
     run_date = now.strftime("%Y-%m-%d %H:%M:%S")
     return dt_string, run_date
 
-def update_toolbutton_list(button, list, action_function, parent=None):
-    toolmenu = QMenu(parent)
-    alignmentGroup = QActionGroup(parent)
-    actions = list
-    for act in actions:
-        a = alignmentGroup.addAction(act)
-        a.setCheckable(True)
-        toolmenu.addAction(a)
-    alignmentGroup.triggered.connect(lambda: action_function(alignmentGroup, button))
-    button.setMenu(toolmenu)
-    button.setPopupMode(QToolButton.InstantPopup)
-
 
 def print_diff(text_output_obj, d1, d2, diff_var):
     """
@@ -106,12 +102,6 @@ def print_diff(text_output_obj, d1, d2, diff_var):
         text_output_obj.append(f"{_red_str('DIFF IN')}: {_red_str(diff_var)}")
         text_output_obj.append(f"{d1.id}: {_red_str(getattr(d1, diff_var))}")
         text_output_obj.append(f"{d2.id}: {_red_str(getattr(d2, diff_var))}")
-
-
-#Todo: fix these output functinos for a more generic formatting
-def set_toolbutton_text(action, button):
-    selection = action.checkedAction().text()
-    button.setText(selection)
 
 
 def print_output(text_output_obj, msg, color):
@@ -137,7 +127,7 @@ def _blue_str(s):
 
 def print_debug(psychsim_module, debug, level=0):
     """
-    Expand and print the minecraft sim debug dictionary
+    Expand and print the search and rescue sim debug dictionary
     :param psychsim_module:
     :param debug: debug dictionary
     :param level:
@@ -160,18 +150,13 @@ def print_debug(psychsim_module, debug, level=0):
         print(f"{end_node} {debug}")
 
 
-def dataframe_difference(df1, df2, which=None):
-    """Find rows which are different between two DataFrames."""
-    comparison_df = df1.merge(df2,
-                              indicator=True,
-                              how='outer')
-    if which is None:
-        diff_df = comparison_df[comparison_df['_merge'] != 'both']
-    else:
-        diff_df = comparison_df[comparison_df['_merge'] == which]
-    return diff_df
-
 def dataframe_columns_equal(df1, df2):
+    """
+    Check if dataframe columns are the same length, and also contain the same elements
+    :param df1: pandas dataframe
+    :param df2: pandas dataframe
+    :return: bool
+    """
     if len(df1.columns) != len(df2.columns):
         return False
     for col in df1.columns:
@@ -179,6 +164,7 @@ def dataframe_columns_equal(df1, df2):
             return False
         else:
             return True
+
 
 def update_combo(combo_box, item_list):
     """
@@ -190,6 +176,7 @@ def update_combo(combo_box, item_list):
     combo_box.clear()
     new_items = [item for item in item_list]
     combo_box.addItems(new_items)
+
 
 if __name__ == "__main__":
     df = pd.DataFrame()
