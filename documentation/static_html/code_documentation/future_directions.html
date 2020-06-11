@@ -1,0 +1,266 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Future Directions &#8212; Psychsim Gui  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorial" href="../tutorial.html" />
+    <link rel="prev" title="Directory Structure" href="directory_structure.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="future-directions">
+<h1>Future Directions<a class="headerlink" href="#future-directions" title="Permalink to this headline">¶</a></h1>
+<p>Here I describe known issues / bugs with the GUI and how to fix them.
+I also describe features that would be nice to have but that I haven’t gotten around to adding (and how to possibly implement them).</p>
+<div class="section" id="known-bugs-issues">
+<h2>Known Bugs/issues<a class="headerlink" href="#known-bugs-issues" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><dl class="first docutils">
+<dt>Query functions</dt>
+<dd><p class="first"><strong>Issue:</strong>
+Currently, the query functions lack some information about the actual simulation. Part of this problem is that the simulation is’nt
+completely defined / in a working state, or I didn’t have enough information to complete the query funciton.</p>
+<p>The main issue with this is when looking at the query results (for example beliefs, or predicted actions) there are
+numerical values that don’t have much meaning to the user. There should be some sort of mapping between these internal
+PsychSim values and actual user-interpertable values that can be displayed.</p>
+<p class="last"><strong>How to fix:</strong>
+Once the mapping information becomes available, the functions can be edited in <em>functions/query_functions.py</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Dropdown options</dt>
+<dd><p class="first"><strong>Issue:</strong>
+Some dropdown selections have a cascade effect of setting other dropdowns, or making them enabled.
+For example, selecting the data source to sample will populate the variable drop down with available varialbes in that source.
+Sometimes, when these optiosn are initialised, there will be a text value but they haven’t initialised the subsequent dropdowns.</p>
+<p class="last"><strong>How to fix:</strong>
+I think this is because when they are set, they don’t trigger an action. Probably the easiest thing to do in these cases is at the point where the dropdown is set,
+emit an ‘activated’ action for the dropdown. This should then trigger any connected functions. (I connect them all to the activated signal)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Query info updating</dt>
+<dd><p class="first"><strong>Issue:</strong>
+The ‘View Query Data’ button automatically changes the query info back to the first query after close</p>
+<p class="last"><strong>How to fix:</strong>
+This should be fixed from the ‘display_query’ function in the ui/QueryDataPage.py file. I am not entirely sure how just yet but it probably is just a conditional somewhere.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Duplicate plot naming</dt>
+<dd><p class="first"><strong>Issue:</strong>
+you can name two plots the same name. Plots are stored in a dictionary so only one key value pair will be saved. This will override your old plot.
+If you delete the plot, one of the items will remain on the list but the key no longer exists in the dictionary</p>
+<p class="last"><strong>How to fix:</strong>
+This is probably easy and just involves protecting against having two names the same on the list somehow. To be extra fancy, a new dialog with a message like
+‘&lt;name&gt; already exists!’ could be shown to alert the user.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Plot stats</dt>
+<dd><p class="first"><strong>Issue1:</strong>
+The stats are calculated for each value of the x-axis. and not across the x-axis. This means if you have multiple agents (or datapoints per x-axis)
+The mean function will avearage over them. It does not, however, average across the x-axis. So, if you want to find the mean of a single agent over all x-values (e.g. time)
+A new function needs to be implemented.</p>
+<p><strong>How to fix:</strong>
+Stats are applied in the <em>plot_data</em> function of <em>PlotWindow.py</em> in the following line</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_combo</span><span class="o">.</span><span class="n">currentText</span><span class="p">()]),</span> <span class="n">stat</span><span class="p">)()</span>
+</pre></div>
+</div>
+<p>A new function should be added somewhere that doesn’t groupby the x_axis but calculates the stat across all x values
+<strong>Issue2:</strong>
+The stats on the plotting work over some cases (e.g. the following plot showing a scatter plot with the mean over the top).
+However, i haven’t tested it over all cases with psychsim data. Therefore it might end up not being the correct implementation.
+.. image:: images/plot_stat_issue_example.png</p>
+<p class="last"><strong>How to fix:</strong>
+This probably needs a specific use case to test on. If a use case is known, then the functionality can be amended.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Other plot functionality</dt>
+<dd><p class="first last"><strong>Issue:</strong>
+Similar to the stats, there might be issues with other functionality. I haven’t fully tested using other plot types and different combinations
+such as using violin and histograms etc.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Sim load on initialisation</dt>
+<dd><p class="first"><strong>Issue:</strong>
+Currently you need to click the “Load Simulation” button to load a sim before running it.
+This functinoality is there so edits could be made to the sim, and it can be reloaded without having to re-search for the path (useful for debugging).
+It would be good, however, if the sim in the config is loaded on initialisation.</p>
+<p class="last"><strong>How to fix:</strong>
+Probably just a matter of calling the ‘load_sim’ function in the SimulationInfoPage on initialisation. This is something I thought of at the end and didn’t get around to implementing and testing.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="nice-to-haves">
+<h2>Nice To Haves<a class="headerlink" href="#nice-to-haves" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><dl class="first docutils">
+<dt>Diff table cell highlighting</dt>
+<dd><p class="first"><strong>Issue:</strong>
+The DIFF function currently highlights an entire row with either red or blue if something in that row is different.
+It would be good to highlight the individual cell where the difference occurs instead of the whole row, and keep the
+row numbers on the left highlighted to indicate that something within that row has changed.</p>
+<p class="last"><strong>How To Fix:</strong>
+I use difflib which does give information on where the diff occurs and have started to implement this in the
+‘get_diff_as_vector’ function in ui/DiffResultsWindow.py. However, it is far from finished.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Diff variable selectinon</dt>
+<dd><p class="first"><strong>Issue:</strong>
+Currently, the diff compares an entire results dataframe. It might be useful to just diff one variable of interest</p>
+<p class="last"><strong>How to Fix:</strong>
+This would need a new dropdown to select the variable you want to compare. Then, only selecting that variable from the dataframe to diff and display
+The dropdown would be added to the ui/query_data_page.ui and corresponding button connections in the ui/QueryDataPage.py. The filtering of the data would probably be done
+here, and just passed to the ui/DiffRestulsWindow.py as is.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Sampling on first day</dt>
+<dd><p class="first"><strong>Issue:</strong>
+Currently, when you sample some query data, the sample is applied to the whole data set.
+This is an issue if you want to track how agents progress over time. For example, if you want to see how an ‘in danger’ or a ‘poor’ agent
+performs over time, you would want to create a sample that includes only these groups on the first day. They might change groups (become out of danger or rich)
+over time. If you sample over the whole dataset, you would not capture them. You may want to sample over the whole dataset for other purposes, however. And you might
+want to track over a different variable than time.</p>
+<p class="last"><strong>How to fix:</strong>
+There needs to be an option to sample on the first step (or first of any continuous variable) that can be checked.
+The sample group would then need to be determined on that first step (or other first value) and the resulting group sampled over the whole dataset.
+Sampling is currently all done in the ui/QueryDataPage.py file in the ‘sample_by_range’ and ‘sample_by_category’ functions.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Saving queries to csv</dt>
+<dd><p class="first"><strong>Issue:</strong>
+Currently, the queries are saved to csv to the default <em>sim_output</em> folder. This isn’t flexible, and the only feedback is in the text area which might be missed.
+It would be useful to pull up a save file dialog here to allow saving anywhere, and also give the user feedback as to if it is saved.</p>
+<p class="last"><strong>How to fix:</strong>
+The save function is located in the <em>save_csv_query</em> of <em>ui/QueryDataPage.py</em></p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Loading saved query results</dt>
+<dd><p class="first"><strong>Issue:</strong>
+Currently, there is the ability to save query results as a csv. There isn’t however, the ability to load saved query results.</p>
+<p class="last"><strong>How to fix:</strong>
+This feature would likely be added in the ui/QueryDataPage.py file.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Psychsim Gui</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../code_documentation.html">Code Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="directory_structure.html">Directory Structure</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Future Directions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#known-bugs-issues">Known Bugs/issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nice-to-haves">Nice To Haves</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code_documentation.html">Code Documentation</a><ul>
+      <li>Previous: <a href="directory_structure.html" title="previous chapter">Directory Structure</a></li>
+      <li>Next: <a href="../tutorial.html" title="next chapter">Tutorial</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Turner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="../_sources/code_documentation/future_directions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

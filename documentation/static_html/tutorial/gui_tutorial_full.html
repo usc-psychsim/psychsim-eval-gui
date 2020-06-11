@@ -1,0 +1,343 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>USING THE GUI &#8212; Psychsim Gui  documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Tutorial" href="../tutorial.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="using-the-gui">
+<h1>USING THE GUI<a class="headerlink" href="#using-the-gui" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="demo-using-psychsim-search-and-rescue-simulation">
+<h2>Demo using psychsim search and rescue simulation<a class="headerlink" href="#demo-using-psychsim-search-and-rescue-simulation" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial steps through the different functions of the GUI.</p>
+<ol class="arabic simple">
+<li>Set paths and run the sim</li>
+</ol>
+<p>When we start up the GUI we are met with the following screen</p>
+<blockquote>
+<div><img alt="../_images/gui_startup1.png" src="../_images/gui_startup1.png" />
+</div></blockquote>
+<p>The PsychSim directory and Simulation model directory were automatically set by the config.ini.
+However, if these are wrong, we can navigate to the correct directories with the supplied buttons.</p>
+<p>We are happy with the paths to psychsim, the model. Now make sure ‘GuiTestSim.py is set as the simulation
+(you can find it in the <em>sim_scripts</em> directory)</p>
+<p>Click on the <em>Load Simulation</em> button. Great! everything is working as planned and you the sim is LOADED as per the
+following screen:</p>
+<blockquote>
+<div><img alt="../_images/loaded_simulation.png" src="../_images/loaded_simulation.png" />
+<p><em>The ‘load simulation’ button MUST be pressed before running a simulation.</em></p>
+</div></blockquote>
+<p>Now we’re ready to run!
+Click the RUN SIM button and watch as your sim progresses through the steps (there are 50 in this simulation).</p>
+<p>You can also see that the GUI has automatically given your run data a timestamp as a name (in this case <em>20200610_215941</em>)</p>
+<blockquote>
+<div><img alt="../_images/sim_complete.png" src="../_images/sim_complete.png" />
+</div></blockquote>
+<p><em>20200610_215941</em> is a bit boring, so go ahead and rename your data to something more informative like <em>myFirstSimData</em></p>
+<blockquote>
+<div><img alt="../_images/sim_complete_renamed.png" src="../_images/sim_complete_renamed.png" />
+</div></blockquote>
+<p>Just for fun, let’s run the simulation again so we can have more than one dataset.
+Only this time, let’s stop it before it ends by clicking the <em>STOP</em> (it does take a while to finish).</p>
+<blockquote>
+<div><img alt="../_images/sim_complete_renamed2.png" src="../_images/sim_complete_renamed2.png" />
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Saving and renaming the data</li>
+</ol>
+<p>We are worried that we won’t get time to finish this tutorial immediately, so we want to save the data. Click on the
+<em>data&gt;view table of stored data</em> menu item to view the data we have</p>
+<blockquote>
+<div><img alt="../_images/data_view.png" src="../_images/data_view.png" />
+</div></blockquote>
+<p>From here, you can save the data to any directory you like. Data is saved as a <em>.pickle</em> file and can be reloaded at any
+time through this screen. If you are also unhappy with the names you gave your data, you can rename them here.</p>
+<p>We’re happy so we’ll leave everything as it is. Close that window.</p>
+<ol class="arabic simple" start="3">
+<li>Querying the data</li>
+</ol>
+<p>We’re now ready to extract some information from our data. Click on the <em>data&gt;create query from data</em> menu item.
+Since <em>myFirstSimData</em> had 50 runs, let’s look at that data. It should be automatically selected as the first item
+in the <em>Select Data/Sample</em> dropdown.</p>
+<blockquote>
+<div><img alt="../_images/first_query_screen.png" src="../_images/first_query_screen.png" />
+</div></blockquote>
+<p>We’re interested in the beliefs of this agent so select <em>get_individual_agents_beliefs</em> from the
+<em>select function to query data</em> dropdown</p>
+<p>You’ll notice that the <em>agent</em> parameter dropdown became active. Since there is only one agent in our data, just select
+‘TriageAg1’</p>
+<p>click <em>Execute function</em> to get the beliefs of TriageAg1</p>
+<blockquote>
+<div><img alt="../_images/agent_beliefs_query_results.png" src="../_images/agent_beliefs_query_results.png" />
+</div></blockquote>
+<p>You will notice that the name of the query results has been automatically filled with something informative
+(<em>get_individual_agent_beliefs_myFirstSimData_20200610_222657</em>). feel free to rename it with something easier for you to
+remember.</p>
+<p>We’re not finished with the queries yet. We also want to know what actions this agent took. Select <em>get_actions</em> and
+<strong>TriageAg1</strong> as the <em>agent</em> parameter.</p>
+<blockquote>
+<div><img alt="../_images/agent_actions.png" src="../_images/agent_actions.png" />
+</div></blockquote>
+<p>It seems that the agent found and triaged two victims (victim3 and then victim1). We want to know the reasoning behind
+triaging these two victims.</p>
+<p>Select <em>query_action</em> as the function, <em>TriageAg1</em> as the agent, and <em>TriageAg1-triage-victim3</em> as the action.</p>
+<blockquote>
+<div><img alt="../_images/triage_victim_3.png" src="../_images/triage_victim_3.png" />
+</div></blockquote>
+<p>Repeat the same, only now select <em>TriageAg1-triage-victim1</em> as the action.</p>
+<blockquote>
+<div><img alt="../_images/triage_victim_1.png" src="../_images/triage_victim_1.png" />
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Viewing query results</li>
+</ol>
+<p>We have now created a few queries and want to look back at some of our results. Click on the <em>View saved queries</em> tab,
+select your first query and <em>view query data</em>.</p>
+<p>This brings up the same view we saw when we originally created the query. If you decided you don’t like the name
+anymore, go ahead and change it.</p>
+<p>If you realised that you made too many queries that weren’t useful, you can delete the currently selected one with the
+<em>Delete Selected Query</em> button. If you want to preserve the query results, or analyise them with an external tool, you
+can save the results to file with <em>Save query results as CSV</em>. This will save the csv to the <em>sim_output</em> directory
+(sorry, at the moment you can’t change where it goes)</p>
+<ol class="arabic simple" start="9">
+<li>Comparing query results.</li>
+</ol>
+<p>One interesting thing to know is what the difference was between the decisions the agent made to triage the two victims.
+Go to the <em>Compare Saved query results</em> tab to do this.</p>
+<p>Make sure both the <em>query_action</em> results are selected and click <em>DIFF</em></p>
+<blockquote>
+<div><img alt="../_images/query_action_diff.png" src="../_images/query_action_diff.png" />
+</div></blockquote>
+<p>We can now see the planning for both actions side by side and can see that in fact everything is different. This is to
+be expected as they were different stages of the same actor’s journey.</p>
+<p>This tool can also be used for comparing different actors from different simulations.</p>
+<ol class="arabic simple" start="10">
+<li>Sampling</li>
+</ol>
+<p>We’re almost ready to plot the data. Specifically, we’ll plot some data from the agent’s beliefs. But before we do that,
+we want to trim our data a little by making some samples.</p>
+<p>Go to the <em>Create sample from query</em> tab and select the query with individual_agent_beliefs.</p>
+<p>The agent triages the two victims in the first half of the data, then moves back and forth. So let’s cut out the second
+half.</p>
+<p><em>Note: you need to explicitly select the data for the variable list to be populated</em></p>
+<p>Select <em>step</em> for the variable to sample, and <em>range</em> as the sample function then <em>select sample</em></p>
+<blockquote>
+<div><img alt="../_images/query_action_diff_0-25.png" src="../_images/query_action_diff_0-25.png" />
+</div></blockquote>
+<p>you will see that you can select steps with a range from 0 to 49 (our 50 steps). Select 0 as min and 25 as the max and
+<em>OK</em>.</p>
+<p>This has saved a new query with <em>_step_range_0.0-25.0</em> appended to the name. You can view this, rename, and save as
+before from the <em>view query data</em> tab.</p>
+<ol class="arabic simple" start="11">
+<li>Plotting</li>
+</ol>
+<p>We are now ready to plot our sampled data.</p>
+<p>Go to the <em>plot&gt;plot query results</em> screen from the main menu items.</p>
+<blockquote>
+<div><img alt="../_images/plot_page.png" src="../_images/plot_page.png" />
+</div></blockquote>
+<p>Click on <em>create new plot</em> to open a blank plot window.</p>
+<blockquote>
+<div><img alt="../_images/blank_plot.png" src="../_images/blank_plot.png" />
+</div></blockquote>
+<p>Select the sampled query (the one we just created for 0-25 steps) as the query. Select <em>Step</em> for the x-axis and
+<em>TriageAg1’s victim in crosshair</em> for the y-axis.</p>
+<p><strong>*due to the nature of the simulation the plots may end up being slightly different*</strong></p>
+<p>There is only one agent so nothing to really group by, or apply stats over for this plot. So we will leave these options
+blank.</p>
+<p>Click <em>add to plot</em> to get the following plot:</p>
+<blockquote>
+<div><img alt="../_images/plot1.png" src="../_images/plot1.png" />
+</div></blockquote>
+<p>Don’t worry if you make a mistake. You can click <em>undo add</em> to step backwards through the plots you add, or just <em>clear</em>
+to start from scratch.</p>
+<p>you can give the plot a name and come back to it later by clicking <em>save and close</em>.</p>
+<p>Double click on the plot in the list to bring it back up</p>
+<blockquote>
+<div><img alt="../_images/plot_list.png" src="../_images/plot_list.png" />
+</div></blockquote>
+</div>
+<div class="section" id="demonstrating-more-functionality-with-generic-simulation">
+<h2>Demonstrating more functionality with generic simulation<a class="headerlink" href="#demonstrating-more-functionality-with-generic-simulation" title="Permalink to this headline">¶</a></h2>
+<p>Unfortunately, the search and rescue sim doesn’t yet give a rich enough data to demonstrate all of the functionality.
+This will be demonstrated with the use of a generic sim (<a href="#id1"><span class="problematic" id="id2">*</span></a>sim_scripts/GenericSim.py).</p>
+<p>This simulation creates three channels of sin waves. Channel 1 has added noise.</p>
+<ol class="arabic simple">
+<li>Load and run the new sim.</li>
+</ol>
+<p>Go back to the <em>simulation&gt;view simulation info</em> page and select this as the sim file. Don’t forget to load it!!
+then click <em>RUN SIM</em>.</p>
+<blockquote>
+<div><img alt="../_images/generic_sim.png" src="../_images/generic_sim.png" />
+</div></blockquote>
+<p>Do this twice so we have two sets of data run generated by the generic sim (<em>generic_output</em> and <em>generic_output2</em>
+in the table).</p>
+<blockquote>
+<div><img alt="../_images/generic_data_table.png" src="../_images/generic_data_table.png" />
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li>Querying the data</li>
+</ol>
+<p>make your way back to the <em>Create New Query</em> tab through the <em>data&gt;create query from data</em> dropdown menu.</p>
+<p>Select the <em>generic_output</em> data in the <em>Select Data/Sample</em> dropdown.</p>
+<p>Now, as this simulation does not have agent data, the only function that will really work is the <em>get_generic_data</em>
+function. Execute this (there should be no params active as you do not need any).</p>
+<blockquote>
+<div><img alt="../_images/generic_query.png" src="../_images/generic_query.png" />
+</div></blockquote>
+<p>Repeat for the second dataset we generated in step 1. (<em>generic_output2</em>).</p>
+<p>Select these two queries that you just created (one for <em>generic_output</em> and one for <em>generic_output2</em>) on the
+<em>compare saved query results tab</em> and diff the data.</p>
+<blockquote>
+<div><img alt="../_images/generic_diff_table1.png" src="../_images/generic_diff_table1.png" />
+</div></blockquote>
+<p>you can see that only channel 1 differs between the two queries. This is because channel 1 has noise so each time the
+simulation is run, it will generate different results. The other two channels are noiseless so they will be the same
+across runs.</p>
+<ol class="arabic simple" start="3">
+<li>Create a sample</li>
+</ol>
+<p>We now want to only see the top half of one two of these sinusoid functions. Go to the <em>Create sample from qurey</em> tab
+and select one of the query results you just made for this generic data.</p>
+<p>You should now have <em>channel, x, y, step</em> for the sample variables.</p>
+<p>Select <em>y</em> as we want to sample only the positive y values and select <em>range</em>.</p>
+<p>Select 0 as the minimum, and 3 as the maximum. This saves a new query that is a sample of the orignal.</p>
+<blockquote>
+<div><img alt="../_images/generic_range_select1.png" src="../_images/generic_range_select1.png" />
+</div></blockquote>
+<p>We are also only interested in channel 1 (with the noise) and channel3 (channel 2 is too boring).</p>
+<p>Select the newly created sample query, then select <em>channel</em> as the sample variable and <em>category</em> as the function.</p>
+<p>You can now select which channels you want to include in the sample. Choose Channel1 and 3.</p>
+<blockquote>
+<div><img alt="../_images/generic_category_select1.png" src="../_images/generic_category_select1.png" />
+</div></blockquote>
+<p>4. Plot
+We’re now ready to plot so head back to the plot screen and create a new plot window.</p>
+<p>Select the last query you made (with both range and category sample).</p>
+<p>We will plot x on the x-axis and y on the y-axis and plot a scatter plot.</p>
+<blockquote>
+<div><img alt="../_images/generic_scatter_1.png" src="../_images/generic_scatter_1.png" />
+</div></blockquote>
+<p>It looks a bit messy and we can’t distinguish what functions are what so select <em>channel</em> as the group variable.</p>
+<blockquote>
+<div><img alt="../_images/generic_scatter_2.png" src="../_images/generic_scatter_2.png" />
+</div></blockquote>
+<p>It’s still a bit messy but you can clearly make out the peaks of the noiseless sinusoid (channel 3).</p>
+<p>Try a line plot to connect the dots.</p>
+<blockquote>
+<div><img alt="../_images/generic_line1.png" src="../_images/generic_line1.png" />
+</div></blockquote>
+<p>Plot the original query (before sampling) to see all sin waves.</p>
+<blockquote>
+<div><img alt="../_images/generic_line_full1.png" src="../_images/generic_line_full1.png" />
+</div></blockquote>
+<p>Let’s try add some statistics. The mean will plot the mean over the x-axis. So in this case it will be the mean of all
+three signals.</p>
+<blockquote>
+<div><img alt="../_images/generic_mean.png" src="../_images/generic_mean.png" />
+</div></blockquote>
+<p>A violin plot with channel on the x-axis and no grouping will show the energy distributions of each of the channels</p>
+<blockquote>
+<div><img alt="../_images/generic_violin.png" src="../_images/generic_violin.png" />
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Psychsim Gui</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code_documentation.html">Code Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">USING THE GUI</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#demo-using-psychsim-search-and-rescue-simulation">Demo using psychsim search and rescue simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#demonstrating-more-functionality-with-generic-simulation">Demonstrating more functionality with generic simulation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../tutorial.html">Tutorial</a><ul>
+      <li>Previous: <a href="../tutorial.html" title="previous chapter">Tutorial</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Turner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="../_sources/tutorial/gui_tutorial_full.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

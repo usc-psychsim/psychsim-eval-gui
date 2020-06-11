@@ -68,11 +68,11 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.actionmanual.triggered.connect(lambda: self.show_doc_window("index.html"))
 
         # help buttons
-        self.sim_info_page.sim_info_button.clicked.connect(lambda: self.show_doc_window("simulation_script.html"))
-        self.sim_info_page.sim_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "simulation"))
-        self.query_data_page.query_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "query"))
-        self.query_data_page.function_info_button.clicked.connect(lambda: self.show_doc_window("function_definitions.html"))
-        self.plot_query_page.plot_help_button.clicked.connect(lambda: self.show_doc_window("gui_functionality.html", "plot"))
+        self.sim_info_page.sim_info_button.clicked.connect(lambda: self.show_doc_window("manual/simulation_script.html"))
+        self.sim_info_page.sim_help_button.clicked.connect(lambda: self.show_doc_window("manual/gui_functionality.html", "simulation"))
+        self.query_data_page.query_help_button.clicked.connect(lambda: self.show_doc_window("manual/gui_functionality.html", "query"))
+        self.query_data_page.function_info_button.clicked.connect(lambda: self.show_doc_window("manual/function_definitions.html"))
+        self.plot_query_page.plot_help_button.clicked.connect(lambda: self.show_doc_window("manual/gui_functionality.html", "plot"))
 
     def update_data_info(self, data_id, data):
         """
