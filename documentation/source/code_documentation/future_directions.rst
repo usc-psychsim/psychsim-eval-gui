@@ -6,6 +6,19 @@ I also describe features that would be nice to have but that I haven't gotten ar
 
 Known Bugs/issues
 =================
+
+- Query functions
+    **Issue:**
+    Currently, the query functions lack some information about the actual simulation. Part of this problem is that the simulation is'nt
+    completely defined / in a working state, or I didn't have enough information to complete the query funciton.
+
+    The main issue with this is when looking at the query results (for example beliefs, or predicted actions) there are
+    numerical values that don't have much meaning to the user. There should be some sort of mapping between these internal
+    PsychSim values and actual user-interpertable values that can be displayed.
+
+    **How to fix:**
+    Once the mapping information becomes available, the functions can be edited in *functions/query_functions.py*
+
 - Dropdown options
     **Issue:**
     Some dropdown selections have a cascade effect of setting other dropdowns, or making them enabled.

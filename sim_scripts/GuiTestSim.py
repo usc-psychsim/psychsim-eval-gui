@@ -97,15 +97,6 @@ class GuiTestSim:
         print('Initial State')
         self.world.printBeliefs(self.triageAgent.name)
 
-        # Chris: if you define a dictionary like result={'agent': {}} and call world.step(...,debug=result),
-        # you can then access result['agent'] to access all of the intermediate decision-making information.
-        # Or You should also be able to use a dictionary like {'agent': {'other_agent': {}}} to then
-        # retrieve the decision-making information within the agent's beliefs about the other_agent human
-        # (but not the human's actual decision-making in this example).
-        # self.result0 = {'TriageAg1': {}}
-        # self.result1 = {'ATOMIC': {'TriageAg1': {}}}  # Chris: doesn't seem to work probably because ATOMIC
-        # has no beliefs so far
-        cmd = 'blank'
 
     def run_step(self):
         legalActions = self.triageAgent.getActions()
@@ -118,42 +109,11 @@ class GuiTestSim:
         for a, n in zip(legalActions, range(len(legalActions))):
             print(n, ': ', a)
         print()
-        # world.printBeliefs(self.triageAgent.name)
         print('Triage Agent Reward: ', self.triageAgent.reward())
 
-        # result1 = {'TriageAg2': {}, 'TriageAg1': {}}
-        # result2= {'TriageAg2': {}}
-        # resultA = {'ATOMIC': {}}
-        # resultA1 = {'ATOMIC': {'TriageAg1': {}}}
-
-        #GET ALL RESULTS OF ALL AGENTS
-        # result = {agent: {} for agent in self.agents}
-
-        # valuefn = ValueFunction()#THIS DOESNT WORK - how do you do this????
-        # valuefn.set("TriageAg1", self.triageAgent.world.state, "TriageAg1-move-E", self.horizon, 0)#THIS DOESNT WORK - how do you do this????
-        # predicted_actions = self.triageAgent.predict(self.world.state,"TriageAg1",legalActions,horizon=0)#THIS DOESNT WORK - how do you do this????
-
         result0 = {'TriageAg1': {}}
-        # result0 = {'TriageAg1':{'TriageAg1':{}}}
         self.world.step(debug=result0)
         intermediate_results = result0['TriageAg1']
-
-        # for la_key, legal_action in intermediate_results["__decision__"]["TriageAg10"]["V"].items():
-        #     for idx, hyp_action_set in enumerate(legal_action['__S__']):
-        #         # print(f"KEYS: {hyp_action_set.keyMap}")
-        #         hyp_action = hyp_action_set.marginal("TriageAg1's __ACTION__")
-        #         print(f"HYP_ACTION FOR {la_key}_{idx}: {hyp_action}")
-        #         hyp_act_name = Distribution({next(iter(hyp_action)): 1.})
-
-
-        #TODO: see what is in things like triageAgent.reward - see what the legal actionsa re after the move, what the state is etc
-        legalActions_after = self.triageAgent.getActions()
-        agent_state_after = self.triageAgent.getState('loc')
-        reward_after = self.triageAgent.reward()
-        other_after = self.triageAgent.getAttribute('R',model='TriageAg10')
-
-        # world.printBeliefs(self.triageAgent.name)
-
 
         print('Triage Agent Reward: ', self.triageAgent.reward())
 
