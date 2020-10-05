@@ -31,7 +31,7 @@ __description__ = 'Perform reward model inference in the ASIST world based on sy
 
 EXPT = 'sparky'
 IS_SMALL = False
-NUM_STEPS = 5
+NUM_STEPS = 1
 
 AGENT_NAME = 'Player'
 YELLOW_VICTIM = 'Gold'
@@ -82,50 +82,66 @@ def create_mental_models(world, agent, observer, victimsObj):
     return [m['name'] for m in model_list]
 
 
-if __name__ == '__main__':
-    # create output
-    create_clear_dir(OUTPUT_DIR)
+class RwdModelInferenceSynGuiVersion:
+    def __init__(self):
 
-    # sets up log to file
-    change_log_handler(os.path.join(OUTPUT_DIR, 'inference.log'), 2 if DEBUG else 1)
+        self.sim_steps = 5 #THIS IS THE TOTAL NUMBR OF STEPS TO RUN
 
-    if EXPT == 'falcon':
-        adj_fname = 'falcon_adjacency_v1.1_OCN'
-        vics_fname = 'falcon_vic_locs_v1.1_OCN'
-        start_room = 'el'
+        # create output
+        create_clear_dir(OUTPUT_DIR)
+
+        # sets up log to file
+        change_log_handler(os.path.join(OUTPUT_DIR, 'inference.log'), 2 if DEBUG else 1)
+
         IS_SMALL = False
-    elif EXPT == 'sparky':
-        adj_fname = 'sparky_adjacency'
-        vics_fname = 'sparky_vic_locs'
-        start_room = 'CH4'
-    else:
-        raise NameError(f'Experiment "{EXPT}" is not implemented yet')
+        if EXPT == 'falcon':
+            adj_fname = 'falcon_adjacency_v1.1_OCN'
+            vics_fname = 'falcon_vic_locs_v1.1_OCN'
+            start_room = 'el'
+            IS_SMALL = False
+        elif EXPT == 'sparky':
+            adj_fname = 'sparky_adjacency'
+            vics_fname = 'sparky_vic_locs'
+            start_room = 'CH4'
+        else:
+            raise NameError(f'Experiment "{EXPT}" is not implemented yet')
 
-    sr_map = getSandRMap(small=IS_SMALL, fname=adj_fname)
-    sr_vics = getSandRVictims(small=IS_SMALL, fname=vics_fname)
+        sr_map = getSandRMap(small=IS_SMALL, fname=adj_fname)
+        sr_vics = getSandRVictims(small=IS_SMALL, fname=vics_fname)
 
-    # create world, agent and observer
-    world, agent, observer, victims, world_map = \
-        make_single_player_world(AGENT_NAME, start_room, sr_map, sr_vics, False, FULL_OBS)
-    agent.setAttribute('horizon', HORIZON)
-    agent.setAttribute('selection', AGENT_SELECTION)
-    agent.resetBelief(ignore={modelKey(observer.name)})
+        # create world, agent and observer
+        self.world, self.agent, self.observer, victims, world_map = \
+            make_single_player_world(AGENT_NAME, start_room, sr_map, sr_vics, False, FULL_OBS)
+        self.agent.setAttribute('horizon', HORIZON)
+        self.agent.setAttribute('selection', AGENT_SELECTION)
+        self.agent.resetBelief(ignore={modelKey(self.observer.name)})
 
-    model_names = create_mental_models(world, agent, observer, victims)
+        self.model_names = create_mental_models(self.world, self.agent, self.observer, victims)
 
-    # generates trajectory
-    logging.info('Generating trajectory of length {}...'.format(NUM_STEPS))
-    trajectory = generate_trajectory(agent, NUM_STEPS, verbose=lambda: summarizeState(world, agent.name))
-    save_object(trajectory, os.path.join(OUTPUT_DIR, 'trajectory.pkl.gz'), True)
+    def run_step(self):
+        # generates trajectory
+        logging.info('Generating trajectory of length {}...'.format(NUM_STEPS))
 
-    # gets evolution of inference over reward models of the agent
-    probs = track_reward_model_inference(
-        trajectory, model_names, agent, observer, [stateKey(agent.name, 'loc')], verbose=False)
+        #! NUM_STEPS here should be 1 if we want to run it through step by step
+        trajectory = generate_trajectory(self.agent, NUM_STEPS, verbose=lambda: summarizeState(self.world, self.agent.name))
+        save_object(trajectory, os.path.join(OUTPUT_DIR, 'trajectory.pkl.gz'), True)
 
-    # create and save inference evolution plot
-    plot_evolution(probs.T, [_get_fancy_name(name) for name in model_names],
-                   'Evolution of Model Inference', None,
-                   os.path.join(OUTPUT_DIR, 'inference.png'), 'Time', 'Model Probability', True)
+        # gets evolution of inference over reward models of the agent
+        probs = track_reward_model_inference(
+            trajectory, self.model_names, self.agent, self.observer, [stateKey(self.agent.name, 'loc')], verbose=False)
 
-    # plot_trajectories("Player", [trajectory], locations, neighbors, output_img, coordinates=None, state=None,
-    #                   title='Trajectories', draw_victims=True, show=False)
+        # create and save inference evolution plot
+        plot_evolution(probs.T, [_get_fancy_name(name) for name in self.model_names],
+                       'Evolution of Model Inference', None,
+                       os.path.join(OUTPUT_DIR, 'inference.png'), 'Time', 'Model Probability', True)
+
+        # plot_trajectories("Player", [trajectory], locations, neighbors, output_img, coordinates=None, state=None,
+        #                   title='Trajectories', draw_victims=True, show=False)
+
+        return trajectory
+
+
+if __name__ == "__main__":
+    sim = RwdModelInferenceSynGuiVersion()
+    for step in range(10):
+        sim.run_step()

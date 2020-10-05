@@ -60,6 +60,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
 
+    #todo: check if these buttons actually do anything... (do they actually change the path )
         self.sel_psychsim_dir.clicked.connect(lambda: pgh.set_directory(path_label=self.psychsim_dir_path,
                                                                         path_var=self.psychsim_path,
                                                                         caption="Select Psychsim Directory"))
@@ -139,6 +140,8 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
         sys.path.insert(1, self.psychsim_path)
         sys.path.insert(1, self.definitions_path)
+        #TODO: add model_learning path (and take out of sim)
+        # sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/Sep2020/model-learning/")
 
     def start_sim_thread(self):
         """
