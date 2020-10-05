@@ -9,6 +9,7 @@ pandas = "*"
 pyqtwebengine = "*"
 plotly = "*"
 statsmodels = "*"
+matplotlib = "*"
 
 [dev-packages]
 
