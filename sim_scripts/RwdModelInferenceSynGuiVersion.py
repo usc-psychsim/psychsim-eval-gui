@@ -138,7 +138,13 @@ class RwdModelInferenceSynGuiVersion:
         # plot_trajectories("Player", [trajectory], locations, neighbors, output_img, coordinates=None, state=None,
         #                   title='Trajectories', draw_victims=True, show=False)
 
-        return trajectory
+        return_result = {"WORLD_STATE": self.world.state,
+                         "TRAJECTORY": trajectory,
+                         "OBSERVER": self.observer}
+
+        return return_result
+
+
 
 
 if __name__ == "__main__":

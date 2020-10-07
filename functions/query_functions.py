@@ -134,10 +134,10 @@ class PsychSimQuery:
         for key, value in kwargs.items():
             if key == "data":
                 for step_data in value.data.values():
-                    if type(step_data[0][0].agents) == dict:
+                    if type(step_data['TRAJECTORY'][0][0].agents) == dict:
                     # if type(step_data['AGENT_STATE']) == dict:
                     #     for agent in list(step_data['AGENT_STATE'].keys()):
-                        for agent in step_data[0][0].agents.keys():
+                        for agent in step_data['TRAJECTORY'][0][0].agents.keys():
                             if agent not in agent_dict['agent']:
                                 agent_dict['agent'].append(agent)
 
@@ -155,7 +155,7 @@ class PsychSimQuery:
         try:
             for step, step_data in data.data.items():
                 actions_dict['step'].append(step)
-                actions_dict['action'].append(str(step_data[0][1]))
+                actions_dict['action'].append(str(step_data['TRAJECTORY'][0][1]))
                 step_data[0][1]
                 # for agent_i, agent_data in step_data['AGENT_STATE'].items():
                 #     if agent_i == agent:
