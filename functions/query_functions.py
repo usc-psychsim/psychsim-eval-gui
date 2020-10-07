@@ -134,8 +134,10 @@ class PsychSimQuery:
         for key, value in kwargs.items():
             if key == "data":
                 for step_data in value.data.values():
-                    if type(step_data['AGENT_STATE']) == dict:
-                        for agent in list(step_data['AGENT_STATE'].keys()):
+                    if type(step_data[0][0].agents) == dict:
+                    # if type(step_data['AGENT_STATE']) == dict:
+                    #     for agent in list(step_data['AGENT_STATE'].keys()):
+                        for agent in step_data[0][0].agents.keys():
                             if agent not in agent_dict['agent']:
                                 agent_dict['agent'].append(agent)
 
@@ -152,14 +154,17 @@ class PsychSimQuery:
         actions_dict = dict(step=[], action=[])
         try:
             for step, step_data in data.data.items():
-                for agent_i, agent_data in step_data['AGENT_STATE'].items():
-                    if agent_i == agent:
-                        for d in agent_data['__decision__'].values():
-                            if type(d) == dict:
-                                for k, v in d.items():
-                                    if k == 'action':
-                                        actions_dict['action'].append(str(v))
-                                        actions_dict['step'].append(step)
+                actions_dict['step'].append(step)
+                actions_dict['action'].append(str(step_data[0][1]))
+                step_data[0][1]
+                # for agent_i, agent_data in step_data['AGENT_STATE'].items():
+                #     if agent_i == agent:
+                #         for d in agent_data['__decision__'].values():
+                #             if type(d) == dict:
+                #                 for k, v in d.items():
+                #                     if k == 'action':
+                #                         actions_dict['action'].append(str(v))
+                #                         actions_dict['step'].append(step)
         except:
             tb = traceback.format_exc()
             print(tb)
