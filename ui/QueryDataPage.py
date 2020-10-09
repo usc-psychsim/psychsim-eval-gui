@@ -5,13 +5,15 @@ from PyQt5 import uic
 import traceback
 import inspect
 import os
+import re
 import sys
 import copy
+import importlib.util
 import pandas as pd
 import numpy as np
 
 import psychsim_gui_helpers as pgh
-from functions.query_functions import PsychSimQuery
+from functions.PsychSimQueryFunctions import PsychSimQueryFunctions
 
 from ui.PandasModel import PandasModel
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
@@ -35,7 +37,13 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.sim_data_dict = sim_data_dict
         self.query_data_dict = query_data_dict
 
-        self.psychsim_query = PsychSimQuery()
+        # SET UP VARS
+        self.func_spec = None
+        self.func_module = None
+        self.func_source = ""
+        self.func_class_name = ""
+
+        self.psychsim_query = PsychSimQueryFunctions()
 
         self.set_function_dropdown()
 
@@ -54,11 +62,14 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_doc_button.clicked.connect(self.get_query_doc)
         self.query_doc_button.clicked.connect(self.get_query_doc)
 
+        self.set_func_source_button.clicked.connect(self.set_func_source)
+        self.reload_func_source_button.clicked.connect(self.reolaod_func_source)
+
         self.set_sample_function_dropdown(["range", "category"])
 
     def execute_query(self):
         """
-        Execute the query with the given params. The query function is defined in functions/query_functions.py
+        Execute the query with the given params. The query function is defined in functions/PsychSimQueryFunctions.py
         """
         # get the query function
         query_function = self.function_combo.currentText()
@@ -359,7 +370,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def set_function_dropdown(self):
         """
-        Populate the query function dropdown with functions from functions/query_functions.py
+        Populate the query function dropdown with functions from functions/PsychSimQueryFunctions.py
         """
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
@@ -374,7 +385,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def handle_params(self):
         """
-        Get the parameters from the function definitions in functions/query_functions.py
+        Get the parameters from the function definitions in functions/PsychSimQueryFunctions.py
         :return:
         """
         function_name = self.function_combo.currentText()
@@ -521,6 +532,46 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param color: color to display message
         """
         pgh.print_output(self.query_output, msg, color)
+
+    def set_func_source(self):
+        """
+        Set the path to the simulation script (self.sim_path) and update the gui labels
+        """
+        new_path = pgh.get_file_path(path_label=self.func_source_label)
+        if new_path:
+            self.func_source = new_path
+            # self.func_source_label.setText("...")
+
+    def reolaod_func_source(self):
+        """
+        import the functions script
+        """
+        #todo: refactor with similar function in simulationInfoPage?
+        self.add_to_sys_path()
+        self.print_query_output(f"attempting to load functions from: {self.func_source}", "green")
+        try:
+            # import the sim module
+            self.func_spec = importlib.util.spec_from_file_location(self.func_class_name, self.func_source)
+            self.func_module = importlib.util.module_from_spec(self.func_spec)
+            self.func_spec.loader.exec_module(self.func_module)
+            # update buttons and print output
+            self.print_query_output(f"functions loaded: {self.func_source}", "green")
+            #update functions dropdown
+            self.psychsim_query = getattr(self.func_module, self.func_class_name)()
+            self.set_function_dropdown()
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
+    def add_to_sys_path(self):
+        """
+        Add the selected functions source sys path variable
+        This enables the functions to be found by required elements of the gui
+        """
+        # todo: refactor with similar function in simulationInfoPage
+        self.func_class_name = re.split(r'[.,/]', self.func_source)[-2]
+        # sys.path.insert(1, self.psychsim_path)
+        # sys.path.insert(1, self.definitions_path)
 
 
 if __name__ == "__main__":

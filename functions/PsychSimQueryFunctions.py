@@ -9,7 +9,7 @@ import traceback
 import psychsim_gui_helpers as pgh
 
 
-class PsychSimQuery:
+class PsychSimQueryFunctions:
     def __init__(self):
         pass
 
