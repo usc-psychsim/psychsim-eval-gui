@@ -155,7 +155,8 @@ class PsychSimQueryFunctions:
         try:
             for step, step_data in data.data.items():
                 actions_dict['step'].append(step)
-                actions_dict['action'].append(str(step_data['TRAJECTORY'][0][1]))
+                action = str(step_data['TRAJECTORY'][0][1]).split('\t')[1]
+                actions_dict['action'].append(action)
                 # step_data[0][1]
                 # for agent_i, agent_data in step_data['AGENT_STATE'].items():
                 #     if agent_i == agent:
