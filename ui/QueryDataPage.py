@@ -569,9 +569,13 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         This enables the functions to be found by required elements of the gui
         """
         # todo: refactor with similar function in simulationInfoPage
-        self.func_class_name = re.split(r'[.,/]', self.func_source)[-2]
+        try:
+            self.func_class_name = re.split(r'[.,/]', self.func_source)[-2]
         # sys.path.insert(1, self.psychsim_path)
         # sys.path.insert(1, self.definitions_path)
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
 
 if __name__ == "__main__":

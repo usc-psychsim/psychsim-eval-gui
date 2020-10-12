@@ -15,6 +15,13 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0">
+     <widget class="QPushButton" name="pickle_load_data_button">
+      <property name="text">
+       <string>Load data from pickle</string>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="0">
      <widget class="QTableWidget" name="loaded_data_table">
       <property name="editTriggers">
@@ -25,10 +32,10 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="load_data_button">
+    <item row="2" column="0">
+     <widget class="QPushButton" name="log_load_data_button">
       <property name="text">
-       <string>Load data from file</string>
+       <string>Load data from log</string>
       </property>
      </widget>
     </item>

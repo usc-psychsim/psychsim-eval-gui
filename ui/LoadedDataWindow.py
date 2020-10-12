@@ -21,9 +21,9 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         self.loaded_data_table.setColumnCount(len(columns))
         self.loaded_data_table.setHorizontalHeaderLabels(columns)
 
-    def load_data_from_file(self):
+    def load_data_from_pickle(self):
         """
-        Open dialog to get file name of data to load
+        Open dialog to get file name of data to load (pickle files)
         """
         fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.pickle)")
         with open(fileName, 'rb') as f:

@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
 import os
+import re
 import pickle
 import sys
 from functools import partial
@@ -35,7 +36,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
         # SET UP OTHER WINDOWS
         self.loaded_data_window = LoadedDataWindow()
-        self.loaded_data_window.load_data_button.clicked.connect(self.load_data_from_file)
+        self.loaded_data_window.pickle_load_data_button.clicked.connect(self.load_data_from_pickle)
+        self.loaded_data_window.log_load_data_button.clicked.connect(self.load_data_from_log)
         self.doc_window = DocWindow()
 
         # set up the containers for storing data
@@ -127,7 +129,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             self.sim_info_page.print_sim_output(f"{data_id} saved to: {output_name}", "black")
             self.update_data_table()
 
-    def load_data_from_file(self):
+    def load_data_from_pickle(self):
         """
         load previously saved pickle data
         """
@@ -145,6 +147,48 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 self.sim_data_dict[data.id] = data
                 self.update_data_table()
                 pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
+
+    def load_data_from_log(self):
+        """
+        load previously saved log data
+        """
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(self,
+                                                  "Select data file",
+                                                  "",
+                                                  "psychsim log data (*.log)",
+                                                  options=options)
+        if fileName:
+            # parse the log file
+            print("PARSING")
+            regex = '(<property name="(.*?)">(.*?)<\/property>)'
+
+            match_list = []
+            with open(fileName, "r") as file:
+                for line in file:
+                    line_data = re.split("\[(.*?)]\s|:\s", line)
+                    if len(line_data) > 3:
+                        date = line_data[1].split()[0]
+                        type = line_data[1].split()[-1]
+                        variable = line_data[2]
+                        value = line_data[4].strip(")\n")
+                    pass
+
+                #
+                #     for match in re.finditer(regex, line, re.S):
+                #         match_text = match.group()
+                #         match_list.append(match_text)
+                #         print(match_text)
+
+
+
+            # self.sim_info_page.load_sim()
+            # with open(fileName, 'rb') as f:
+            #     data = pickle.load(f)
+            #     self.sim_data_dict[data.id] = data
+            #     self.update_data_table()
+            #     pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
+
 
     def show_rename_dialog(self, old_key):
         """
