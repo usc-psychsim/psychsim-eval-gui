@@ -183,12 +183,12 @@ class PsychSimQueryFunctions:
             agent_id = agent
             steps = {}
             for step, step_data in data.data.items():
-                for agent, agent_data in step_data["AGENT_STATE"].items():
-                    if agent == agent_id:
-                        for decision, decision_data in agent_data["__decision__"].items():
-                            if type(decision_data) == dict and "V" in decision_data.keys():
-                                for element, element_data in decision_data["V"].items():
-                                    steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(element_data["__beliefs__"]))
+                for t, sa in enumerate(step_data['TRAJECTORY']):
+                    world, action = sa
+                    agent_obj = world.agents[agent]
+                    beliefs = agent_obj.getBelief(world.state)
+                    steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0]))
+
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
@@ -196,7 +196,6 @@ class PsychSimQueryFunctions:
         except:
             tb = traceback.format_exc()
             print(tb)
-
 
     def get_all_agents_beliefs(self, *args, **kwargs):
         """
@@ -236,42 +235,6 @@ class PsychSimQueryFunctions:
             tb = traceback.format_exc()
             print(tb)
 
-    def __get_debug_data(self, debug, step, level=0):
-        # THIS ASSUMES THE STRUCTURE WON'T CHANGE
-        sim_info = pd.DataFrame(columns=["step", "agent", "action"])
-        step_info = []
-
-        for k, v in debug.items():
-            agent_info = dict(step=[step], agent=None, action=None, possible_actions=None, beliefs=None)
-            agent_info["agent"] = k
-            for k1, v1 in v.items():
-                for k2, v2 in v1.items():
-                    if type(v2) == dict:
-                        for k3, v3 in v2.items():
-                            # if type(v3) == self.psychsim_module.ActionSet:
-                            if v3.__class__.__name__ == "ActionSet":
-                                agent_info["action"] = v3
-                            if type(v3) == dict:
-                                agent_info["possible_actions"] = v3
-            if agent_info["possible_actions"] is not None:
-                agent_info["beliefs"] = [agent_info["possible_actions"][agent_info["action"]]["__beliefs__"]]
-            step_info.append(agent_info)
-
-        # TODO: turn ste_info rows into a dataframe here PROPERLY
-        step_dataframes = []
-        for info in step_info:
-            info["action"] = [str(info["action"])]
-            info.pop("possible_actions", None)
-            # agent_info.pop("beliefs", None)
-            agent_df = pd.DataFrame.from_dict(info)  # TODO: FIX THIS
-            if info['beliefs']:
-                vds_vals = self.__extract_values_fromVectorDistributionSet(info['beliefs'][0])
-                agent_df = pd.concat([agent_df, vds_vals], axis=1)
-            agent_df = agent_df.drop('beliefs', axis=1)
-            step_dataframes.append(agent_df)
-        output_df = pd.concat(step_dataframes)
-        return output_df
-
     def __extract_values_fromVectorDistributionSet(self, vds):
         vds_values = pd.DataFrame()
         clean_header = []
@@ -287,23 +250,5 @@ class PsychSimQueryFunctions:
         vds_values = vds_values.append(data)
         return vds_values
 
-    def get_generic_data(self, *args, **kwargs):
-        """
-        This is a test of getting data from the test simulation "sim_scripts/GenericSim.py"
-        :param "data": data from psychsimGUI in dict format
-        :return: Dataframe containing x, y, channel, and step data from the test simulation
-        """
-        data_dict = dict(channel=[], x=[], y=[], step=[])
-        for key, value in kwargs.items():
-            if key == "data":
-                for step, step_data in value.data.items():
-                    if type(step_data) == dict:
-                        for channel, data in list(step_data.items()):
-                            data_dict["channel"].append(channel)
-                            data_dict["x"].append(data["x"])
-                            data_dict["y"].append(data["y"])
-                            data_dict["step"].append(step)
 
-        output_data = pd.DataFrame.from_dict(data_dict)
-        return output_data
 
