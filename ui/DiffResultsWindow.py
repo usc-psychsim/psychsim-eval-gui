@@ -69,23 +69,25 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         self.set_table_headers(self.q1_table, diff[0])
         self.set_table_headers(self.q2_table, diff[0])
         diff.pop(0) #remove the header
-        diff_rows1, diff_rows2 = self.get_diff_table_rows(diff)
-        self.format_diff_tables(self.q1_table, diff_rows1, "-", "red")
-        self.format_diff_tables(self.q2_table, diff_rows2, "+", "blue")
+        diff_v = self.get_diff_as_vector(diff)
+        diff_row_info1, diff_row_info2 = self.get_diff_table_rows(diff_v)
+        self.format_diff_tables(self.q1_table, diff_row_info1, "-", "red")
+        self.format_diff_tables(self.q2_table, diff_row_info2, "+", "blue")
 
-    def format_diff_tables(self, table, diff_rows, diff_type, diff_colour):
+    def format_diff_tables(self, table, diff_row_info, diff_type, diff_colour):
         """
         Populate the tables with items and colour according to if a difference exists or not
         :param table: table to render diff results to
-        :param diff_rows: list containing rows to populate table with
+        :param diff_row_info: dict containing rows to populate table with and the diff info for what has changed
         :param diff_type: '+' or '-' mean that the diff is unique to one table.
         :param diff_colour: colour to colour the cell with if a difference exists
         """
-        for row_number, row in enumerate(diff_rows):
-            if row.startswith(" "):
+        for row_number, row in enumerate(diff_row_info["rows"]):
+            if row[0].startswith(" "):
                 self.set_table_row(table, row)
-            elif row.startswith(diff_type):
-                self.set_table_row(table, row, color=diff_colour)
+            elif row[0].startswith(diff_type):
+                row_diff = diff_row_info["info"][row_number]
+                self.set_table_row(table, row, row_diff, color=diff_colour)
                 self.set_vertical_header(table, row_number, diff_colour)
 
     def get_diff_table_rows(self, diff):
@@ -94,25 +96,44 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         :return: lists with elements corresponding to table rows
         """
         diff_rows1 = []
+        diff_info1 = []
         diff_rows2 = []
+        diff_info2 = []
         for line_no, line in enumerate(diff):
-            if line.startswith(" "):
+            if line[0].startswith(" "):
                 diff_rows1.append(line)
                 diff_rows2.append(line)
-            elif line.startswith("-"):
+                diff_info1.append([])
+                diff_info2.append([])
+            elif line[0].startswith("-"):
                 diff_rows1.append(line)
-            elif line.startswith("+"):
+                # if next line exists AND starts with '?' then also append to info list
+                if line_no >= 0 and line_no + 1 < len(diff) and diff[line_no + 1][0].startswith("?"): #TODO: CLEAN THIS UP COS IT'S CONFUSING
+                    diff_info1.append(diff[line_no + 1])
+                elif line_no >= 0 and line_no + 1 < len(diff) and not diff[line_no + 1][0].startswith("?"): #TODO: CLEAN THIS UP COS IT'S CONFUSING
+                    diff_info1.append([])
+                elif line_no >= 0 and line_no + 1 == len(diff):
+                    diff_info1.append([])
+            elif line[0].startswith("+"):
                 diff_rows2.append(line)
-        return diff_rows1, diff_rows2
+                if line_no >= 0 and line_no + 1 < len(diff) and diff[line_no + 1][0].startswith("?"):
+                    diff_info2.append(diff[line_no + 1])
+                elif line_no >= 0 and line_no + 1 < len(diff) and not diff[line_no + 1][0].startswith("?"):
+                    diff_info2.append([])
+                elif line_no >= 0 and line_no + 1 == len(diff):
+                    diff_info2.append([])
 
-    def set_table_row(self, table, line, color="black"):
+        return dict(rows=diff_rows1, info=diff_info1), dict(rows=diff_rows2, info=diff_info2)
+
+    def set_table_row(self, table, line, line_diff=None, color="black"):
         """
         For a given csv line, separate the elements and create a table item (cell) for each
+        :param line_diff: info about which cells have changed
         :param table: table to populate
         :param line: csv line ifnormation
         :param color: color to render the cell text
         """
-        line_items = line.split(',')
+        line_items = line  # line.split(',') todo: refactor this (remove)
         row_position = table.rowCount()
         table.insertRow(row_position)
         table.setColumnCount(len(line_items))
@@ -120,25 +141,46 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         for idx, item in enumerate(line_items):
             cell_item = QTableWidgetItem(item)
             cell_item.setForeground(QColor(color))
+            if line_diff and "^" in line_diff[idx]:
+                cell_item.setForeground(QColor("black"))
+                cell_item.setBackground(QColor(color))
             table.setItem(row_position, idx, QTableWidgetItem(cell_item))
 
     def get_diff_as_vector(self, diff):
-        # TODO: Fix this function to get information for each cell (the actual text to display, and if it was different from the previous line)
-        #  A difference is indicated by a '^', '+', or '-' in the previous line by a line that starts with a '?'
-        #  (see difflib documentation https://docs.python.org/3/library/difflib.html)
+        """
+
+        :param diff:
+        :return:
+        """
+        for line in diff:
+            print(line)
 
         #go through the diff results, if a line starts with '?' then separate it based on the lengths of the previous line split
         fixed_diff = []
         for line_idx, line in enumerate(diff):
             if line.startswith('?'):
                 #THE QUESTION MARK MEANS THAT THINGS WERE CHANGED, BUT NOT UNIQUE
-                prev_line = re.split((','), diff[line_idx-1])
-                line_diff_info = [line[i:i+len(e)] for i, e in enumerate(prev_line)]
+                prev_line = re.split(('(,)'), diff[line_idx-1])
+                line_diff_info = self._split_str_on_pattern(line, prev_line)
                 fixed_diff.append(line_diff_info)
             else:
                 #NO QUESTION MARK BUT A + or - MEANS THAT THE ITEM IS ONLY IN ONE SIDE
-                fixed_diff.append(line.split(','))
+                fixed_diff.append(re.split((','), diff[line_idx]))
         return fixed_diff
+
+    def _split_str_on_pattern(self, string_to_split, patterns):
+        #TODO: refactor this (maybe it doesn't belong here?)
+
+        # there might also be an easier way to do it like:
+        # prev_line = re.split(('(,)'), diff[line_idx - 1]) - but this doesn't move the index
+        split_string = []
+        idx = 0
+        for p in patterns:
+            # ignore commas
+            if "," not in p:
+                split_string.append(string_to_split[idx:idx+len(p)])
+            idx = idx + len(p)
+        return split_string
 
 
 if __name__ == "__main__":
