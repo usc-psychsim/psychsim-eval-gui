@@ -15,10 +15,11 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
     """
     Window to display diff results as side by side tables. Different rows are highlighted by colour
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, stepwise_diff=False):
         super(DiffResultsWindow, self).__init__(parent)
         self.setupUi(self)
         self.setWindowTitle("Diff Results")
+        self.stepwise_diff = stepwise_diff
 
         self.changed_t1_label.setStyleSheet("color: red")
         # self.unique_t1_label.setStyleSheet("background-color : pink")
@@ -35,7 +36,14 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         q1_csv = q1.results.to_csv(index=False).splitlines(keepends=False)
         q2_csv = q2.results.to_csv(index=False).splitlines(keepends=False)
         d = difflib.Differ()
-        diff = list(d.compare(q1_csv, q2_csv))
+
+        diff = []
+        #If step selected - do a line by line diff
+        if self.stepwise_diff:
+            for i, row in enumerate(q1_csv):
+                diff = diff + (list(d.compare([row], [q2_csv[i]])))
+        else:
+            diff = list(d.compare(q1_csv, q2_csv))
         return diff
 
     def set_table_headers(self, table, header_list):
@@ -165,6 +173,7 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
                 fixed_diff.append(line_diff_info)
             else:
                 #NO QUESTION MARK BUT A + or - MEANS THAT THE ITEM IS ONLY IN ONE SIDE
+            #todo: artifically insert a ? row if it doesn't exist (compare each element) IF it starts with a '-' or '+'
                 fixed_diff.append(re.split((','), diff[line_idx]))
         return fixed_diff
 
