@@ -1,5 +1,7 @@
 """
 Model used to display pandas dataframes in qt tableview widget
+# useful documentation on custom models: https://www.learnpyqt.com/courses/model-views/qtableview-modelviews-numpy-pandas/
+
 """
 
 from PyQt5.QtCore import *
@@ -23,7 +25,11 @@ class PandasModel(QAbstractTableModel):
                 return str(self._data.iloc[index.row(), index.column()])
         return None
 
-    def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._data.columns[col]
-        return None
+    def headerData(self, section, orientation, role):
+        # section is the index of the column/row.
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return str(self._data.columns[section])
+
+            if orientation == Qt.Vertical:
+                return str(self._data.index[section])
