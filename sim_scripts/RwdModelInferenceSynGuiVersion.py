@@ -2,7 +2,7 @@ import sys
 print(sys.path)
 # sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/Sep2020/psychsim/")
 # sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/Sep2020/atomic/")
-sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/Sep2020/model-learning/")
+sys.path.insert(1, "/home/christ/Documents/Sep2020/model-learning/")
 
 import logging
 import os
