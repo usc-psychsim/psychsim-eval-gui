@@ -46,15 +46,18 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
             diff = list(d.compare(q1_csv, q2_csv))
         return diff
 
-    def set_table_headers(self, table, header_list):
+    def set_table_headers(self, table, horizontal_header_list, vertical_header_list):
         """
         Set the header of a table from the provided csv header
         :param table: table to set headers on
-        :param header_list: csv header (i.e. first line from csv file)
+        :param horizontal_header_list: csv header (i.e. first line from csv file)
+        :param vertical_header_list: lsit of row names from data
         """
-        line_elements = header_list.split(',')
+        line_elements = horizontal_header_list.split(',')
         table.setColumnCount(len(line_elements))
+        table.setRowCount(len(vertical_header_list))
         table.setHorizontalHeaderLabels(line_elements)
+        table.setVerticalHeaderLabels(vertical_header_list)
 
     def set_vertical_header(self, table, line_no, color):
         """
@@ -66,6 +69,7 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         item1 = QTableWidgetItem(str(line_no))
         item1.setBackground(QColor(color))
         table.setVerticalHeaderItem(line_no, item1)
+        pass
 
     def execute_diff(self, q1, q2):
         """
@@ -74,8 +78,9 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         :param q2: PsySimQuery to diff
         """
         diff = self.get_diff_from_queries(q1, q2)
-        self.set_table_headers(self.q1_table, diff[0])
-        self.set_table_headers(self.q2_table, diff[0])
+        rownames = q1.results.index.values
+        self.set_table_headers(self.q1_table, diff[0], rownames)
+        self.set_table_headers(self.q2_table, diff[0], q2.results.index.values)
         diff.pop(0) #remove the header
         diff_v = self.get_diff_as_vector(diff)
         diff_row_info1, diff_row_info2 = self.get_diff_table_rows(diff_v)
