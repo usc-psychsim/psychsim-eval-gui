@@ -120,12 +120,6 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QTableWidget" name="q1_table"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QTableWidget" name="q2_table"/>
-       </item>
        <item row="0" column="1">
         <widget class="QLabel" name="q2_diff_label">
          <property name="text">
@@ -139,6 +133,12 @@
           <string>Diff color legend:</string>
          </property>
         </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QTableView" name="q1_table"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QTableView" name="q2_table"/>
        </item>
       </layout>
      </widget>

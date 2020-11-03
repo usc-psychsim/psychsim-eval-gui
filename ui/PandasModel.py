@@ -5,13 +5,15 @@ Model used to display pandas dataframes in qt tableview widget
 """
 
 from PyQt5.QtCore import *
-
+from PyQt5.QtGui import *
 
 class PandasModel(QAbstractTableModel):
 
-    def __init__(self, data):
+    def __init__(self, data, diff=None, diff_colour="blue"):
         QAbstractTableModel.__init__(self)
         self._data = data
+        self._diff = diff
+        self._diff_colour = diff_colour
 
     def rowCount(self, parent=None):
         return self._data.shape[0]
@@ -23,6 +25,13 @@ class PandasModel(QAbstractTableModel):
         if index.isValid():
             if role == Qt.DisplayRole:
                 return str(self._data.iloc[index.row(), index.column()])
+            if self._diff is not None and role == Qt.BackgroundRole:
+                row = index.row()
+                col = index.column()
+                diff_val = self._diff.iloc[index.row(), index.column()]#.iloc[index.row()][index.column()]
+                if not diff_val: # colour if the diff value is FALSE (i.e. the values aren't the same between the two dataframes)
+                    return QColor(self._diff_colour)
+
         return None
 
     def headerData(self, section, orientation, role):

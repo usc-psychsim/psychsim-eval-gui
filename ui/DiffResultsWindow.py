@@ -5,7 +5,9 @@ import sys
 import re
 import os
 import difflib
+import pandas as pd
 from dataclasses import dataclass
+from ui.PandasModel import PandasModel
 
 diff_results_window_file = os.path.join("ui", "diff_results_window.ui")
 ui_diffResultsWindow, QtBaseClass = uic.loadUiType(diff_results_window_file)
@@ -46,18 +48,23 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
             diff = list(d.compare(q1_csv, q2_csv))
         return diff
 
-    def set_table_headers(self, table, horizontal_header_list, vertical_header_list):
+    def set_table_headers(self, table, data):#, horizontal_header_list, vertical_header_list):
         """
         Set the header of a table from the provided csv header
         :param table: table to set headers on
         :param horizontal_header_list: csv header (i.e. first line from csv file)
         :param vertical_header_list: lsit of row names from data
         """
-        line_elements = horizontal_header_list.split(',')
-        table.setColumnCount(len(line_elements))
-        table.setRowCount(len(vertical_header_list))
-        table.setHorizontalHeaderLabels(line_elements)
-        table.setVerticalHeaderLabels(vertical_header_list)
+        # line_elements = horizontal_header_list.split(',')
+        # table.setColumnCount(len(line_elements))
+        # table.setRowCount(len(vertical_header_list))
+        # table.setHorizontalHeaderLabels(line_elements)
+        # table.setVerticalHeaderLabels(vertical_header_list)
+
+        table.setColumnCount(data.shape[1])
+        table.setRowCount(data.shape[0])
+        table.setHorizontalHeaderLabels(data.columns)
+        table.setVerticalHeaderLabels(data.index.array)
 
     def set_vertical_header(self, table, line_no, color):
         """
@@ -77,15 +84,20 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         :param q1: PsySimQuery to diff
         :param q2: PsySimQuery to diff
         """
-        diff = self.get_diff_from_queries(q1, q2)
-        rownames = q1.results.index.values
-        self.set_table_headers(self.q1_table, diff[0], rownames)
-        self.set_table_headers(self.q2_table, diff[0], q2.results.index.values)
-        diff.pop(0) #remove the header
-        diff_v = self.get_diff_as_vector(diff)
-        diff_row_info1, diff_row_info2 = self.get_diff_table_rows(diff_v)
-        self.format_diff_tables(self.q1_table, diff_row_info1, "-", "red")
-        self.format_diff_tables(self.q2_table, diff_row_info2, "+", "blue")
+        diff_rows = []
+        for index, row_1 in q1.results.iterrows():
+            # get the row of the other dataframe
+            row_2 = q2.results.loc[index, :]
+            # get the difference row (we only really need one because the absolute difference is the same on both sides
+            diff_rows.append(row_1 == row_2)
+        # combine the diff rows to a new dataframe
+        diff_output = pd.concat(diff_rows, axis=1, keys=[s.name for s in diff_rows]).T
+        # Use the new diff dataframe to format the table (color the cells)
+        model_1 = PandasModel(data=q1.results, diff=diff_output, diff_colour="red")
+        model_2 = PandasModel(data=q2.results, diff=diff_output)
+        self.q1_table.setModel(model_1)
+        self.q2_table.setModel(model_2)
+
 
     def format_diff_tables(self, table, diff_row_info, diff_type, diff_colour):
         """
