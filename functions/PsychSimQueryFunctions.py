@@ -36,7 +36,9 @@ class PsychSimQueryFunctions:
         """
         results = dict(agent=[f"{agent}_{i}" for i in range(1, 11)],
                        action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)])
-        return pd.DataFrame(results)
+        output = pd.DataFrame(results)
+        output = output.set_index('agent')
+        return pd.DataFrame(output)
 
 
 
