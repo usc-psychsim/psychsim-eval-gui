@@ -5,6 +5,7 @@ Query function definitions used by psychsim gui
 import pandas as pd
 import numpy as np
 import traceback
+from random import randint
 
 import psychsim_gui_helpers as pgh
 
@@ -34,7 +35,7 @@ class PsychSimQueryFunctions:
 
         """
         results = dict(agent=[f"{agent}_{i}" for i in range(1, 11)],
-                       action=[f"{action}_{i}" for i in range(11, 21)])
+                       action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)])
         return pd.DataFrame(results)
 
 
@@ -192,7 +193,7 @@ class PsychSimQueryFunctions:
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
-            return all_steps
+            return all_steps.T
         except:
             tb = traceback.format_exc()
             print(tb)
