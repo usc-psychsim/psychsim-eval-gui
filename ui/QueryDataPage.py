@@ -583,7 +583,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
     def show_step_through_window(self):
         try:
             query = self.query_data_dict[self.step_query_combo.currentText()]
-            step_through_results_window = StepThroughResultsWindow(parent=self)
+            step_through_results_window = StepThroughResultsWindow(parent=self, query=query)
             step_through_results_window.results_title.setText(f"Step through results for query:{query.id}")
             step_through_results_window.show()
         except:

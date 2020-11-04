@@ -52,9 +52,6 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEdit"/>
-          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label">
             <property name="text">
@@ -63,14 +60,17 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="no_steps_label">
             <property name="text">
-             <string>Select number of steps to view</string>
+             <string>Select number of steps to view (max = .. )</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="variable_select_combo"/>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="no_steps_spin"/>
           </item>
          </layout>
         </widget>
