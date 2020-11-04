@@ -19,6 +19,7 @@ from ui.PandasModel import PandasModel
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
 from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
 from ui.DiffResultsWindow import DiffResultsWindow
+from ui.StepThroughQueryWindow import StepThroughResultsWindow
 from ui.DeleteAreYouSureDialog import DeleteAreYouSure
 from ui.QueryDataDialog import QueryDataDialog
 
@@ -55,6 +56,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.save_csv_query_button.clicked.connect(self.save_csv_query)
         self.delete_query_buton.clicked.connect(self.delete_query)
         self.diff_query_button.clicked.connect(self.diff_query)
+        self.query_step_view_button.clicked.connect(self.show_step_through_window)
         self.sample_query_combo.activated.connect(self.handle_sample_query_dropdown)
         self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
@@ -367,6 +369,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         pgh.update_combo(self.sample_query_combo, self.query_data_dict.keys())
         pgh.update_combo(self.query_diff_1, self.query_data_dict.keys())
         pgh.update_combo(self.query_diff_2, self.query_data_dict.keys())
+        pgh.update_combo(self.step_query_combo, self.query_data_dict.keys())
 
     def set_function_dropdown(self):
         """
@@ -576,6 +579,17 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+    def show_step_through_window(self):
+        try:
+            query = self.query_data_dict[self.step_query_combo.currentText()]
+            step_through_results_window = StepThroughResultsWindow(parent=self)
+            step_through_results_window.results_title.setText(f"Step through results for query:{query.id}")
+            step_through_results_window.show()
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
 
 
 if __name__ == "__main__":
