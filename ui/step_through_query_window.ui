@@ -60,7 +60,7 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="no_steps_label">
+           <widget class="QLabel" name="no_steps_view_label">
             <property name="text">
              <string>Select number of steps to view (max = .. )</string>
             </property>
@@ -70,7 +70,7 @@
            <widget class="QComboBox" name="variable_select_combo"/>
           </item>
           <item row="1" column="1">
-           <widget class="QSpinBox" name="no_steps_spin"/>
+           <widget class="QSpinBox" name="no_steps_view_spin"/>
           </item>
          </layout>
         </widget>
@@ -91,6 +91,16 @@
            <widget class="QPushButton" name="step_back_button">
             <property name="text">
              <string>&lt; Step .. steps back</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="no_steps_spin">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
            </widget>
           </item>

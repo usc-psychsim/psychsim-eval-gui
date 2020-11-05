@@ -26,13 +26,20 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
         self.step_forward_button.clicked.connect(lambda: self.step_through_data(type="forward"))
         self.step_back_button.clicked.connect(lambda: self.step_through_data(type="backward"))
         self.no_steps_spin.valueChanged.connect(self.set_no_steps)
+        self.no_steps_view_spin.valueChanged.connect(self.set_no_steps_view)
 
         max_steps = self.query.results.shape[1]
-        self.no_steps_label.setText(f"Select number of steps to view (max = {max_steps})")
+        self.no_steps_view_label.setText(f"Select number of steps to view (max = {max_steps})")
+        self.no_steps_view_spin.setMinimum(1)
+        self.no_steps_view_spin.setMaximum(max_steps)
         self.no_steps_spin.setMinimum(1)
         self.no_steps_spin.setMaximum(max_steps)
 
         self.no_steps = 1
+        self.no_steps_view = 1
+
+    def set_no_steps_view(self):
+        self.no_steps_view = self.no_steps_view_spin.value()
 
     def set_no_steps(self):
         self.no_steps = self.no_steps_spin.value()
@@ -45,7 +52,7 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
         #todo: create a new dataframe with only the variables we want
 
         # only select the number of steps
-        self.selection_window = (0, self.no_steps)
+        self.selection_window = (0, self.no_steps_view)
         step_through_data = step_through_data.iloc[:, self.selection_window[0]:self.selection_window[1]]
         # display the data
         model = PandasModel(data=step_through_data)
@@ -65,15 +72,15 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
             # deal with viewing the extreme ends (and stopping)
             if step_start < 0:
                 step_start = 0
-                step_end = 0 + self.no_steps
+                step_end = 0 + self.no_steps_view
             elif step_end > step_through_data.shape[1]:
-                step_start = step_through_data.shape[1] - self.no_steps
+                step_start = step_through_data.shape[1] - self.no_steps_view
                 step_end = step_through_data.shape[1]
 
             self.selection_window = (step_start, step_end)
 
             step_through_data = step_through_data.iloc[:, step_start:step_end]
-            
+
             # display dataframe
             model = PandasModel(data=step_through_data)
             self.results_table.setModel(model)
