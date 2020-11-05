@@ -102,9 +102,9 @@ class CheckableComboBox(QComboBox):
 
     def addItem(self, text, data=None):
         item = QStandardItem()
-        item.setText(text)
+        item.setText(str(text))
         if data is None:
-            item.setData(text)
+            item.setData(str(text))
         else:
             item.setData(data)
         item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
