@@ -90,14 +90,14 @@
           <item>
            <widget class="QPushButton" name="step_back_button">
             <property name="text">
-             <string>&lt; Step back</string>
+             <string>&lt; Step .. steps back</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="step_forward_button">
             <property name="text">
-             <string>Step forward &gt;</string>
+             <string>Step .. steps forward &gt;</string>
             </property>
            </widget>
           </item>
