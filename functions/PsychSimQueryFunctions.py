@@ -1,5 +1,6 @@
 """
 Query function definitions used by psychsim gui
+
 """
 
 import pandas as pd
@@ -33,6 +34,8 @@ class PsychSimQueryFunctions:
         These functions need to correspond to the output from the simulation file that was run.
         e.g. if that output is a dctionary with certain keys, then these functions must acces using the same keys
 
+        NOTE: the index must be a string.
+        NOTE: it is better to have 'step' on the x axis
         """
         results = dict(agent=[f"{agent}_{i}" for i in range(1, 11)],
                        action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)])
@@ -174,7 +177,7 @@ class PsychSimQueryFunctions:
             print(tb)
 
         output_data = pd.DataFrame.from_dict(actions_dict)
-        return output_data
+        return output_data.T
 
     def get_individual_agent_beliefs(self, data=None, agent=None, *args, **kwargs):
         """
