@@ -60,15 +60,19 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
         self.step_forward_button.setText(f"Step {self.no_steps} steps forward >")
 
     def view_data(self):
-        cat_values = self.variable_combo_mult.currentData()
-        display_data = self.query.results.loc[cat_values]
+        try:
+            cat_values = self.variable_combo_mult.currentData()
+            display_data = self.query.results.loc[cat_values]
 
-        # only select the number of steps
-        self.selection_window = (0, self.no_steps_view)
-        display_data = display_data.iloc[:, self.selection_window[0]:self.selection_window[1]]
-        # display the data
-        model = PandasModel(data=display_data)
-        self.results_table.setModel(model)
+            # only select the number of steps
+            self.selection_window = (0, self.no_steps_view)
+            display_data = display_data.iloc[:, self.selection_window[0]:self.selection_window[1]]
+            # display the data
+            model = PandasModel(data=display_data)
+            self.results_table.setModel(model)
+        except:
+            tb = traceback.format_exc()
+            print(tb)
 
     def step_through_data(self, type):
         # todo refactor this with the view_data function
