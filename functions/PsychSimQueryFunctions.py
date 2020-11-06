@@ -179,7 +179,7 @@ class PsychSimQueryFunctions:
         output_data = pd.DataFrame.from_dict(actions_dict)
         return output_data.T
 
-    def get_individual_agent_beliefs(self, data=None, agent=None, *args, **kwargs):
+    def get_individual_agent_beliefs_numeric(self, data=None, agent=None, *args, **kwargs):
         """
         return a dataframe of beliefs for the agent at each step
         :return: Dataframe containing the actions and beliefs for the selected agent
@@ -194,6 +194,35 @@ class PsychSimQueryFunctions:
                     agent_obj = world.agents[agent]
                     beliefs = agent_obj.getBelief(world.state)
                     steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0]))
+
+            #append all the horizons to one dictionary
+            all_steps = pd.concat(steps.values())
+            all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
+            return all_steps.T
+        except:
+            tb = traceback.format_exc()
+            print(tb)
+
+    def get_individual_agent_beliefs_values(self, data=None, agent=None, *args, **kwargs):
+        """
+        return a dataframe of beliefs for the agent at each step
+        :return: Dataframe containing the actions and beliefs for the selected agent
+        """
+        try:
+            data = data
+            agent_id = agent
+            steps = {}
+            for step, step_data in data.data.items():
+                for t, sa in enumerate(step_data['TRAJECTORY']):
+                    world, action = sa
+                    agent_obj = world.agents[agent]
+                    beliefs = agent_obj.getBelief(world.state)
+                    steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0]))
+
+                    # TODO:
+                    #  [ ]figure out if Symbols is what we need to map to ALL values (or just some)
+                    #  [ ]figure out how to map agent.world.symbols to these values (if that's what we need)
+
 
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
