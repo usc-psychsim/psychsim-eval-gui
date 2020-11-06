@@ -229,7 +229,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param q1: object to diff
         :param q2: object to diff
         """
-        diff_results_window = DiffResultsWindow(parent=self, stepwise_diff=self.stepwise_diff_checkbox.isChecked())
+        diff_results_window = DiffResultsWindow(parent=self)
         diff_results_window.diff_title.setText(f"Diff Results for {q1.id} and {q2.id}")
         diff_results_window.q1_diff_label.setText(f"{q1.id}")
         diff_results_window.q2_diff_label.setText(f"{q2.id}")
