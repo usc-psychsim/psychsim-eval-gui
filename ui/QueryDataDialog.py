@@ -33,6 +33,7 @@ class QueryDataDialog(QDialog, ui_queryDataView):
         """
         self.model = model
         self.Query_data_table.setModel(model)
+        # self.Query_data_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 
     def rename_query(self):
         self.query_data.id = self.query_id_input.text()

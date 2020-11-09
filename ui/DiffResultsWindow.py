@@ -55,6 +55,10 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         self.q1_table.setModel(model_1)
         self.q2_table.setModel(model_2)
 
+        # todo: find a way to implement this without it killing the GUI
+        # self.q1_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        # self.q2_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
