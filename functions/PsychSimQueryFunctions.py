@@ -218,11 +218,7 @@ class PsychSimQueryFunctions:
                     agent_obj = world.agents[agent]
                     beliefs = agent_obj.getBelief(world.state)
                     steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0]))
-
-                    # TODO:
-                    #  [ ]figure out if Symbols is what we need to map to ALL values (or just some)
-                    #  [ ]figure out how to map agent.world.symbols to these values (if that's what we need)
-
+                    steps[step] = steps[step].iloc[[0]].apply(self.__convert_symbol_vals_to_names, args=(agent_obj,)).to_frame().T
 
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
@@ -284,6 +280,12 @@ class PsychSimQueryFunctions:
         data.columns = clean_header
         vds_values = vds_values.append(data)
         return vds_values
+
+    def __convert_symbol_vals_to_names(self, val, agent):
+        if int(float(val)) < len(agent.world.symbolList):
+            return agent.world.symbolList[int(float(val))]
+        return val
+
 
 
 
