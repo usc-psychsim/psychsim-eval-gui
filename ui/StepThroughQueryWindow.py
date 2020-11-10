@@ -37,6 +37,8 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
         self.veiw_data_button.clicked.connect(self.view_data)
         self.step_forward_button.clicked.connect(lambda: self.step_through_data(type="forward"))
         self.step_back_button.clicked.connect(lambda: self.step_through_data(type="backward"))
+        self.to_end_button.clicked.connect(lambda: self.step_through_data(type="end"))
+        self.to_start_button.clicked.connect(lambda: self.step_through_data(type="start"))
         self.no_steps_spin.valueChanged.connect(self.set_no_steps)
         self.no_steps_view_spin.valueChanged.connect(self.set_no_steps_view)
 
@@ -83,9 +85,18 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
             if type == "forward":
                 step_start = self.selection_window[0] + self.no_steps
                 step_end = self.selection_window[1] + self.no_steps
-            if type == "backward":
+            elif type == "backward":
                 step_start = self.selection_window[0] - self.no_steps
                 step_end = self.selection_window[1] - self.no_steps
+            elif type == "start":
+                step_start = 0
+                step_end = 0 + self.no_steps_view
+            elif type == "end":
+                step_start = display_data.shape[1] - self.no_steps_view
+                step_end = display_data.shape[1]
+
+
+
 
             # deal with viewing the extreme ends (and stopping)
             if step_start < 0:

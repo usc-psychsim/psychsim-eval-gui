@@ -88,6 +88,19 @@
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
+           <widget class="QPushButton" name="to_start_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>&lt;&lt; </string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="step_back_button">
             <property name="text">
              <string>&lt; Step .. steps back</string>
@@ -108,6 +121,19 @@
            <widget class="QPushButton" name="step_forward_button">
             <property name="text">
              <string>Step .. steps forward &gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="to_end_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string> &gt;&gt;</string>
             </property>
            </widget>
           </item>
