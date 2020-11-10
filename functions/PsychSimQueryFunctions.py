@@ -177,7 +177,7 @@ class PsychSimQueryFunctions:
             print(tb)
 
         output_data = pd.DataFrame.from_dict(actions_dict)
-        return output_data.T
+        return output_data
 
     def get_individual_agent_beliefs_numeric(self, data=None, agent=None, *args, **kwargs):
         """
@@ -198,6 +198,7 @@ class PsychSimQueryFunctions:
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
+            all_steps = all_steps.set_index('step', drop=False)
             return all_steps.T
         except:
             tb = traceback.format_exc()
@@ -218,11 +219,12 @@ class PsychSimQueryFunctions:
                     agent_obj = world.agents[agent]
                     beliefs = agent_obj.getBelief(world.state)
                     steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0]))
-                    steps[step] = steps[step].iloc[[0]].apply(self.__convert_symbol_vals_to_names, args=(agent_obj,)).to_frame().T
+                    steps[step] = steps[step].iloc[[0]].apply(self.__convert_symbol_vals_to_names, args=(agent_obj,)).to_frame().T # TODO: fix this so it doesn't take forever!
 
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
+            all_steps = all_steps.set_index('step', drop=False)
             return all_steps.T
         except:
             tb = traceback.format_exc()
