@@ -26,7 +26,7 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
         vbox_layout = QVBoxLayout()
         vbox_layout.addWidget(self.variable_combo_mult)
         self.variable_select_widget.setLayout(vbox_layout)
-        self.variable_combo_mult.addItems(query.results.index.values)
+        self.variable_combo_mult.addItems(sorted(query.results.index.values))
 
         self.query = query
         # self.display_data = self.query.results
