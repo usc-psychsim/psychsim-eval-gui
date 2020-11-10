@@ -198,8 +198,9 @@ class PsychSimQueryFunctions:
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
-            all_steps = all_steps.set_index('step', drop=False)
-            return all_steps.T
+            all_steps = all_steps.set_index('step', drop=False).T
+            all_steps = all_steps.sort_index()
+            return all_steps
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -224,8 +225,8 @@ class PsychSimQueryFunctions:
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
-            all_steps = all_steps.set_index('step', drop=False)
-            return all_steps.T
+            all_steps = all_steps.set_index('step', drop=False).T
+            return all_steps
         except:
             tb = traceback.format_exc()
             print(tb)
