@@ -111,7 +111,7 @@ class PsychSimQueryFunctions:
                                     for element, element_data in decision_data["V"].items():
                                         if str(element) == state_id:
                                             for idx, hzn in enumerate(element_data["__S__"]):
-                                                horizon[idx] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(hzn))
+                                                horizon[idx] = pd.DataFrame(self.__extract_numeric_values_fromVectorDistributionSet(hzn))
             #append all the horizons to one dictionary
             all_horizons = pd.concat(horizon.values())
             all_horizons.insert(loc=0, column='horizon', value=pd.Series(list(horizon.keys()), index=all_horizons.index))
@@ -193,7 +193,7 @@ class PsychSimQueryFunctions:
                     world, action = sa
                     agent_obj = world.agents[agent]
                     beliefs = agent_obj.getBelief(world.state)
-                    steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0]))
+                    steps[step] = pd.DataFrame(self.__extract_numeric_values_fromVectorDistributionSet(list(beliefs.values())[0]))
 
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
@@ -219,8 +219,7 @@ class PsychSimQueryFunctions:
                     world, action = sa
                     agent_obj = world.agents[agent]
                     beliefs = agent_obj.getBelief(world.state)
-                    steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0]))
-                    steps[step] = steps[step].iloc[[0]].apply(self.__convert_symbol_vals_to_names, args=(agent_obj,)).to_frame().T # TODO: fix this so it doesn't take forever!
+                    steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0], world))
 
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
@@ -260,7 +259,7 @@ class PsychSimQueryFunctions:
             output_data = pd.DataFrame()
             steps = []
             for step, step_data in data.data.items():
-                output_data = output_data.append(self.__extract_values_fromVectorDistributionSet(step_data['WORLD_STATE']))
+                output_data = output_data.append(self.__extract_numeric_values_fromVectorDistributionSet(step_data['WORLD_STATE']))
                 steps.append(str(step))
             step_col = pd.Series(steps)
             output_data.insert(loc=0, column='step', value=pd.Series(steps, index=output_data.index))
@@ -269,7 +268,7 @@ class PsychSimQueryFunctions:
             tb = traceback.format_exc()
             print(tb)
 
-    def __extract_values_fromVectorDistributionSet(self, vds):
+    def __extract_numeric_values_fromVectorDistributionSet(self, vds):
         vds_values = pd.DataFrame()
         clean_header = []
         actor_values = []
@@ -284,10 +283,21 @@ class PsychSimQueryFunctions:
         vds_values = vds_values.append(data)
         return vds_values
 
-    def __convert_symbol_vals_to_names(self, val, agent):
-        if int(float(val)) < len(agent.world.symbolList):
-            return agent.world.symbolList[int(float(val))]
-        return val
+    def __extract_values_fromVectorDistributionSet(self, vds, world):
+        # TODO: clean this up
+        vds_values = pd.DataFrame()
+        clean_header = []
+        actor_values = []
+        for key in vds.keyMap:
+            # print(actor_distribution_set.marginal(key))
+            actor_values.append(world.getFeature(key, unique=True))
+            if "Actor" in key:
+                key = key.split(' ')[-1]
+            clean_header.append(key)
+        data = pd.DataFrame(actor_values).T
+        data.columns = clean_header
+        vds_values = vds_values.append(data)
+        return vds_values
 
 
 
