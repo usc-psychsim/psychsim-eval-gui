@@ -65,7 +65,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         Update the relevent dropdowns based on the selected query
         """
         data_key = self.query_combo.currentText()
-        axis_values = sorted(self.query_data_dict[data_key].results.columns)
+        axis_values = sorted(self.query_data_dict[data_key].results.index.values)
         pgh.update_combo(self.y_combo, axis_values)
         pgh.update_combo(self.x_combo, axis_values)
         axis_values.insert(0, "none")
@@ -120,8 +120,8 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         :param name: name of the axis (to be added to the legend)
         :return: newly created figure
         """
-        x_data = data[self.x_combo.currentText()].tolist()
-        y_data = data[self.y_combo.currentText()].tolist()
+        x_data = data.loc[self.x_combo.currentText(), :].tolist()
+        y_data = data.loc[self.y_combo.currentText(), :].tolist()
         return self.add_trace_to_plot(fig, plot_type, x_data, y_data, name, data=data,
                                       x_name=self.x_combo.currentText(),
                                       y_name=self.y_combo.currentText())

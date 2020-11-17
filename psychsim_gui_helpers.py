@@ -174,7 +174,7 @@ def update_combo(combo_box, item_list):
     :return:
     """
     combo_box.clear()
-    new_items = [item for item in item_list]
+    new_items = [str(item) for item in item_list]
     combo_box.addItems(new_items)
 
 
