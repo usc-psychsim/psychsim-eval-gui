@@ -47,7 +47,7 @@ LOW_VAL = 10
 MEAN_VAL = (HIGH_VAL + LOW_VAL) / 2
 
 OUTPUT_DIR = 'output/reward-model-inference-data'
-DEBUG = False
+DEBUG = True
 SHOW = True
 INCLUDE_RANDOM_MODEL = False
 FULL_OBS = True  # False
@@ -91,9 +91,7 @@ if __name__ == '__main__':
 
     # create world, agent and observer
     world, agent, observer, victims, world_map = \
-        make_single_player_world(player_name, map_info['start'], neighbors, victims_locs, False, FULL_OBS)
-    world, agent, observer, victims, world_map = \
-        make_single_player_world(player_name, map_info['start'], neighbors, victims_locs, False, FULL_OBS)
+        make_single_player_world(player_name, map_info.init_loc, neighbors, victims_locs, False, FULL_OBS)
 
     plot_environment(world, locations, neighbors, os.path.join(OUTPUT_DIR, 'map.pdf'), coords)
 
@@ -112,8 +110,9 @@ if __name__ == '__main__':
     set_player_models(world, observer.name, agent.name, victims, model_list)
 
     # generates trajectory
-    aes, _ = parser.getActionsAndEvents(agent.name, victims, world_map, True, MAX_TRAJ_LENGTH)
-    logging.info('Getting trajectory out of {} actions/events...'.format(len(aes)))
+    # aes, _ = parser.getActionsAndEvents(agent.name, victims, world_map, True, MAX_TRAJ_LENGTH)
+    parser.getActionsAndEvents(victims, world_map) #This now stores the aes in parser.actions and the _ in parser.pdata
+    logging.info('Getting trajectory out of {} actions/events...'.format(len(parser.actions)))
 
     # # parser.runTimeless(world, agent.name, aes, 0, len(aes), len(aes), prune_threshold=PRUNE_THRESHOLD)
     # parser.runTimeless(world, agent.name, aes, 0, 2, len(aes), prune_threshold=PRUNE_THRESHOLD)
@@ -132,8 +131,8 @@ if __name__ == '__main__':
     inference_data = []
     NUM_STEPS = 2
     step = 0
-    while step > NUM_STEPS:
-        parser.runTimeless(world, agent.name, aes, step, step+1, len(aes), prune_threshold=PRUNE_THRESHOLD)
+    while step < NUM_STEPS:
+        parser.runTimeless(world, step, step+1, 0, prune_threshold=PRUNE_THRESHOLD)
         logging.info('Recorded {} state-action pairs'.format(len(parser.trajectory)))
 
         t = world.getState(WORLD, 'seconds', unique=True)
