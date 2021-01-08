@@ -1,7 +1,7 @@
 """
 Functions for appraisal dimensions
 """
-
+import math
 from dataclasses import dataclass, asdict
 
 @dataclass
@@ -14,6 +14,8 @@ class PlayerAppraisal:
     #  figure out a better way to store this
     motivational_relevance: float = 0.0
     motivational_congruence: float = 0.0
+    coerced: bool = False
+    accountable: bool = False
 
     def desirability(self):
         """
@@ -32,6 +34,7 @@ def calculate_utility(reward_fn, state):
     reward_fn = reward function
     state = state
     """
+    pass
 
 
 def motivational_relevance(pre_utility, cur_utility):
@@ -61,19 +64,20 @@ def motivational_congruence(pre_utility, cur_utility):
 
 def if_coerced(actor, pact, pre_utility):
     """
-    This is the accountability
+    Determines if the agent coerced to perform a specific action
     actor: the agent being studied
     pact: the action performed by actor
-    pre_utility: actor’s utility before doing pact
+    pre_utility: actor’s utility before doing pact (as observed by observing actor)
+    action_utility: the actor's utility after completing the action (as observed by observing actor) #TOOD: check this
     """
-    for action in actor.actionOptions():
+    action_utility = actor.getState("__REWARD__").domain()[0] # this is the current utility of the agent (afther the action was completed)
+    for action in actor.actionOptions(): #todo: fix this to be the correct code
         if action != pact: #if there exists another action which does not hurt actor’s own utility
-            if utility(action) >= pre_utility: #TODO: find out if utility should be part of a class? maybe we could inherit the actor class and add these functions so all this stuff is just available internaly?
+            if action_utility >= pre_utility: #TODO: find out if utility should be part of a class? maybe we could inherit the actor class and add these functions so all this stuff is just available internaly?
                 return False
-    if utility(action) < pre_utility:
+    if action_utility < pre_utility:
         return False
     return True
-
 
 
 def is_coercer_for(agent, actor, agent_pact, actor_pact):
@@ -91,6 +95,23 @@ def is_coercer_for(agent, actor, agent_pact, actor_pact):
     pass
 
 
+def accountability(agent, actor, agent_pact, actor_pact, pre_utility):
+    """
+    Determines if an actor is accountable for a specific action
+    agent: agent who might be coerced
+    actor: the agent being studied
+    agent_pact: the action performed by agent
+    actor_pact: the action performed by actor
+    pre_utility: actor’s utility before doing pact (as observed by observing actor)
+    action_utility: the actor's utility after completing the action (as observed by observing actor) #TOOD: check this
+    """
+    if not if_coerced(actor, actor_pact, pre_utility):
+        return True  # This actor was responsible as there was no coercer
+    if not is_coercer_for(actor, agent, agent_pact, actor_pact):
+        return False  # the actor was at least partially responsible for coercing the agent
+    return False
+
+
 def control(preUtility):
     # preUtility: utility before the event happens
     # control ← 0 for m1in mental_models_about_agent1 do for m2in mental_models_about_agent2 do for m3in mental_models_about_sel f do #project limited steps into the future using this set of mental models lookahead(m1,m2,m3) #curUtili ty: utility after the lookahead process if curUtili ty ≥ preUtili ty then control ← control + p(m1) ∗ p(m2) ∗ p(m3)
@@ -98,5 +119,32 @@ def control(preUtility):
     pass
 
 
-def novelty():
-    pass
+def novelty(num_possible_actions, action_rank):
+    """
+    how novel (unexpected) an action is compared to agent's beliefs
+    """
+    return 1-consistency(num_possible_actions, action_rank)
+
+
+def consistency(num_possible_actions, action_rank):
+    """
+    How consistent (expected) an action is compared an agent's beliefs
+    num_possible_actions: the number of possible actions that can be taken
+    action_rank: the rank of the action (actions are ranked from lowest to highest utility)
+    """
+    denom = 0
+    for i in range(num_possible_actions):
+        denom = denom + math.exp(i)
+    return math.exp(action_rank) / denom
+
+
+
+
+
+# EMA DIMENSIONS
+# Desirability. The value of a proposition to the agent (such as Does it ad- vance or inhibit its utility?) can be posi- tive or negative;
+# Likelihood. A measure of the likelihood of propositions;
+# Expectedness. The extent to which a state could have been predicted from the causal interpretation; = NOVELTY
+# Causal attribution. Who deserves credit/blame?;
+# Controllability. Can the outcome be altered through an agent’s actions?; and
+# Changeability. Can the outcome be altered by another agent?
