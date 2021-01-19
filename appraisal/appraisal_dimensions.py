@@ -12,10 +12,13 @@ class PlayerAppraisal:
     # TODO:
     #  fix this to have only the relevant ones
     #  figure out a better way to store this
-    motivational_relevance: float = 0.0
-    motivational_congruence: float = 0.0
+    motivational_relevance: float = None
+    motivational_congruence: float = None
     coerced: bool = False
     accountable: bool = False
+    novelty: float = None
+    consistency: float = None
+
 
     def desirability(self):
         """

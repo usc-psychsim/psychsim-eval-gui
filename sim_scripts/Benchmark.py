@@ -18,7 +18,7 @@ from model_learning.util.plot import plot_bar
 from model_learning.util.io import get_files_with_extension, create_clear_dir, change_log_handler
 
 
-from appraisal import appraisal_dimentions as ad
+from appraisal import appraisal_dimensions as ad
 
 __author__ = 'Pedro Sequeira'
 __email__ = 'pedrodbs@gmail.com'
