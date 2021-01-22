@@ -1,7 +1,7 @@
 
 import pickle
 
-file = open("output/benchmark/trajectories_pickle20210119-144324", 'rb')
+file = open("output/benchmark/trajectories_pickle20210122-122352", 'rb')
 trajectories = pickle.load(file)
 file.close()
 
@@ -52,6 +52,10 @@ for t in trajectories[0]:
     player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility,
                                                                           player_cur_utility)
     print(f"MOTIVATIONAL CONG: {player_appraisal.motivational_congruence}")
+
+    # extract the possible actions and corresponding rewards from the trajectory
+    agent_decision = t[2][agent_name]["__decision__"]
+    ad.extract_expected_action_reward(agent_decision, agent_name)
     # player_appraisal.novelty = #TODO: figure out what the possible actions are (legal?) and how to rank them
     # player_appraisal.accountable = ad.accountability(...) # TODO: figure out who should be the observer (maybe this doesn't work in single player?)
     # player_appraisal.control = #TODO: figure out how to do the projected action stuff
