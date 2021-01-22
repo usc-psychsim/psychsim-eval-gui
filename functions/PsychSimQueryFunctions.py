@@ -8,6 +8,7 @@ import numpy as np
 import traceback
 from random import randint
 
+from appraisal import appraisal_dimensions as ad
 import psychsim_gui_helpers as pgh
 
 
@@ -73,10 +74,10 @@ class PsychSimQueryFunctions:
         try:
             action_of_interest = data.data[action]["AGENT_STATE"][agent]
             output_data = pd.DataFrame()
-            for la_key, legal_action in action_of_interest["__decision__"]["TriageAg10"]["V"].items():
+            for la_key, legal_action in next(iter(action_of_interest["__decision__"].items()))[1]["V"].items():
                 for idx, hyp_action_set in enumerate(legal_action['__S__']):
-                    hyp_action = hyp_action_set.marginal("TriageAg1's __ACTION__")
-                    hyp_reward = hyp_action_set.marginal("TriageAg1's __REWARD__")
+                    hyp_action = hyp_action_set.marginal(f"{agent}'s __ACTION__")
+                    hyp_reward = hyp_action_set.marginal(f"{agent}'s __REWARD__")
                     output_dict = dict(horizon=[idx], base_action=[str(la_key)], hypothetical_action=[str(hyp_action)],hypothetical_reward=[str(hyp_reward)])
                     output_data = output_data.append(pd.DataFrame.from_dict(output_dict))
 
@@ -140,10 +141,10 @@ class PsychSimQueryFunctions:
         for key, value in kwargs.items():
             if key == "data":
                 for step_data in value.data.values():
-                    if type(step_data['TRAJECTORY'][0][0].agents) == dict:
+                    if type(step_data['TRAJECTORY'][0].agents) == dict:
                     # if type(step_data['AGENT_STATE']) == dict:
                     #     for agent in list(step_data['AGENT_STATE'].keys()):
-                        for agent in step_data['TRAJECTORY'][0][0].agents.keys():
+                        for agent in step_data['TRAJECTORY'][0].agents.keys():
                             if agent not in agent_dict['agent']:
                                 agent_dict['agent'].append(agent)
 
@@ -161,7 +162,7 @@ class PsychSimQueryFunctions:
         try:
             for step, step_data in data.data.items():
                 actions_dict['step'].append(step)
-                action = str(step_data['TRAJECTORY'][0][1]).split('\t')[1]
+                action = str(step_data['TRAJECTORY'][1]).split('\t')[1]
                 actions_dict['action'].append(action)
                 # step_data[0][1]
                 # for agent_i, agent_data in step_data['AGENT_STATE'].items():
@@ -264,6 +265,48 @@ class PsychSimQueryFunctions:
             step_col = pd.Series(steps)
             output_data.insert(loc=0, column='step', value=pd.Series(steps, index=output_data.index))
             return output_data
+        except:
+            tb = traceback.format_exc()
+            print(tb)
+
+    def get_appraisal_diemensions(self, data=None, agent=None, *args, **kwargs):
+        """
+        Get the appraisal dimensions
+        """
+        step_appraisal_info = dict(step=[], relevance=[], congruence=[])
+        player_pre_utility = 0.0 # Assume that the players start with 0 utility
+        try:
+            for step, step_data in data.data.items():
+
+                traj_world = step_data["TRAJECTORY"][0]
+                traj_agent = traj_world.agents[agent]
+                traj_debug = step_data["TRAJECTORY"][2]
+
+                player_loc = traj_world.getFeature(f"{agent}'s loc", traj_agent.world.state)
+                player_cur_utility = traj_agent.getState("__REWARD__").domain()[0]
+                legal_actions = traj_agent.getLegalActions()
+                cur_action = traj_agent.getState('__ACTION__').domain()[0]
+
+                player_appraisal = ad.PlayerAppraisal()
+                player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
+                player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility, player_cur_utility)
+
+                # extract the possible actions and corresponding rewards from the trajectory
+                agent_decision = traj_debug[agent]["__decision__"]
+                ad.extract_expected_action_reward(agent_decision, agent)
+                # player_appraisal.novelty = #TODO: figure out what the possible actions are (legal?) and how to rank them
+                # player_appraisal.accountable = ad.accountability(...) # TODO: figure out who should be the observer (maybe this doesn't work in single player?)
+                # player_appraisal.control = #TODO: figure out how to do the projected action stuff
+
+                step_appraisal_info['step'].append(step)
+                step_appraisal_info['relevance'].append(player_appraisal.motivational_relevance)
+                step_appraisal_info['congruence'].append(player_appraisal.motivational_congruence)
+
+                player_pre_utility = player_cur_utility
+
+            output_data = pd.DataFrame.from_dict(step_appraisal_info)
+            return output_data.T
+
         except:
             tb = traceback.format_exc()
             print(tb)
