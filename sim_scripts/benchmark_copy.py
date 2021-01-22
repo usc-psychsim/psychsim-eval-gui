@@ -9,8 +9,8 @@ import multiprocessing as mp
 from collections import OrderedDict
 from timeit import default_timer as timer
 from atomic.definitions import victims, world_map
-from atomic.inference import set_player_models
 from atomic.definitions.map_utils import get_default_maps
+from atomic.model_learning.linear.rewards import create_reward_vector
 from atomic.model_learning.parser import TrajectoryParser
 from atomic.parsing.replayer import Replayer, SUBJECT_ID_TAG, COND_MAP_TAG
 from atomic.scenarios.single_player import make_single_player_world
@@ -28,7 +28,7 @@ OUTPUT_DIR = 'output/benchmark'
 
 # params
 NUM_TRAJECTORIES = 1
-TRAJ_LENGTH = 10  # 15
+TRAJ_LENGTH = 25  # 15
 RATIONALITY = 1 / 0.1  # inverse temperature
 SELECTION = 'distribution'
 PRUNE_THRESHOLD = 5e-2  # 1e-2
@@ -41,23 +41,20 @@ MAP_NAME = 'FalconEasy'
 PLAYER_NAME = 'Player'
 FULL_OBS = True
 
-# models
-YELLOW_VICTIM = 'Gold'
-GREEN_VICTIM = 'Green'
-TRUE_MODEL = 'task_scores'
-PREFER_NONE_MODEL = 'prefer_none'
-PREFER_YELLOW_MODEL = 'prefer_gold'
-PREFER_GREEN_MODEL = 'prefer_green'
-RANDOM_MODEL = 'zero_rwd'
+REWARD_WEIGHTS = np.array([
+    0,  # Before Mid
+    0,  # After Mid
+    0,  # Loc Freq
+    0.5,  # Triaged Green
+    0.5,  # Triaged Gold
+    0,  # See White
+    0,  # See Red
+    0,  # Move N
+    0,  # Move E
+    0,  # Move S
+    0  # Move W
+])
 
-# agents properties
-MODEL_SELECTION = 'distribution'  # TODO 'consistent' or 'random' gives an error
-MODEL_RATIONALITY = .5
-
-# victim reward values
-HIGH_VAL = 200
-LOW_VAL = 10
-MEAN_VAL = (HIGH_VAL + LOW_VAL) / 2
 
 def _signal_traj_completion():
     logging.info('\tTrajectory generation complete.')
@@ -175,11 +172,11 @@ if __name__ == '__main__':
         agent.setAttribute('rationality', args.rationality)
         agent.setAttribute('selection', args.selection)
         agent.setAttribute('horizon', args.horizon)
-        model_list = [{'name': PREFER_GREEN_MODEL, 'reward': {GREEN_VICTIM: HIGH_VAL, YELLOW_VICTIM: LOW_VAL},
-                       'rationality': MODEL_RATIONALITY, 'selection': MODEL_SELECTION}]
-        set_player_models(world, observer.name, agent.name, victims, model_list)
 
-
+        # set agent rwd function
+        rwd_vector = create_reward_vector(agent, map_table.rooms_list, world_map.moveActions[agent.name])
+        rwd_vector.set_rewards(agent, REWARD_WEIGHTS)
+        logging.info('Set reward vector: {}'.format(dict(zip(rwd_vector.names, REWARD_WEIGHTS))))
 
         # generate trajectories
         logging.info('Generating {} trajectories of length {} using {} parallel processes...'.format(
