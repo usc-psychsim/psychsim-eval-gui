@@ -40,6 +40,21 @@ def calculate_utility(reward_fn, state):
     pass
 
 
+def extract_expected_action_reward(player_decision, player_name):
+    """
+    Return a dictionary with actions: expected_reward
+    player_decision = decision object returned by psychsim
+    player_name = name of player
+    """
+    actions = {}
+    for k, v in player_decision.items():
+        if player_name in k:
+            for k1, v1 in v.items():
+                if k1 == "V":
+                    actions = {k2: v2["__ER__"][-1] for k2, v2 in v1.items()}
+    return actions
+
+
 def motivational_relevance(pre_utility, cur_utility):
     """
     Motivational relevance evaluates the extent to which an encounter touches upon personal goals"
@@ -135,6 +150,7 @@ def consistency(num_possible_actions, action_rank):
     num_possible_actions: the number of possible actions that can be taken
     action_rank: the rank of the action (actions are ranked from lowest to highest utility)
     """
+    #TODO: Question - what if actions are equally ranked? Should they just count as one action?
     denom = 0
     for i in range(num_possible_actions):
         denom = denom + math.exp(i)
