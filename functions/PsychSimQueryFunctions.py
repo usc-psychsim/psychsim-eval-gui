@@ -73,11 +73,13 @@ class PsychSimQueryFunctions:
         """
         try:
             action_of_interest = data.data[action]["AGENT_STATE"][agent]
+            world = data.data[action]["TRAJECTORY"][0]
             output_data = pd.DataFrame()
             for la_key, legal_action in next(iter(action_of_interest["__decision__"].items()))[1]["V"].items():
                 for idx, hyp_action_set in enumerate(legal_action['__S__']):
-                    hyp_action = hyp_action_set.marginal(f"{agent}'s __ACTION__")
-                    hyp_reward = hyp_action_set.marginal(f"{agent}'s __REWARD__")
+                    hyp_action = world.symbolList[hyp_action_set.marginal(f"{agent}'s __ACTION__").max()]
+
+                    hyp_reward = legal_action["__ER__"][idx] #hyp_action_set.marginal(f"{agent}'s __REWARD__")
                     output_dict = dict(horizon=[idx], base_action=[str(la_key)], hypothetical_action=[str(hyp_action)],hypothetical_reward=[str(hyp_reward)])
                     output_data = output_data.append(pd.DataFrame.from_dict(output_dict))
 
@@ -273,7 +275,7 @@ class PsychSimQueryFunctions:
         """
         Get the appraisal dimensions
         """
-        step_appraisal_info = dict(step=[], relevance=[], congruence=[])
+        step_appraisal_info = dict(step=[], action=[], cur_utility=[], relevance=[], congruence=[], novelty=[])
         player_pre_utility = 0.0 # Assume that the players start with 0 utility
         try:
             for step, step_data in data.data.items():
@@ -283,7 +285,8 @@ class PsychSimQueryFunctions:
                 traj_debug = step_data["TRAJECTORY"][2]
 
                 player_loc = traj_world.getFeature(f"{agent}'s loc", traj_agent.world.state)
-                player_cur_utility = traj_agent.getState("__REWARD__").domain()[0]
+                player_decision_key = list(traj_debug[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
+                player_cur_utility = traj_debug[agent]["__decision__"][player_decision_key]["V*"]
                 legal_actions = traj_agent.getLegalActions()
                 cur_action = traj_agent.getState('__ACTION__').domain()[0]
 
@@ -293,16 +296,26 @@ class PsychSimQueryFunctions:
 
                 # extract the possible actions and corresponding rewards from the trajectory
                 agent_decision = traj_debug[agent]["__decision__"]
-                ad.extract_expected_action_reward(agent_decision, agent)
-                # player_appraisal.novelty = #TODO: figure out what the possible actions are (legal?) and how to rank them
+                expected_rewards = ad.extract_expected_action_reward(agent_decision, agent)
+                num_possible_actions = len(expected_rewards)
+                # get the position in the dict
+                projected_actions = list(expected_rewards.keys())
+                cur_action_rank = 0
+                if cur_action in projected_actions:
+                    cur_action_rank = projected_actions.index(cur_action)
+
+                player_appraisal.novelty = ad.novelty(num_possible_actions, cur_action_rank)
                 # player_appraisal.accountable = ad.accountability(...) # TODO: figure out who should be the observer (maybe this doesn't work in single player?)
                 # player_appraisal.control = #TODO: figure out how to do the projected action stuff
 
                 step_appraisal_info['step'].append(step)
+                step_appraisal_info['action'].append(cur_action)
+                step_appraisal_info['cur_utility'].append(player_cur_utility)
                 step_appraisal_info['relevance'].append(player_appraisal.motivational_relevance)
                 step_appraisal_info['congruence'].append(player_appraisal.motivational_congruence)
+                step_appraisal_info['novelty'].append(player_appraisal.novelty)
 
-                player_pre_utility = player_cur_utility
+                player_pre_utility = player_cur_utility # TODO: should this be cumulative?
 
             output_data = pd.DataFrame.from_dict(step_appraisal_info)
             return output_data.T
