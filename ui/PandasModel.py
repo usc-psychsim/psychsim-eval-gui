@@ -7,6 +7,8 @@ Model used to display pandas dataframes in qt tableview widget
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+import pandas as pd
+
 class PandasModel(QAbstractTableModel):
 
     def __init__(self, data, diff=None, diff_colour="blue"):
@@ -24,7 +26,23 @@ class PandasModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
             if role == Qt.DisplayRole:
+                value = self._data.iloc[index.row(), index.column()]
+
+                if isinstance(value, float):
+                    # Render float to 2 dp
+                    return "%.3f" % value
+
+                if isinstance(value, str):
+                    # Render strings with quotes
+                    return '"%s"' % value
+
+                if pd.api.types.is_string_dtype(value):
+                    pass
+
+
+                # return value
                 return str(self._data.iloc[index.row(), index.column()])
+
             if self._diff is not None and role == Qt.BackgroundRole:
                 row = index.row()
                 col = index.column()
