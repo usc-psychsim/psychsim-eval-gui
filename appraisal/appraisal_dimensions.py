@@ -16,8 +16,10 @@ class PlayerAppraisal:
     motivational_congruence: bool = False
     coerced: bool = False
     accountable: bool = False
+    blame: bool = False
     novelty: float = None
     consistency: float = None
+    control: float = None
 
 
     def desirability(self):
@@ -81,6 +83,25 @@ def motivational_congruence(pre_utility, cur_utility):
     return False
 
 
+def blame(actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utility):
+    """
+    was the action that the actor took, the best for the agent?
+    i.e. did the action that the actor took
+    """
+    # TODO: change if the action simply benefited the team to if it was the best (when we actually have the team info
+    # 1. did the actor's action benefit the team? if so - they are not to blame
+    if team_cur_utility > team_pre_utility:
+        return True
+    # 2. did the actor's action negatively affect the team?
+    if team_cur_utility < team_pre_utility:
+        # did the actor's action benefit the actor? - if so they are to blame
+        if actor_cur_utility > actor_pre_utility:
+            return True
+        # did the actor's action negatively benefit the actor? if so - they are not to blame
+        elif actor_cur_utility < actor_pre_utility:
+            return False
+    return False
+
 def if_coerced(actor, pact, pre_utility):
     """
     Determines if the agent coerced to perform a specific action
@@ -131,17 +152,24 @@ def accountability(agent, actor, agent_pact, actor_pact, pre_utility):
     return False
 
 
-def control(preUtility):
-    # preUtility: utility before the event happens
-    # control ← 0 for m1in mental_models_about_agent1 do for m2in mental_models_about_agent2 do for m3in mental_models_about_sel f do #project limited steps into the future using this set of mental models lookahead(m1,m2,m3) #curUtili ty: utility after the lookahead process if curUtili ty ≥ preUtili ty then control ← control + p(m1) ∗ p(m2) ∗ p(m3)
-    # Return control
-    pass
+def control(player_decision):
+    """
+    This is a probability. For each predicted action that delivers a positive utility change, sum the probabilities.
+    that is the control
+    """
+    control = 0
+    for action, predictions in player_decision['V'].items():
+        if predictions['__EV__'] > 0: # TODO: check this is ok (is it always if the expected reward is any positive value?)
+            control = control + player_decision['action'][action]
+    return control
+
 
 
 def novelty(num_possible_actions, action_rank):
     """
     how novel (unexpected) an action is compared to agent's beliefs
     """
+    # TODO: fix this to take into account environment
     return 1-consistency(num_possible_actions, action_rank)
 
 

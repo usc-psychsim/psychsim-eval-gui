@@ -275,7 +275,15 @@ class PsychSimQueryFunctions:
         """
         Get the appraisal dimensions
         """
-        step_appraisal_info = dict(step=[], action=[], pre_utility=[], cur_utility=[], relevance=[], congruence=[], novelty=[])
+        step_appraisal_info = dict(step=[],
+                                   action=[],
+                                   pre_utility=[],
+                                   cur_utility=[],
+                                   relevance=[],
+                                   congruence=[],
+                                   blame=[],
+                                   novelty=[],
+                                   control=[])
         player_pre_utility = 0.0 # Assume that the players start with 0 utility
         try:
             for step, step_data in data.data.items():
@@ -293,6 +301,8 @@ class PsychSimQueryFunctions:
                 player_appraisal = ad.PlayerAppraisal()
                 player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
                 player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility, player_cur_utility)
+                player_appraisal.blame = ad.blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
+                player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key])
 
                 # extract the possible actions and corresponding rewards from the trajectory
                 agent_decision = traj_debug[agent]["__decision__"]
@@ -314,7 +324,9 @@ class PsychSimQueryFunctions:
                 step_appraisal_info['cur_utility'].append(player_cur_utility)
                 step_appraisal_info['relevance'].append(player_appraisal.motivational_relevance)
                 step_appraisal_info['congruence'].append(player_appraisal.motivational_congruence)
+                step_appraisal_info['blame'].append(player_appraisal.blame)
                 step_appraisal_info['novelty'].append(player_appraisal.novelty)
+                step_appraisal_info['control'].append(player_appraisal.control)
 
                 player_pre_utility = player_cur_utility # TODO: should this be cumulative?
 
