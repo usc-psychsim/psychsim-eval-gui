@@ -275,7 +275,7 @@ class PsychSimQueryFunctions:
         """
         Get the appraisal dimensions
         """
-        step_appraisal_info = dict(step=[], action=[], cur_utility=[], relevance=[], congruence=[], novelty=[])
+        step_appraisal_info = dict(step=[], action=[], pre_utility=[], cur_utility=[], relevance=[], congruence=[], novelty=[])
         player_pre_utility = 0.0 # Assume that the players start with 0 utility
         try:
             for step, step_data in data.data.items():
@@ -310,6 +310,7 @@ class PsychSimQueryFunctions:
 
                 step_appraisal_info['step'].append(step)
                 step_appraisal_info['action'].append(cur_action)
+                step_appraisal_info['pre_utility'].append(player_pre_utility)
                 step_appraisal_info['cur_utility'].append(player_cur_utility)
                 step_appraisal_info['relevance'].append(player_appraisal.motivational_relevance)
                 step_appraisal_info['congruence'].append(player_appraisal.motivational_congruence)

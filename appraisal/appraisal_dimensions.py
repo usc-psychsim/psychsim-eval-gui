@@ -12,8 +12,8 @@ class PlayerAppraisal:
     # TODO:
     #  fix this to have only the relevant ones
     #  figure out a better way to store this
-    motivational_relevance: float = None
-    motivational_congruence: float = None
+    motivational_relevance: bool = False
+    motivational_congruence: bool = False
     coerced: bool = False
     accountable: bool = False
     novelty: float = None
@@ -62,10 +62,10 @@ def motivational_relevance(pre_utility, cur_utility):
     cur_utility: utility after event has happened (utility = state*goals) -> goals = reward functions
     pre_utility: utility before event has happened
     """
-    # sort out divide by 0 if initial utility is 0
-    if pre_utility == 0:
-        return abs(cur_utility) # TODO: check if this is valid
-    return abs((cur_utility - pre_utility)/pre_utility)
+    m_rel = abs((cur_utility - pre_utility))
+    if m_rel > 0:
+        return True
+    return False
 
 
 def motivational_congruence(pre_utility, cur_utility):
@@ -75,9 +75,10 @@ def motivational_congruence(pre_utility, cur_utility):
     cur_utility: utility after event has happened
     pre_utility: utility before event has happened
     """
-    if pre_utility == 0:
-        return cur_utility # TODO: check if this is valid
-    return (cur_utility - pre_utility)/abs(pre_utility)
+    m_con = (cur_utility - pre_utility)
+    if m_con > 0:
+        return True
+    return False
 
 
 def if_coerced(actor, pact, pre_utility):
