@@ -13,7 +13,7 @@ class PlayerAppraisal:
     #  fix this to have only the relevant ones
     #  figure out a better way to store this
     motivational_relevance: bool = False
-    motivational_congruence: bool = False
+    motivational_congruence: float = None
     coerced: bool = False
     accountable: bool = False
     blame: bool = False
@@ -78,9 +78,7 @@ def motivational_congruence(pre_utility, cur_utility):
     pre_utility: utility before event has happened
     """
     m_con = (cur_utility - pre_utility)
-    if m_con > 0:
-        return True
-    return False
+    return m_con
 
 
 def blame(actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utility):
