@@ -69,6 +69,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         pgh.update_combo(self.y_combo, axis_values)
         pgh.update_combo(self.x_combo, axis_values)
         axis_values.insert(0, "none")
+        pgh.update_combo(self.x_alias_combo, axis_values)
         pgh.update_combo(self.group_combo, axis_values)
 
     def plot_data(self):
@@ -82,6 +83,10 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                 data = self.query_data_dict[self.query_combo.currentText()].results
                 fig = self.current_fig
                 stat = self.stat_combo.currentText()
+                x_alias_source = self.x_alias_combo.currentText()
+                x_alias = None
+                if x_alias_source not in ["none"]:
+                    x_alias = data.loc[self.x_alias_combo.currentText(), :].tolist()
 
                 if self.group_combo.currentText() not in ["none"]:
                     if stat in ["none"]:
@@ -106,7 +111,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
                 self.update_class_plot_info(fig, plot_type)
                 self.render_plot_to_gui(fig=fig, title="", x_name=self.x_combo.currentText(),
-                                        y_name=self.y_combo.currentText())
+                                        y_name=self.y_combo.currentText(), x_alias=x_alias)
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -180,16 +185,17 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                                         meanline_visible=True))
         return fig
 
-    def render_plot_to_gui(self, fig, title="", x_name="", y_name=""):
+    def render_plot_to_gui(self, fig, title="", x_name="", y_name="", x_alias=None):
         """
         Create the html code for the plot to disply on the qwebengine widget
         :param fig: plotly plot to display
         :param title: title of the plot
         :param x_name: x_axis name
         :param y_name: y_axis name
+        :param x_alias: labels to give to x_axis ticks
         """
         self.update_y_axis_name(y_name)
-        self.setup_plot_layout(fig, title, x_name, y_name)
+        self.setup_plot_layout(fig, title, x_name, y_name, x_alias)
         html = self.get_fig_as_html(fig)
         self.plot_widget.setHtml(html)
 
@@ -206,7 +212,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                 y_name = "count"
         return y_name
 
-    def setup_plot_layout(self, fig, title, x_name, y_name):
+    def setup_plot_layout(self, fig, title, x_name, y_name, x_alias=None):
         """
         Update the layout of the figure. This is how the plot is formatted for visualisation
         plotly layout reference: https://plotly.com/python/reference/#layout
@@ -214,6 +220,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         :param title: title of the plot
         :param x_name: x_axis name
         :param y_name: y_axis name
+        :param x_alias: labels to give to x_axis ticks
         :return: figure with updated layout
         """
         layout = dict(
@@ -238,6 +245,14 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         )
 
         fig.update_layout(layout)
+        if x_alias:
+            fig.update_layout(xaxis=dict(
+                tickmode='array',
+                tickvals=list(range(len(x_alias))),
+                ticktext=x_alias
+                )
+            )
+
         return fig
 
     def get_fig_as_html(self, fig):
