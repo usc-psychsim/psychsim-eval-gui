@@ -86,9 +86,9 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                 if self.group_combo.currentText() not in ["none"]:
                     if stat in ["none"]:
                         # if there is a group and no stat, loop over the unique elements in the group and add a new trace for each
-                        for group in data[self.group_combo.currentText()].unique().tolist():
+                        for group in data.T[self.group_combo.currentText()].unique().tolist(): #TODO: figure out how to determine if the data is wide or long
                             name = f"{group}"
-                            group_data = data[data[self.group_combo.currentText()] == group]
+                            group_data = data.T[data.T[self.group_combo.currentText()] == group].T
                             fig = self.set_figure(data=group_data, fig=fig, plot_type=plot_type, name=name)
                     else:
                         # if there is a group and also a stat groupby the x-axis and apply the stat to that data
