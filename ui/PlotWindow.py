@@ -231,20 +231,24 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                 t=25,
                 pad=4
             ),
-            legend=dict(
-                x=0,
-                y=0.7,
-                traceorder='normal',
-                font=dict(
-                    size=12,),
-            ),
+            # legend=dict(
+            #     x=0,
+            #     y=0.7,
+            #     traceorder='normal',
+            #     font=dict(
+            #         size=12,),
+            # ),
             showlegend=True,
             title=title,
             xaxis_title=x_name,
             yaxis_title=y_name,
         )
 
-        fig.update_layout(layout)
+        fig.update_layout(layout,
+                          yaxis=dict(
+                                tickformat=".2f",
+                              ),
+                          )
         if x_alias:
             fig.update_layout(xaxis=dict(
                 tickmode='array',
