@@ -44,6 +44,8 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         plot_window = PlotWindow(query_data_dict=self.query_data_dict, window_name=plot_name, parent=self)
         plot_window.save_plot_button.clicked.connect(lambda: self.save_plot(plot_window.current_plot))
         pgh.update_combo(plot_window.query_combo, self.query_data_dict.keys())
+        # emit the query_combo activated signal to populate the other dropdowns when this window opens
+        plot_window.query_combo.activated.emit(0)
         plot_window.show()
         return plot_window
 
