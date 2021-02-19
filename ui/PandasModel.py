@@ -113,12 +113,13 @@ class TreeModel(QAbstractItemModel):
         #convert the multiindex object to nodes
         nodes = []
         self._data = data.to_frame()
+        #TODO: this is currently specific to the 'query_action' function and isn't general
         for level, new_df_0 in data.groupby(data.levels[0]).items():
             nodes.append(CustomNode(level))
             # for level1, new_df_1 in data.groupby(data.levels[1]).items():
             for index, row in self._data.iterrows():
                 if row['base'] == level:
-                    nodes[-1].addChild(CustomNode([index, row['future'], row['reward']]))
+                    nodes[-1].addChild(CustomNode([index, row['future'], row['horizon'], row['reward']]))
 
         for node in nodes:
             self._root.addChild(node)

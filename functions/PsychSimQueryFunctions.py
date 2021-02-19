@@ -117,8 +117,8 @@ class PsychSimQueryFunctions:
                 for idx, hyp_action_set in enumerate(legal_action['__S__']):
                     hyp_action = world.symbolList[hyp_action_set.marginal(f"{agent}'s __ACTION__").max()]
                     hyp_reward = legal_action["__ER__"][idx] #hyp_action_set.marginal(f"{agent}'s __REWARD__")
-                    index.append((str(la_key), str(hyp_action), str(hyp_reward)))
-            output_data = pd.MultiIndex.from_tuples(index, names=["base", "future", "reward"])
+                    index.append((str(la_key), str(hyp_action), str(idx), str(hyp_reward)))
+            output_data = pd.MultiIndex.from_tuples(index, names=["base", "future", "horizon", "reward"])
             return output_data
         except KeyError as e:
             print(f"No key data for {e}")
