@@ -11,17 +11,19 @@ import copy
 import importlib.util
 import pandas as pd
 import numpy as np
+from PyQt5.Qt import QStandardItemModel
 
 import psychsim_gui_helpers as pgh
 from functions.PsychSimQueryFunctions import PsychSimQueryFunctions
 
-from ui.PandasModel import PandasModel
+from ui.PandasModel import PandasModel, TreeModel
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
 from ui.QuerySampleRangeDialog import QuerySampleRangeDialog
 from ui.DiffResultsWindow import DiffResultsWindow
 from ui.StepThroughQueryWindow import StepThroughResultsWindow
 from ui.DeleteAreYouSureDialog import DeleteAreYouSure
 from ui.QueryDataDialog import QueryDataDialog
+from ui.QueryDataTreeDialog import QueryDataTreeDialog
 
 query_data_page_file = os.path.join("ui", "query_data_page.ui")
 ui_queryDataPage, QtBaseClass = uic.loadUiType(query_data_page_file)
@@ -83,8 +85,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         try:
             result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
                                                                   agent=agent, action=action_step, state=state)
-            result = result.apply(pd.to_numeric,
-                                  errors='ignore')  # convert the resulting dataframe to numeric where possible
+            # result = result.apply(pd.to_numeric,
+            #                       errors='ignore')  # convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
             new_query = self.create_new_query_object(query_function, data_id, result)
@@ -243,7 +245,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         selection = self.sample_query_combo.currentText()
         current_query = self.query_data_dict[selection]
-        vars = current_query.results.columns.to_list()
+        vars = current_query.results.T.columns.to_list() # Transpose to convert wide to long
+        # vars = current_query.results.index.to_list() # use this for wide data (vars as row names)
         self.sample_variable_combo.clear()
         self.sample_variable_combo.addItems(vars)
 
@@ -254,6 +257,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         query_selection = self.sample_query_combo.currentText()
         selected_query = self.query_data_dict[query_selection]
+        selected_query.results = selected_query.results.T # Transpose to account for wide data (this is a bit of a hack because the code was written for long data)
         variable_selection = self.sample_variable_combo.currentText()
         try:
             if self.sample_function_combo.currentText() == "range":
@@ -271,8 +275,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param variable_selection: variable of query results to sample over
         """
         # get max and min values for specific variable
-        range_max = selected_query.results[variable_selection].max()
+        range_max = selected_query.results[variable_selection].max() # use this for variables as columns
         range_min = selected_query.results[variable_selection].min()
+        # range_max = selected_query.results.loc[variable_selection, :].max()
+        # range_min = selected_query.results.loc[variable_selection, :].min()
         # test to see if the max and min are numeric
         if np.issubdtype(type(range_max), np.number) and np.issubdtype(type(range_min), np.number):
             sample_dialog = self.setup_range_sample_dialog(range_min, range_max, selected_query.id, variable_selection)
@@ -356,7 +362,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         sample_dialog = QuerySampleCategoryDialog()
         sample_dialog.name_label.setText(f"{selected_query.id}")
         sample_dialog.value_label.setText(f"{variable_selection}")
-        values_raw = selected_query.results[variable_selection].unique()
+        values_raw = selected_query.results[variable_selection].unique() # use this for variable as cols
+        # values_raw = selected_query.results.loc[variable_selection, :].unique() # use this for variables as rows
         values_string = [str(i) for i in values_raw]
         sample_dialog.sample_combo_mult.addItems(values_string)
         return sample_dialog
@@ -488,7 +495,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         try:
             if query_id in self.query_data_dict.keys():
                 selected_query = self.query_data_dict[query_id]
-                selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
+                if type(selected_query.results) == pd.DataFrame:
+                    selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
+                elif type(selected_query.results) == pd.MultiIndex:
+                    selected_query = self.show_query_tree_dialog(model=TreeModel(selected_query.results), query=selected_query)
                 self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
                 # TODO: fix bug that updates query list even if viewed
                 self.set_query_list_dropdown()
@@ -504,6 +514,25 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param query: PsySimQuery object of selected query
         """
         query_dialog = QueryDataDialog(query, model)
+        result = query_dialog.exec_()
+        query = query_dialog.query_data
+        if result:
+            query.id = query_dialog.query_id_input.text()
+        return query
+
+    def show_query_tree_dialog(self, model, query):
+        """
+        Show the dialog that shows the query results
+        :param model: PandasModel with query results
+        :param query: PsySimQuery object of selected query
+        """
+        #----
+        #for standardItem lists
+        # rootNode = model.invisibleRootItem()
+        # for node in query.results:
+        #     rootNode.appendRow(node)
+        #----
+        query_dialog = QueryDataTreeDialog(query, model)
         result = query_dialog.exec_()
         query = query_dialog.query_data
         if result:

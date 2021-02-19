@@ -8,6 +8,9 @@ import numpy as np
 import traceback
 from random import randint
 
+from PyQt5.Qt import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QFont, QColor
+
 from appraisal import appraisal_dimensions as ad
 import psychsim_gui_helpers as pgh
 
@@ -59,6 +62,40 @@ class PsychSimQueryFunctions:
         print("query_all")
         pass
 
+    # ---- THIS IS FOR USING A LIST INSTEAD OF MULTIINDEX
+    # def query_action(self, data=None, agent=None, action=None, *args, **kwargs):
+    #     """
+    #      action specific query, which I can use to look at overall reasoning of a planning agent.
+    #
+    #      This function answers the question "what was the agent's reasoning for taking the eventual action.
+    #      It shows the hypothetical actions and rewards that were used to decide on the current action.
+    #     :param planning_agent: agent to query
+    #     :param action: action to query. This is actually the step value of the action
+    #     :param cycle:
+    #     :param planning_horizon:
+    #     :return: Tree data
+    #     """
+    #     #TODO: fix the output data to be pandas multiindex instead of a list
+    #     try:
+    #         action_of_interest = data.data[action]["AGENT_STATE"][agent]
+    #         world = data.data[action]["TRAJECTORY"][0]
+    #         # output_data = pd.DataFrame()
+    #         output_data = []
+    #         for la_key, legal_action in next(iter(action_of_interest["__decision__"].items()))[1]["V"].items():
+    #             base_action_item = StandardItem(str(la_key), 16, set_bold=True)
+    #             for idx, hyp_action_set in enumerate(legal_action['__S__']):
+    #                 hyp_action = world.symbolList[hyp_action_set.marginal(f"{agent}'s __ACTION__").max()]
+    #                 hyp_action_item = StandardItem(str(hyp_action), 14)
+    #                 base_action_item.appendRow(hyp_action_item)
+    #
+    #                 hyp_reward = legal_action["__ER__"][idx] #hyp_action_set.marginal(f"{agent}'s __REWARD__")
+    #                 # output_dict = dict(horizon=[idx], base_action=[str(la_key)], hypothetical_action=[str(hyp_action)],hypothetical_reward=[str(hyp_reward)])
+    #                 # output_data = output_data.append(pd.DataFrame.from_dict(output_dict))
+    #             output_data.append(base_action_item)
+    #         return output_data
+    #     except KeyError as e:
+    #         print(f"No key data for {e}")
+
     def query_action(self, data=None, agent=None, action=None, *args, **kwargs):
         """
          action specific query, which I can use to look at overall reasoning of a planning agent.
@@ -69,23 +106,23 @@ class PsychSimQueryFunctions:
         :param action: action to query. This is actually the step value of the action
         :param cycle:
         :param planning_horizon:
-        :return:
+        :return: Tree data
         """
+        #TODO: fix the output data to be pandas multiindex instead of a list
         try:
             action_of_interest = data.data[action]["AGENT_STATE"][agent]
             world = data.data[action]["TRAJECTORY"][0]
-            output_data = pd.DataFrame()
+            index = []
             for la_key, legal_action in next(iter(action_of_interest["__decision__"].items()))[1]["V"].items():
                 for idx, hyp_action_set in enumerate(legal_action['__S__']):
                     hyp_action = world.symbolList[hyp_action_set.marginal(f"{agent}'s __ACTION__").max()]
-
                     hyp_reward = legal_action["__ER__"][idx] #hyp_action_set.marginal(f"{agent}'s __REWARD__")
-                    output_dict = dict(horizon=[idx], base_action=[str(la_key)], hypothetical_action=[str(hyp_action)],hypothetical_reward=[str(hyp_reward)])
-                    output_data = output_data.append(pd.DataFrame.from_dict(output_dict))
-
+                    index.append((str(la_key), str(hyp_action), str(hyp_reward)))
+            output_data = pd.MultiIndex.from_tuples(index, names=["base", "future", "reward"])
             return output_data
         except KeyError as e:
             print(f"No key data for {e}")
+
 
     def query_state(self, data=None, agent=None, action=None, state=None, *args, **kwargs):
         """
@@ -370,4 +407,14 @@ class PsychSimQueryFunctions:
 
 
 
+class StandardItem(QStandardItem):
+    def __init__(self, txt='', font_size=12, set_bold=False, color=QColor(0, 0, 0)):
+        super().__init__()
 
+        fnt = QFont('Open Sans', font_size)
+        fnt.setBold(set_bold)
+
+        self.setEditable(False)
+        self.setForeground(color)
+        self.setFont(fnt)
+        self.setText(txt)

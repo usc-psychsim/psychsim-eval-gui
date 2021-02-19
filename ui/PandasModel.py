@@ -14,6 +14,8 @@ class PandasModel(QAbstractTableModel):
     def __init__(self, data, diff=None, diff_colour="blue"):
         QAbstractTableModel.__init__(self)
         self._data = data
+        if type(data) == pd.MultiIndex: # This allows hierarchical tree data to be displayed in a table
+            self._data = data.to_frame()
         self._diff = diff
         self._diff_colour = diff_colour
 
@@ -60,3 +62,116 @@ class PandasModel(QAbstractTableModel):
 
             if orientation == Qt.Vertical:
                 return str(self._data.index[section])
+
+# https://gist.github.com/danieljfarrell/6e94aa6f8c3c437d901fd15b7b931afb
+class CustomNode(object):
+    def __init__(self, data):
+        self._data = data
+        if type(data) == tuple:
+            self._data = list(data)
+        if type(data) is str or not hasattr(data, '__getitem__'):
+            self._data = [data]
+
+        self._columncount = len(self._data)
+        self._children = []
+        self._parent = None
+        self._row = 0
+
+    def data(self, column):
+        if column >= 0 and column < len(self._data):
+            return self._data[column]
+
+    def columnCount(self):
+        return self._columncount
+
+    def childCount(self):
+        return len(self._children)
+
+    def child(self, row):
+        if row >= 0 and row < self.childCount():
+            return self._children[row]
+
+    def parent(self):
+        return self._parent
+
+    def row(self):
+        return self._row
+
+    def addChild(self, child):
+        child._parent = self
+        child._row = len(self._children)
+        self._children.append(child)
+        self._columncount = max(child.columnCount(), self._columncount)
+
+
+class TreeModel(QAbstractItemModel):
+    def __init__(self, data):
+        QAbstractItemModel.__init__(self)
+        self._root = CustomNode(None)
+
+        #TODO: this could be fixed because 'reward' shouldn't really be in the index.. (fix in the query function)
+        #convert the multiindex object to nodes
+        nodes = []
+        self._data = data.to_frame()
+        for level, new_df_0 in data.groupby(data.levels[0]).items():
+            nodes.append(CustomNode(level))
+            # for level1, new_df_1 in data.groupby(data.levels[1]).items():
+            for index, row in self._data.iterrows():
+                if row['base'] == level:
+                    nodes[-1].addChild(CustomNode([index, row['future'], row['reward']]))
+
+        for node in nodes:
+            self._root.addChild(node)
+
+    def rowCount(self, index):
+        if index.isValid():
+            return index.internalPointer().childCount()
+        return self._root.childCount()
+
+    def addChild(self, node, _parent):
+        if not _parent or not _parent.isValid():
+            parent = self._root
+        else:
+            parent = _parent.internalPointer()
+        parent.addChild(node)
+
+    def index(self, row, column, _parent=None):
+        if not _parent or not _parent.isValid():
+            parent = self._root
+        else:
+            parent = _parent.internalPointer()
+
+        if not QAbstractItemModel.hasIndex(self, row, column, _parent):
+            return QModelIndex()
+
+        child = parent.child(row)
+        if child:
+            return QAbstractItemModel.createIndex(self, row, column, child)
+        else:
+            return QModelIndex()
+
+    def parent(self, index):
+        if index.isValid():
+            p = index.internalPointer().parent()
+            if p:
+                return QAbstractItemModel.createIndex(self, p.row(), 0, p)
+        return QModelIndex()
+
+    def columnCount(self, index):
+        if index.isValid():
+            return index.internalPointer().columnCount()
+        return self._root.columnCount()
+
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+        node = index.internalPointer()
+        if role == Qt.DisplayRole:
+            return node.data(index.column())
+        return None
+
+    def headerData(self, section, orientation, role):
+        # section is the index of the column/row.
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return str(self._data.columns[section])
