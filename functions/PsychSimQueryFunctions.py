@@ -14,6 +14,8 @@ from PyQt5.QtGui import QFont, QColor
 from appraisal import appraisal_dimensions as ad
 import psychsim_gui_helpers as pgh
 
+TREE_TYPE = 'tree'
+TABLE_TYPE = 'table'
 
 class PsychSimQueryFunctions:
     def __init__(self):
@@ -45,7 +47,7 @@ class PsychSimQueryFunctions:
                        action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)])
         output = pd.DataFrame(results)
         output = output.set_index('agent')
-        return pd.DataFrame(output)
+        return TABLE_TYPE, pd.DataFrame(output)
 
 
 
@@ -119,7 +121,7 @@ class PsychSimQueryFunctions:
                     hyp_reward = legal_action["__ER__"][idx] #hyp_action_set.marginal(f"{agent}'s __REWARD__")
                     index.append((str(la_key), str(hyp_action), str(idx), str(hyp_reward)))
             output_data = pd.MultiIndex.from_tuples(index, names=["base", "future", "horizon", "reward"])
-            return output_data
+            return TREE_TYPE, output_data
         except KeyError as e:
             print(f"No key data for {e}")
 
@@ -155,7 +157,7 @@ class PsychSimQueryFunctions:
             #append all the horizons to one dictionary
             all_horizons = pd.concat(horizon.values())
             all_horizons.insert(loc=0, column='horizon', value=pd.Series(list(horizon.keys()), index=all_horizons.index))
-            return all_horizons
+            return TABLE_TYPE, all_horizons
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -188,7 +190,7 @@ class PsychSimQueryFunctions:
                                 agent_dict['agent'].append(agent)
 
         output_data = pd.DataFrame.from_dict(agent_dict)
-        return output_data
+        return TABLE_TYPE, output_data
 
     def get_actions(self, data=None, agent=None, *args, **kwargs):
         """
@@ -217,7 +219,7 @@ class PsychSimQueryFunctions:
             print(tb)
 
         output_data = pd.DataFrame.from_dict(actions_dict)
-        return output_data
+        return TABLE_TYPE, output_data
 
     def get_individual_agent_beliefs_numeric(self, data=None, agent=None, *args, **kwargs):
         """
@@ -240,7 +242,7 @@ class PsychSimQueryFunctions:
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
             all_steps = all_steps.set_index('step', drop=False).T
             all_steps = all_steps.sort_index()
-            return all_steps
+            return TABLE_TYPE, all_steps
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -265,7 +267,7 @@ class PsychSimQueryFunctions:
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
             all_steps = all_steps.set_index('step', drop=False).T
-            return all_steps
+            return TABLE_TYPE, all_steps
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -282,7 +284,7 @@ class PsychSimQueryFunctions:
             output_data = pd.DataFrame()
             for step, step_data in data.data.items():
                 output_data = output_data.append(self.__get_debug_data(debug=step_data['AGENT_STATE'], step=step))
-            return output_data
+            return TABLE_TYPE, output_data
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -303,7 +305,7 @@ class PsychSimQueryFunctions:
                 steps.append(str(step))
             step_col = pd.Series(steps)
             output_data.insert(loc=0, column='step', value=pd.Series(steps, index=output_data.index))
-            return output_data
+            return TABLE_TYPE, output_data
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -340,8 +342,8 @@ class PsychSimQueryFunctions:
                 player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
                 player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility, player_cur_utility)
                 player_appraisal.blame = ad.blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
-                player_appraisal.blame2 = ad.blame2(traj_debug[agent]["__decision__"][player_decision_key])
-                player_appraisal.control = 0#ad.control(traj_debug[agent]["__decision__"][player_decision_key])
+                player_appraisal.blame2 = False#ad.blame2(traj_debug[agent]["__decision__"][player_decision_key])
+                player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key])
 
                 # extract the possible actions and corresponding rewards from the trajectory
                 agent_decision = traj_debug[agent]["__decision__"]
@@ -371,7 +373,7 @@ class PsychSimQueryFunctions:
                 player_pre_utility = player_cur_utility # TODO: should this be cumulative?
 
             output_data = pd.DataFrame.from_dict(step_appraisal_info)
-            return output_data.T
+            return TABLE_TYPE, output_data.T
 
         except:
             tb = traceback.format_exc()

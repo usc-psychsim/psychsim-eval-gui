@@ -83,13 +83,15 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         action_step = self.action_combo.currentData()  # This is actually the step value as it is easier to access the data by step rather than action
         data_id = self.data_combo.currentText()
         try:
-            result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
+            query_result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
                                                                   agent=agent, action=action_step, state=state)
+            result_type = query_result[0]
+            result = query_result[1]
             # result = result.apply(pd.to_numeric,
             #                       errors='ignore')  # convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
             self.print_query_output(str(result))
-            new_query = self.create_new_query_object(query_function, data_id, result)
+            new_query = self.create_new_query_object(query_function, data_id, result, result_type=result_type)
             self.update_query_data(new_query.id, new_query)
             self.display_query(new_query.id)
         except:
@@ -105,7 +107,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_data_dict[query_id] = query_data
         self.set_query_list_dropdown()
 
-    def create_new_query_object(self, query_function, data_id, query_data, query_id=None):
+    def create_new_query_object(self, query_function, data_id, query_data, result_type="table", query_id=None):
         """
         Create a new query object
         :param query_function: (str) name of query function
@@ -117,7 +119,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         if not query_id:
             query_id = f"{query_function}_{data_id}_{dt_string}"
         return pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
-                               results=query_data)
+                               results=query_data, result_type=result_type)
 
     def clear_query_info(self):
         """
@@ -431,7 +433,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         try:
             data_id = self.data_combo.currentText()
             if data_id:
-                agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
+                _, agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
                 self.agent_combo.clear()
                 self.agent_combo.addItems(agents['agent'].tolist())
             self.set_action_dropdown(param_list)
@@ -450,7 +452,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 data_id = self.data_combo.currentText()
                 if data_id:
                     selected_agent = self.agent_combo.currentText()
-                    actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
+                    _, actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
                     self.action_combo.clear()
                     for index, row in actions.iterrows():
                         self.action_combo.insertItem(index, row['action'], row['step'])
@@ -479,7 +481,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 action_id = self.action_combo.currentData()
                 if data_id is not None and action_id is not None:
                     selected_agent = self.agent_combo.currentText()
-                    predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id],
+                    _, predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id],
                                                                          agent=selected_agent, action=action_id)
                     self.state_combo.clear()
                     self.state_combo.addItems(predicted_actions['base_action'].unique().tolist())
@@ -495,9 +497,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         try:
             if query_id in self.query_data_dict.keys():
                 selected_query = self.query_data_dict[query_id]
-                if type(selected_query.results) == pd.DataFrame:
+                if selected_query.result_type == 'table':
                     selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
-                elif type(selected_query.results) == pd.MultiIndex:
+                elif selected_query.result_type == 'tree':
                     selected_query = self.show_query_tree_dialog(model=TreeModel(selected_query.results), query=selected_query)
                 self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
                 # TODO: fix bug that updates query list even if viewed

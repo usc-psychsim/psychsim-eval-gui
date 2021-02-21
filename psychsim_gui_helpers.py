@@ -30,6 +30,7 @@ class PsySimQuery:
     params: list
     function: str
     results: pd.DataFrame
+    result_type: str
     diff_query: bool=False
 
     def get_steps(self):
