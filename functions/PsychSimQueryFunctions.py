@@ -108,7 +108,7 @@ class PsychSimQueryFunctions:
         :param planning_horizon:
         :return: Tree data
         """
-        #TODO: fix the output data to be pandas multiindex instead of a list
+        #TODO: fix the output data to be pandas dataframe that is multiindexed instead of the actual multi index
         try:
             action_of_interest = data.data[action]["AGENT_STATE"][agent]
             world = data.data[action]["TRAJECTORY"][0]
@@ -319,6 +319,7 @@ class PsychSimQueryFunctions:
                                    relevance=[],
                                    congruence=[],
                                    blame=[],
+                                   blame2=[],
                                    novelty=[],
                                    control=[])
         player_pre_utility = 0.0 # Assume that the players start with 0 utility
@@ -339,7 +340,8 @@ class PsychSimQueryFunctions:
                 player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
                 player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility, player_cur_utility)
                 player_appraisal.blame = ad.blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
-                player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key])
+                player_appraisal.blame2 = ad.blame2(traj_debug[agent]["__decision__"][player_decision_key])
+                player_appraisal.control = 0#ad.control(traj_debug[agent]["__decision__"][player_decision_key])
 
                 # extract the possible actions and corresponding rewards from the trajectory
                 agent_decision = traj_debug[agent]["__decision__"]
@@ -362,6 +364,7 @@ class PsychSimQueryFunctions:
                 step_appraisal_info['relevance'].append(player_appraisal.motivational_relevance)
                 step_appraisal_info['congruence'].append(player_appraisal.motivational_congruence)
                 step_appraisal_info['blame'].append(player_appraisal.blame)
+                step_appraisal_info['blame2'].append(player_appraisal.blame2)
                 step_appraisal_info['novelty'].append(player_appraisal.novelty)
                 step_appraisal_info['control'].append(player_appraisal.control)
 

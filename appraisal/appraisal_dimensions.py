@@ -17,6 +17,7 @@ class PlayerAppraisal:
     coerced: bool = False
     accountable: bool = False
     blame: bool = False
+    blame2: bool = False
     novelty: float = None
     consistency: float = None
     control: float = None
@@ -98,6 +99,19 @@ def blame(actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utili
         # did the actor's action negatively benefit the actor? if so - they are not to blame
         elif actor_cur_utility < actor_pre_utility:
             return False
+    return False
+
+
+def blame2(player_decision):
+    """
+    Did the actor take an action that wasn't the best (for the team - or for the actor who is asking)
+    TODO: fix this for multi-player (the player_decision should be the belief about another player's decision) - this assumes the '__EV__' here corresponds to the observing player's utility not the expected utility of the observed player
+    """
+    actual_action = player_decision['action']
+    actual_action_utility = player_decision['V'][actual_action]['__EV__']
+    for action in player_decision['V']:
+        if action['__EV__'] > actual_action_utility: # the player could have taken a better option
+            return True
     return False
 
 def if_coerced(actor, pact, pre_utility):
