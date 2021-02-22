@@ -64,7 +64,7 @@ class PsychSimQueryFunctions:
         print("query_all")
         pass
 
-    # ---- THIS IS FOR USING A LIST INSTEAD OF MULTIINDEX
+    # ---- THIS IS FOR USING A MULTIINDEX DATAFRAME - DOESN"T YET WORK BECAUSE THE MODEL SIDE DOESN"T PROPERLY WORK...
     # def query_action(self, data=None, agent=None, action=None, *args, **kwargs):
     #     """
     #      action specific query, which I can use to look at overall reasoning of a planning agent.
@@ -80,21 +80,35 @@ class PsychSimQueryFunctions:
     #     #TODO: fix the output data to be pandas multiindex instead of a list
     #     try:
     #         action_of_interest = data.data[action]["AGENT_STATE"][agent]
+    #         taken_action = str(data.data[action]["TRAJECTORY"][1]).split('\t')[1]
     #         world = data.data[action]["TRAJECTORY"][0]
-    #         # output_data = pd.DataFrame()
-    #         output_data = []
+    #         output_data = pd.DataFrame()
+    #         # output_data = []
+    #         index = []
     #         for la_key, legal_action in next(iter(action_of_interest["__decision__"].items()))[1]["V"].items():
-    #             base_action_item = StandardItem(str(la_key), 16, set_bold=True)
+    #             # base_action_item = StandardItem(str(la_key), 16, set_bold=True)
     #             for idx, hyp_action_set in enumerate(legal_action['__S__']):
     #                 hyp_action = world.symbolList[hyp_action_set.marginal(f"{agent}'s __ACTION__").max()]
-    #                 hyp_action_item = StandardItem(str(hyp_action), 14)
-    #                 base_action_item.appendRow(hyp_action_item)
+    #                 # hyp_action_item = StandardItem(str(hyp_action), 14)
+    #                 # base_action_item.appendRow(hyp_action_item)
     #
     #                 hyp_reward = legal_action["__ER__"][idx] #hyp_action_set.marginal(f"{agent}'s __REWARD__")
-    #                 # output_dict = dict(horizon=[idx], base_action=[str(la_key)], hypothetical_action=[str(hyp_action)],hypothetical_reward=[str(hyp_reward)])
-    #                 # output_data = output_data.append(pd.DataFrame.from_dict(output_dict))
-    #             output_data.append(base_action_item)
-    #         return output_data
+    #                 base_action = str(la_key)
+    #                 future_action = str(hyp_action)
+    #                 output_dict = dict(horizon=[idx],
+    #                                    future_action=[future_action],
+    #                                    hypothetical_reward=[str(hyp_reward)],
+    #                                    taken_action=[taken_action])
+    #                 # index.append((base_action, future_action))
+    #                 index = pd.MultiIndex.from_tuples([(base_action, future_action)], names=["base_action", "future_action"])
+    #                 output_data = output_data.append(pd.DataFrame(output_dict, index=index))
+    #
+    #
+    #         # output_index = pd.MultiIndex.from_tuples(index, names=["base", "future", "horizon", "reward"])
+    #         # output_data = output_data.set_index("base_action", "future_action")
+    #
+    #             # output_data.append(base_action_item)
+    #         return TREE_TYPE, output_data
     #     except KeyError as e:
     #         print(f"No key data for {e}")
 
@@ -331,6 +345,8 @@ class PsychSimQueryFunctions:
                 traj_world = step_data["TRAJECTORY"][0]
                 traj_agent = traj_world.agents[agent]
                 traj_debug = step_data["TRAJECTORY"][2]
+                # step_action = str(step_data["TRAJECTORY"][1]).split("\t")[1]
+                step_action = list(step_data["TRAJECTORY"][1]._domain.values())[0]
 
                 player_loc = traj_world.getFeature(f"{agent}'s loc", traj_agent.world.state)
                 player_decision_key = list(traj_debug[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
@@ -342,7 +358,7 @@ class PsychSimQueryFunctions:
                 player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
                 player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility, player_cur_utility)
                 player_appraisal.blame = ad.blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
-                player_appraisal.blame2 = False#ad.blame2(traj_debug[agent]["__decision__"][player_decision_key])
+                player_appraisal.blame2 = ad.blame2(step_action, traj_debug[agent]["__decision__"][player_decision_key])
                 player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key])
 
                 # extract the possible actions and corresponding rewards from the trajectory
