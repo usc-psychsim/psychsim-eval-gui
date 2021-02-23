@@ -109,20 +109,27 @@ class TreeModel(QAbstractItemModel):
         QAbstractItemModel.__init__(self)
         self._root = CustomNode(None)
 
-        #TODO: this could be fixed because 'reward' shouldn't really be in the index.. (fix in the query function)
-        #convert the multiindex object to nodes
+        self._data = data
+        level_group = self._data.groupby(self._data.index.get_level_values(level=0))
         nodes = []
-        self._data = data.to_frame()
-        #TODO: this is currently specific to the 'query_action' function and isn't general
-        for level, new_df_0 in data.groupby(data.levels[0]).items():
+        for level in level_group:
             nodes.append(CustomNode(level))
-            # for level1, new_df_1 in data.groupby(data.levels[1]).items():
             for index, row in self._data.iterrows():
-                if row['base'] == level:
-                    nodes[-1].addChild(CustomNode([index, row['future'], row['horizon'], row['reward']]))
+                children = [""]
+                if index == level[0]:
+                    for child in row:
+                        children.append(child)
+                    nodes[-1].addChild(CustomNode(children))
 
         for node in nodes:
             self._root.addChild(node)
+
+        # Add back in the column header for the index
+        index_name = self._data.index.name
+        if index_name:
+            self._data.insert(0, index_name, self._data.index)
+        else:
+            self._data.insert(0, "index", self._data.index)
 
     def rowCount(self, index):
         if index.isValid():
