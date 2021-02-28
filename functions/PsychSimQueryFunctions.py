@@ -298,6 +298,7 @@ class PsychSimQueryFunctions:
                                    congruence=[],
                                    blame=[],
                                    blame2=[],
+                                   intended_blame=[],
                                    novelty=[],
                                    control=[])
         player_pre_utility = 0.0 # Assume that the players start with 0 utility
@@ -319,7 +320,8 @@ class PsychSimQueryFunctions:
                 player_appraisal = ad.PlayerAppraisal()
                 player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
                 player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility, player_cur_utility)
-                player_appraisal.blame = ad.blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
+                player_appraisal.blame = ad.blame(player_pre_utility, player_cur_utility)
+                player_appraisal.intended_blame = ad.intended_blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
                 player_appraisal.blame2 = ad.blame2(step_action, traj_debug[agent]["__decision__"][player_decision_key])
                 player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key])
 
@@ -345,6 +347,7 @@ class PsychSimQueryFunctions:
                 step_appraisal_info['congruence'].append(player_appraisal.motivational_congruence)
                 step_appraisal_info['blame'].append(player_appraisal.blame)
                 step_appraisal_info['blame2'].append(player_appraisal.blame2)
+                step_appraisal_info['intended_blame'].append(player_appraisal.intended_blame)
                 step_appraisal_info['novelty'].append(player_appraisal.novelty)
                 step_appraisal_info['control'].append(player_appraisal.control)
 

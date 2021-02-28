@@ -17,6 +17,7 @@ class PlayerAppraisal:
     coerced: bool = False
     accountable: bool = False
     blame: bool = False
+    intended_blame: bool = False
     blame2: bool = False
     novelty: float = None
     consistency: float = None
@@ -82,16 +83,24 @@ def motivational_congruence(pre_utility, cur_utility):
     return m_con
 
 
-def blame(actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utility):
+def blame(team_pre_utility, team_cur_utility):
     """
-    was the action that the actor took, the best for the agent?
+    Did the actor take an action that netatively impacted the team?
     i.e. did the action that the actor took
     """
     # TODO: change if the action simply benefited the team to if it was the best (when we actually have the team info
-    # 1. did the actor's action benefit the team? if so - they are not to blame
-    if team_cur_utility > team_pre_utility:
+    # If the actor did anything to negatively impact the team, they are to blame
+    if team_cur_utility < team_pre_utility:
         return True
-    # 2. did the actor's action negatively affect the team?
+    return False
+
+
+def intended_blame(actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utility):
+    """
+    Did the agent take an agent that negatively impacted the team, but positively impacted themselves?
+    i.e. did the action that the actor took
+    """
+    # did the actor's action negatively affect the team?
     if team_cur_utility < team_pre_utility:
         # did the actor's action benefit the actor? - if so they are to blame
         if actor_cur_utility > actor_pre_utility:
@@ -99,6 +108,7 @@ def blame(actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utili
         # did the actor's action negatively benefit the actor? if so - they are not to blame
         elif actor_cur_utility < actor_pre_utility:
             return False
+    # if there was no change in utility then the actor isn't to blame
     return False
 
 
