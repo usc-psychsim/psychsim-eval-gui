@@ -535,6 +535,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         #     rootNode.appendRow(node)
         #----
         query_dialog = QueryDataTreeDialog(query, model)
+        query_dialog.Query_data_tree.expandAll()
         result = query_dialog.exec_()
         query = query_dialog.query_data
         if result:
