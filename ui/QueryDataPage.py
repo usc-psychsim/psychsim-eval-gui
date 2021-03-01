@@ -299,10 +299,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 # save the new sample as a query
                 sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
                             f"{filt_min}-{filt_max} "
-                new_query = self.create_new_query_object(selected_query.function,
-                                                         selected_query.data_id,
-                                                         sampled_query.T, #TODO: fix the shape of the data throughout the whole gui
-                                                         sample_id)
+                new_query = self.create_new_query_object(query_function=selected_query.function,
+                                                         data_id=selected_query.data_id,
+                                                         query_data=sampled_query.T, #TODO: fix the shape of the data throughout the whole gui
+                                                         query_id=sample_id)
                 self.update_query_data(new_query.id, new_query)
                 self.print_query_output(f"sample saved as: {sample_id}", "black")
         else:
@@ -333,8 +333,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             dt_string, _ = pgh.get_time_stamp()
             sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
                         f"{dt_string}"
-            new_query = self.create_new_query_object(selected_query.function, selected_query.data_id, sampled_query.T,
-                                                     sample_id)
+            new_query = self.create_new_query_object(query_function=selected_query.function,
+                                                     data_id=selected_query.data_id,
+                                                     query_data=sampled_query.T,
+                                                     query_id=sample_id)
             self.update_query_data(new_query.id, new_query)
             self.print_query_output(f"sample saved as: {sample_id}", "black")
 
