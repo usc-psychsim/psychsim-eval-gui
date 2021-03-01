@@ -248,6 +248,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         selection = self.sample_query_combo.currentText()
         current_query = self.query_data_dict[selection]
         vars = current_query.results.T.columns.to_list() # Transpose to convert wide to long
+        vars = list(map(str, vars)) # make sure vars are string type
         # vars = current_query.results.index.to_list() # use this for wide data (vars as row names)
         self.sample_variable_combo.clear()
         self.sample_variable_combo.addItems(vars)
@@ -258,7 +259,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :return:
         """
         query_selection = self.sample_query_combo.currentText()
-        selected_query = self.query_data_dict[query_selection]
+        selected_query = copy.deepcopy(self.query_data_dict[query_selection])
         selected_query.results = selected_query.results.T # Transpose to account for wide data (this is a bit of a hack because the code was written for long data)
         variable_selection = self.sample_variable_combo.currentText()
         try:
@@ -300,7 +301,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                             f"{filt_min}-{filt_max} "
                 new_query = self.create_new_query_object(selected_query.function,
                                                          selected_query.data_id,
-                                                         sampled_query,
+                                                         sampled_query.T, #TODO: fix the shape of the data throughout the whole gui
                                                          sample_id)
                 self.update_query_data(new_query.id, new_query)
                 self.print_query_output(f"sample saved as: {sample_id}", "black")
@@ -332,7 +333,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             dt_string, _ = pgh.get_time_stamp()
             sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
                         f"{dt_string}"
-            new_query = self.create_new_query_object(selected_query.function, selected_query.data_id, sampled_query,
+            new_query = self.create_new_query_object(selected_query.function, selected_query.data_id, sampled_query.T,
                                                      sample_id)
             self.update_query_data(new_query.id, new_query)
             self.print_query_output(f"sample saved as: {sample_id}", "black")
