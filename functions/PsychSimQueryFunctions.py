@@ -8,14 +8,12 @@ import numpy as np
 import traceback
 from random import randint
 
-from PyQt5.Qt import QStandardItemModel, QStandardItem
-from PyQt5.QtGui import QFont, QColor
-
 from appraisal import appraisal_dimensions as ad
 import psychsim_gui_helpers as pgh
 
 TREE_TYPE = 'tree'
 TABLE_TYPE = 'table'
+
 
 class PsychSimQueryFunctions:
     def __init__(self):
@@ -44,27 +42,12 @@ class PsychSimQueryFunctions:
         NOTE: it is better to have 'step' on the x axis
         """
         results = dict(agent=[f"{agent}_{i}" for i in range(1, 11)],
-                       action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)])
+                       action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)],
+                       reward=[f"{randint(0, 3)}" for i in range(1, 11)])
         output = pd.DataFrame(results)
         output = output.set_index('agent')
-        return TABLE_TYPE, pd.DataFrame(output)
+        return TABLE_TYPE, pd.DataFrame(output).T
 
-
-
-    def query_all(self, *args, **kwargs):
-        """
-        A general query that given a planning agent, one of its action, a cycle number and a certain planning horizon
-        it prints out projected actions of different agents and projected resulting states for all agents.
-        :param planning_agent:
-        :param action:
-        :param cycle:
-        :param planning_horizon:
-        :return:
-        """
-        print("query_all")
-        pass
-
-    #---- THIS IS FOR USING A MULTIINDEX DATAFRAME - DOESN"T YET WORK BECAUSE THE MODEL SIDE DOESN"T PROPERLY WORK...
     def query_action(self, data=None, agent=None, action=None, *args, **kwargs):
         """
          action specific query, which I can use to look at overall reasoning of a planning agent.
@@ -77,7 +60,6 @@ class PsychSimQueryFunctions:
         :param planning_horizon:
         :return: Tree data
         """
-        #TODO: fix the output data to be pandas multiindex instead of a list
         try:
             action_of_interest = data.data[action]["AGENT_STATE"][agent]
             taken_action = str(data.data[action]["TRAJECTORY"][1]).split('\t')[1]
@@ -100,54 +82,6 @@ class PsychSimQueryFunctions:
             return TREE_TYPE, output_data
         except KeyError as e:
             print(f"No key data for {e}")
-
-
-    def query_state(self, data=None, agent=None, action=None, state=None, *args, **kwargs):
-        """
-        A state specific query which gives access to a certain state. Using this one I can plot some of values during
-        reasoning in one cycle and get insight from it
-        :param planning_agent:
-        :param action:
-        :param cycle:
-        :param planning_horizon:
-        :param state:
-        :return:
-        """
-        try:
-            data = data
-            agent_id = agent
-            action_id = action
-            state_id = state
-            output_data = pd.DataFrame()
-            horizon = {}
-            for step, step_data in data.data.items():
-                if step == action_id:
-                    for agent, agent_data in step_data["AGENT_STATE"].items():
-                        if agent == agent_id:
-                            for decision, decision_data in agent_data["__decision__"].items():
-                                if type(decision_data) == dict:
-                                    for element, element_data in decision_data["V"].items():
-                                        if str(element) == state_id:
-                                            for idx, hzn in enumerate(element_data["__S__"]):
-                                                horizon[idx] = pd.DataFrame(self.__extract_numeric_values_fromVectorDistributionSet(hzn))
-            #append all the horizons to one dictionary
-            all_horizons = pd.concat(horizon.values())
-            all_horizons.insert(loc=0, column='horizon', value=pd.Series(list(horizon.keys()), index=all_horizons.index))
-            return TABLE_TYPE, all_horizons
-        except:
-            tb = traceback.format_exc()
-            print(tb)
-
-    def diff_checker(self, *args, **kwargs):
-        """
-        Ideally having a diff checker that gets two queries would help, however having the other queries there exist
-        a lot of diff checker tools that can be used to see the difference between two queries.
-        :param query1:
-        :param query2:
-        :return:
-        """
-        print("diff_checker")
-        pass
 
     def get_agents(self, *args, **kwargs):
         """
@@ -181,15 +115,6 @@ class PsychSimQueryFunctions:
                 actions_dict['step'].append(step)
                 action = str(step_data['TRAJECTORY'][1]).split('\t')[1]
                 actions_dict['action'].append(action)
-                # step_data[0][1]
-                # for agent_i, agent_data in step_data['AGENT_STATE'].items():
-                #     if agent_i == agent:
-                #         for d in agent_data['__decision__'].values():
-                #             if type(d) == dict:
-                #                 for k, v in d.items():
-                #                     if k == 'action':
-                #                         actions_dict['action'].append(str(v))
-                #                         actions_dict['step'].append(step)
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -248,23 +173,6 @@ class PsychSimQueryFunctions:
             tb = traceback.format_exc()
             print(tb)
 
-    def get_all_agents_beliefs(self, *args, **kwargs):
-        """
-        return a dataframe of beliefs for the agent at each step
-        :return: Dataframe containing the actions and beliefs for the selected agent
-        """
-        try:
-            data = kwargs['data']
-            data_id = kwargs['data_id']
-            agent_id = kwargs['agent']
-            output_data = pd.DataFrame()
-            for step, step_data in data.data.items():
-                output_data = output_data.append(self.__get_debug_data(debug=step_data['AGENT_STATE'], step=step))
-            return TABLE_TYPE, output_data
-        except:
-            tb = traceback.format_exc()
-            print(tb)
-
     def get_world_state(self, *args, **kwargs):
         """
         Get the world state of an agent
@@ -281,7 +189,7 @@ class PsychSimQueryFunctions:
                 steps.append(str(step))
             step_col = pd.Series(steps)
             output_data.insert(loc=0, column='step', value=pd.Series(steps, index=output_data.index))
-            return TABLE_TYPE, output_data
+            return TABLE_TYPE, output_data.T
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -391,16 +299,3 @@ class PsychSimQueryFunctions:
         vds_values = vds_values.append(data)
         return vds_values
 
-
-
-class StandardItem(QStandardItem):
-    def __init__(self, txt='', font_size=12, set_bold=False, color=QColor(0, 0, 0)):
-        super().__init__()
-
-        fnt = QFont('Open Sans', font_size)
-        fnt.setBold(set_bold)
-
-        self.setEditable(False)
-        self.setForeground(color)
-        self.setFont(fnt)
-        self.setText(txt)
