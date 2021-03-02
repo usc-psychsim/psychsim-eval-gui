@@ -68,12 +68,13 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         Create queries from test data sets to enable test plotting
         """
         if self.test_check.isChecked():
-            self.test_data_dict = dict(iris=px.data.iris(), wind=px.data.wind(), gapminder=px.data.gapminder())
+            self.test_data_dict = dict(iris=px.data.iris().T, wind=px.data.wind().T, gapminder=px.data.gapminder().T)
             for key, data in self.test_data_dict.items():
                 self.query_data_dict[key] = pgh.PsySimQuery(id=key,
                                                             data_id=key,
                                                             params=[],
                                                             function="test",
+                                                            result_type="table",
                                                             results=data)
         elif not self.test_check.isChecked():
             try:
