@@ -61,7 +61,7 @@ class PsychSimQueryFunctions:
         :return: Tree data
         """
         try:
-            action_of_interest = data.data[action]["AGENT_STATE"][agent]
+            action_of_interest = data.data[action]["TRAJECTORY"][2][agent]
             taken_action = str(data.data[action]["TRAJECTORY"][1]).split('\t')[1]
             world = data.data[action]["TRAJECTORY"][0]
             output_data = pd.DataFrame()
