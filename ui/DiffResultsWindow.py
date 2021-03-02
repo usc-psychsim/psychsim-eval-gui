@@ -4,6 +4,7 @@ import sys
 import os
 import pandas as pd
 from ui.PandasModel import PandasModel
+import traceback
 
 diff_results_window_file = os.path.join("ui", "diff_results_window.ui")
 ui_diffResultsWindow, QtBaseClass = uic.loadUiType(diff_results_window_file)
@@ -42,18 +43,24 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         :param q2: PsySimQuery to diff
         """
         diff_rows = []
+        index_i = 0
         for index, row_1 in q1.results.iterrows():
             # get the row of the other dataframe
-            row_2 = q2.results.loc[index, :]
+            row_2 = q2.results.iloc[index_i, :]
             # get the difference row (we only really need one because the absolute difference is the same on both sides
             diff_rows.append(row_1 == row_2)
+            index_i = index_i +1
         # combine the diff rows to a new dataframe
         diff_output = pd.concat(diff_rows, axis=1, keys=[s.name for s in diff_rows]).T
         # Use the new diff dataframe to format the table (color the cells)
-        model_1 = PandasModel(data=q1.results, diff=diff_output, diff_colour="red")
-        model_2 = PandasModel(data=q2.results, diff=diff_output)
-        self.q1_table.setModel(model_1)
-        self.q2_table.setModel(model_2)
+        try:
+            model_1 = PandasModel(data=q1.results, diff=diff_output, diff_colour="red")
+            model_2 = PandasModel(data=q2.results, diff=diff_output)
+            self.q1_table.setModel(model_1)
+            self.q2_table.setModel(model_2)
+        except:
+            tb = traceback.format_exc()
+            print(tb, "red")
 
         # todo: find a way to implement this without it killing the GUI
         # self.q1_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)

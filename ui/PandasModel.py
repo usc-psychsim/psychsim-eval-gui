@@ -48,9 +48,12 @@ class PandasModel(QAbstractTableModel):
             if self._diff is not None and role == Qt.BackgroundRole:
                 row = index.row()
                 col = index.column()
-                diff_val = self._diff.iloc[index.row(), index.column()]#.iloc[index.row()][index.column()]
-                if not diff_val: # colour if the diff value is FALSE (i.e. the values aren't the same between the two dataframes)
-                    return QColor(self._diff_colour)
+                try:
+                    diff_val = self._diff.iloc[index.row(), index.column()]#.iloc[index.row()][index.column()]
+                    if not diff_val: # colour if the diff value is FALSE (i.e. the values aren't the same between the two dataframes)
+                        return QColor(self._diff_colour)
+                except:
+                    print("error") #TODO FIX THIS. (it can be forced by diffing two query_actions of differnet lengths)
 
         return None
 
