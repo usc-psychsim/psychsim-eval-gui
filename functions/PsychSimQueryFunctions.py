@@ -122,31 +122,31 @@ class PsychSimQueryFunctions:
         output_data = pd.DataFrame.from_dict(actions_dict)
         return TABLE_TYPE, output_data
 
-    def get_individual_agent_beliefs_numeric(self, data=None, agent=None, *args, **kwargs):
-        """
-        return a dataframe of beliefs for the agent at each step
-        :return: Dataframe containing the actions and beliefs for the selected agent
-        """
-        try:
-            data = data
-            agent_id = agent
-            steps = {}
-            for step, step_data in data.data.items():
-                for t, sa in enumerate(step_data['TRAJECTORY']):
-                    world, action = sa
-                    agent_obj = world.agents[agent]
-                    beliefs = agent_obj.getBelief(world.state)
-                    steps[step] = pd.DataFrame(self.__extract_numeric_values_fromVectorDistributionSet(list(beliefs.values())[0]))
-
-            #append all the horizons to one dictionary
-            all_steps = pd.concat(steps.values())
-            all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
-            all_steps = all_steps.set_index('step', drop=False).T
-            all_steps = all_steps.sort_index()
-            return TABLE_TYPE, all_steps.T
-        except:
-            tb = traceback.format_exc()
-            print(tb)
+    # def get_individual_agent_beliefs_numeric(self, data=None, agent=None, *args, **kwargs):
+    #     """
+    #     return a dataframe of beliefs for the agent at each step
+    #     :return: Dataframe containing the actions and beliefs for the selected agent
+    #     """
+    #     try:
+    #         data = data
+    #         agent_id = agent
+    #         steps = {}
+    #         for step, step_data in data.data.items():
+    #             for t, sa in enumerate(step_data['TRAJECTORY']):
+    #                 world, action = sa
+    #                 agent_obj = world.agents[agent]
+    #                 beliefs = agent_obj.getBelief(world.state)
+    #                 steps[step] = pd.DataFrame(self.__extract_numeric_values_fromVectorDistributionSet(list(beliefs.values())[0]))
+    #
+    #         #append all the horizons to one dictionary
+    #         all_steps = pd.concat(steps.values())
+    #         all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
+    #         all_steps = all_steps.set_index('step', drop=False).T
+    #         all_steps = all_steps.sort_index()
+    #         return TABLE_TYPE, all_steps.T
+    #     except:
+    #         tb = traceback.format_exc()
+    #         print(tb)
 
     def get_individual_agent_beliefs_values(self, data=None, agent=None, *args, **kwargs):
         """
@@ -158,11 +158,14 @@ class PsychSimQueryFunctions:
             agent_id = agent
             steps = {}
             for step, step_data in data.data.items():
-                for t, sa in enumerate(step_data['TRAJECTORY']):
-                    world, action = sa
-                    agent_obj = world.agents[agent]
-                    beliefs = agent_obj.getBelief(world.state)
-                    steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0], world))
+                # for t, sa in enumerate(step_data['AGENT_STATE'].agents[agent]):
+                #     world, action = sa
+                #     agent_obj = world.agents[agent]
+                #     beliefs = agent_obj.getBelief(world.state)
+                #     steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0], world))
+                world = step_data["AGENT_STATE"] #TODO: fix this in the sin script (this name is strange as it's really the world state)
+                beliefs = step_data['AGENT_STATE'].agents[agent].getBelief(world.state)
+                steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(list(beliefs.values())[0], world))
 
             #append all the horizons to one dictionary
             all_steps = pd.concat(steps.values())
@@ -183,13 +186,19 @@ class PsychSimQueryFunctions:
         try:
             data = kwargs['data']
             output_data = pd.DataFrame()
-            steps = []
+            steps = {}#[]
             for step, step_data in data.data.items():
-                output_data = output_data.append(self.__extract_numeric_values_fromVectorDistributionSet(step_data['WORLD_STATE']))
-                steps.append(str(step))
-            step_col = pd.Series(steps)
-            output_data.insert(loc=0, column='step', value=pd.Series(steps, index=output_data.index))
-            return TABLE_TYPE, output_data.T
+                # output_data = output_data.append(self.__extract_numeric_values_fromVectorDistributionSet(step_data['WORLD_STATE']))
+                # steps.append(str(step))
+                world = step_data["AGENT_STATE"] #TODO: fix this in the sin script (this name is strange as it's really the world state)
+                steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(world.state, world))
+
+            # step_col = pd.Series(steps)
+            # output_data.insert(loc=0, column='step', value=pd.Series(steps, index=output_data.index))
+            all_steps = pd.concat(steps.values())
+            all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
+            all_steps = all_steps.set_index('step', drop=False).T
+            return TABLE_TYPE, all_steps.T
         except:
             tb = traceback.format_exc()
             print(tb)
