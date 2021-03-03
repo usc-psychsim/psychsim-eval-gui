@@ -141,7 +141,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
         sys.path.insert(1, self.psychsim_path)
         sys.path.insert(1, self.definitions_path)
-        sys.path.knsert(1, self.model_learning_path)
+        sys.path.insert(1, self.model_learning_path)
         #TODO: add model_learning path (and take out of sim)
         # sys.path.insert(1, "/home/chris/Documents/GLASGOW_MARSELLA/Sep2020/model-learning/")
 
