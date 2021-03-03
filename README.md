@@ -1,23 +1,33 @@
 # pyshsim-gui-qt
 
 ## Installation and Running instructions:
-1. if not already installed, install pip. Instructions can be found [here](https://pip.pypa.io/en/stable/installing/)
-1. install pipenv using instructions [here](https://pipenv-fork.readthedocs.io/en/latest/install.html#installing-pipenv)
-2. cd to the root directory
+1. make sure you have the following repositories cloned
+   
+   * https://github.com/usc-psychsim/psychsim
+   * https://github.com/usc-psychsim/atomic
+   * https://github.com/usc-psychsim/model-learning
+   
+2. if not already installed, install pip. Instructions can be found [here](https://pip.pypa.io/en/stable/installing/)
+3. install pipenv using instructions [here](https://pipenv-fork.readthedocs.io/en/latest/install.html#installing-pipenv)
+4. cd to the root directory
 
-    `$ cd GUI`
-3. install from the Pipfile
+    `$ cd psychsim-eval-gui`
+5. install from the Pipfile
 
     `$ pipenv install`
-4. activate the pipenv shell
+6. activate the pipenv shell
 
     `$ pipenv shell`
-    
-5. execute the main gui script
+
+7. edit the paths in `config.ini` for the cloned repos in step 1 for your local environment
+   
+   The gui will add these to the system path
+   
+8. execute the main gui script
 
     `$ python3 PsychSimGui.py`
     
-5. when finished, exit the pipenv
+9. when finished, exit the pipenv
 
     `$ exit`
 
