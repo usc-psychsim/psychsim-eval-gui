@@ -295,6 +295,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 sampled_query = copy.deepcopy(selected_query.results)
                 sampled_query = sampled_query.loc[sampled_query[variable_selection] <= filt_max]
                 sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
+                sampled_query.reset_index(inplace=True, drop=True)
 
                 # save the new sample as a query
                 sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
@@ -328,6 +329,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             # TODO: make this more sophisiticated to enable sampling of only first step (if selected)
             sampled_query = pd.concat(
                 [sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
+            sampled_query.reset_index(inplace=True, drop=True)
 
             # save the new sample as a query
             dt_string, _ = pgh.get_time_stamp()
