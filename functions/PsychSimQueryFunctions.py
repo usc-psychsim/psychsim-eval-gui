@@ -171,7 +171,7 @@ class PsychSimQueryFunctions:
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
             all_steps = all_steps.set_index('step', drop=False).T
-            return TABLE_TYPE, all_steps.T
+            return TABLE_TYPE, all_steps
         except:
             tb = traceback.format_exc()
             print(tb)
@@ -198,7 +198,7 @@ class PsychSimQueryFunctions:
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
             all_steps = all_steps.set_index('step', drop=False).T
-            return TABLE_TYPE, all_steps.T
+            return TABLE_TYPE, all_steps
         except:
             tb = traceback.format_exc()
             print(tb)
