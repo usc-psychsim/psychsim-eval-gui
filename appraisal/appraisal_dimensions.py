@@ -12,11 +12,11 @@ class PlayerAppraisal:
     # TODO:
     #  fix this to have only the relevant ones
     #  figure out a better way to store this
-    motivational_relevance: bool = False
+    motivational_relevance: float = None
     motivational_congruence: float = None
     coerced: bool = False
     accountable: bool = False
-    blame: bool = False
+    blame: float = None
     intended_blame: bool = False
     blame2: bool = False
     novelty: float = None
@@ -67,9 +67,7 @@ def motivational_relevance(pre_utility, cur_utility):
     pre_utility: utility before event has happened
     """
     m_rel = abs((cur_utility - pre_utility))
-    if m_rel > 0:
-        return True
-    return False
+    return m_rel
 
 
 def motivational_congruence(pre_utility, cur_utility):
@@ -87,12 +85,10 @@ def blame(team_pre_utility, team_cur_utility):
     """
     Did the actor take an action that netatively impacted the team?
     i.e. did the action that the actor took
+    return: scale of team utility difference
     """
-    # TODO: change if the action simply benefited the team to if it was the best (when we actually have the team info
     # If the actor did anything to negatively impact the team, they are to blame
-    if team_cur_utility < team_pre_utility:
-        return True
-    return False
+    return team_cur_utility - team_pre_utility
 
 
 def intended_blame(actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utility):
