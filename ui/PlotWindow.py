@@ -64,13 +64,17 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         """
         Update the relevent dropdowns based on the selected query
         """
-        data_key = self.query_combo.currentText()
-        axis_values = sorted(self.query_data_dict[data_key].results.index.values)
-        pgh.update_combo(self.y_combo, axis_values)
-        pgh.update_combo(self.x_combo, axis_values)
-        axis_values.insert(0, "none")
-        pgh.update_combo(self.x_alias_combo, axis_values)
-        pgh.update_combo(self.group_combo, axis_values)
+        try:
+            data_key = self.query_combo.currentText()
+            axis_values = sorted(self.query_data_dict[data_key].results.index.values)
+            pgh.update_combo(self.y_combo, axis_values)
+            pgh.update_combo(self.x_combo, axis_values)
+            axis_values.insert(0, "none")
+            pgh.update_combo(self.x_alias_combo, axis_values)
+            pgh.update_combo(self.group_combo, axis_values)
+        except:
+            tb = traceback.format_exc()
+            print(tb)
 
     def plot_data(self):
         """
@@ -99,14 +103,16 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                         # if there is a group and also a stat groupby the x-axis and apply the stat to that data
                         data = getattr(data.groupby(data[self.x_combo.currentText()]), stat)()
                         data[self.x_combo.currentText()] = data.index
-                        name = f"{self.y_combo.currentText()}_{stat}_{self.query_combo.currentText()}"
+                        # name = f"{self.y_combo.currentText()}_{stat}_{self.query_combo.currentText()}"
+                        name = f"{self.y_combo.currentText()}_{stat}"
                         fig = self.set_figure(data, fig, plot_type, name)
                 else:
                     if stat not in ["none"]:
                         # if there is no group but a stat
                         data = getattr(data.groupby(data[self.x_combo.currentText()]), stat)()
                         data[self.x_combo.currentText()] = data.index
-                    name = f"{self.y_combo.currentText()}_{self.query_combo.currentText()}"
+                    # name = f"{self.y_combo.currentText()}_{self.query_combo.currentText()}"
+                    name = f"{self.y_combo.currentText()}"
                     fig = self.set_figure(data, fig, plot_type, name)
 
                 self.update_class_plot_info(fig, plot_type)
