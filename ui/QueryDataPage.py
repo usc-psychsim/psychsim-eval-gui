@@ -384,6 +384,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         pgh.update_combo(self.query_diff_1, self.query_data_dict.keys())
         pgh.update_combo(self.query_diff_2, self.query_data_dict.keys())
         pgh.update_combo(self.step_query_combo, self.query_data_dict.keys())
+        # emit the query_combo activated signal to populate the other dropdowns
+        self.sample_query_combo.activated.emit(0)
 
     def set_function_dropdown(self):
         """
