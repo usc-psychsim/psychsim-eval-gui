@@ -9,7 +9,7 @@ Known Bugs/issues
 
 - Query functions
     **Issue:**
-    Currently, the query functions lack some information about the actual simulation. Part of this problem is that the simulation is'nt
+    Currently, the query functions lack some information about the actual simulation. Part of this problem is that the simulation isn't
     completely defined / in a working state, or I didn't have enough information to complete the query funciton.
 
     The main issue with this is when looking at the query results (for example beliefs, or predicted actions) there are
@@ -18,16 +18,6 @@ Known Bugs/issues
 
     **How to fix:**
     Once the mapping information becomes available, the functions can be edited in *functions/query_functions.py*
-
-- Dropdown options
-    **Issue:**
-    Some dropdown selections have a cascade effect of setting other dropdowns, or making them enabled.
-    For example, selecting the data source to sample will populate the variable drop down with available varialbes in that source.
-    Sometimes, when these optiosn are initialised, there will be a text value but they haven't initialised the subsequent dropdowns.
-
-    **How to fix:**
-    I think this is because when they are set, they don't trigger an action. Probably the easiest thing to do in these cases is at the point where the dropdown is set,
-    emit an 'activated' action for the dropdown. This should then trigger any connected functions. (I connect them all to the activated signal)
 
 - Query info updating
     **Issue:**
@@ -85,16 +75,6 @@ Known Bugs/issues
 
 Nice To Haves
 =============
-- Diff table cell highlighting
-    **Issue:**
-    The DIFF function currently highlights an entire row with either red or blue if something in that row is different.
-    It would be good to highlight the individual cell where the difference occurs instead of the whole row, and keep the
-    row numbers on the left highlighted to indicate that something within that row has changed.
-
-    **How To Fix:**
-    I use difflib which does give information on where the diff occurs and have started to implement this in the
-    'get_diff_as_vector' function in ui/DiffResultsWindow.py. However, it is far from finished.
-
 - Diff variable selectinon
     **Issue:**
     Currently, the diff compares an entire results dataframe. It might be useful to just diff one variable of interest
