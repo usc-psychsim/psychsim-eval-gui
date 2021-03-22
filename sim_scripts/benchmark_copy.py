@@ -28,7 +28,7 @@ OUTPUT_DIR = 'output/benchmark'
 
 # params
 NUM_TRAJECTORIES = 1
-TRAJ_LENGTH = 25  # 15
+TRAJ_LENGTH = 7  # 15
 RATIONALITY = 1 / 0.1  # inverse temperature
 SELECTION = 'distribution'
 PRUNE_THRESHOLD = 5e-2  # 1e-2
@@ -41,20 +41,32 @@ MAP_NAME = 'FalconEasy'
 PLAYER_NAME = 'Player'
 FULL_OBS = True
 
+# REWARD_WEIGHTS = np.array([
+#     0.00114991739061451,  # Before Mid
+#     0.00114991739061451,  # After Mid
+#     -0.474848329193017,  # Loc Freq
+#     -0.0255842999734829,  # Triaged Green
+#     -0.0174803098286242,  # Triaged Gold
+#     -0.0769018292384294,  # See White
+#     0.00114991739061451,  # See Red
+#     0.0694136754932323,  # Move N
+#     -0.133319804174507,  # Move E
+#     -0.155331107056825,  # Move S
+#     -0.00589324767411008  # Move W
+# ])
 REWARD_WEIGHTS = np.array([
-    0,  # Before Mid
-    0,  # After Mid
-    0,  # Loc Freq
+    0.00114991739061451,  # Before Mid
+    0.00114991739061451,  # After Mid
+    -0.474848329193017,  # Loc Freq
     0.5,  # Triaged Green
-    0.5,  # Triaged Gold
-    0,  # See White
-    0,  # See Red
-    0,  # Move N
-    0,  # Move E
-    0,  # Move S
-    0  # Move W
+    0.2,  # Triaged Gold
+    -0.0769018292384294,  # See White
+    0.00114991739061451,  # See Red
+    0.0694136754932323,  # Move N
+    0.1,  # Move E
+    0.2,  # Move S
+    0.05  # Move W
 ])
-
 
 def _signal_traj_completion():
     logging.info('\tTrajectory generation complete.')
@@ -166,7 +178,7 @@ if __name__ == '__main__':
         map_table = default_maps[args.map_name]
         world, agent, observer, victims, world_map = make_single_player_world(
             PLAYER_NAME, map_table.init_loc, map_table.adjacency, map_table.victims,
-            False, FULL_OBS, create_observer=True)
+            False, FULL_OBS, create_observer=False)
 
         # agent params
         agent.setAttribute('rationality', args.rationality)
@@ -185,7 +197,7 @@ if __name__ == '__main__':
         debug = {'Player': {}}
         trajectories = generate_trajectories(
             agent, args.trajectories, args.length, threshold=args.prune, processes=args.processes, seed=args.seed,
-            verbose=True, debug=debug)
+            verbose=True, debug=debug, selection=args.selection)
 
         elapsed = timer() - start
         logging.info('(mean: {:.3f}s per trajectory, {:.3f}s per step)'.format(

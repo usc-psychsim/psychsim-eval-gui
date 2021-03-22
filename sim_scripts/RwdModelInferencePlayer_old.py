@@ -15,7 +15,7 @@ from model_learning.util.plot import plot_evolution
 from atomic.model_learning.parser import TrajectoryParser
 from atomic.definitions import victims, world_map
 
-from appraisal import appraisal_dimentions as ad
+from appraisal import appraisal_dimensions as ad
 
 __author__ = 'Pedro Sequeira'
 __email__ = 'pedrodbs@gmail.com'
@@ -28,7 +28,11 @@ __description__ = 'Perform reward model inference in the ASIST world based on hu
                   'belief over the models of the triaging agent via PsychSim inference. ' \
                   'A plot is show with the inference evolution.'
 
-DATA_FILE = '/Users/christopherturner/Documents/GLASGOW-MARSELLA/Data/ASU_2020_08/WithMissionTimer/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv'#'/home/chris/Documents/GLASGOW_MARSELLA/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv' #atomic/data/processed_ASIST_data_study_id_000001_condition_id_000002_trial_id_000010_messages.csv' #'data/glasgow/processed_20200724_Participant1_Cond1.csv'
+ # DATA_FILE = '/Users/christopherturner/Documents/GLASGOW-MARSELLA/Data/ASU_2020_08/WithMissionTimer/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv'#'/home/chris/Documents/GLASGOW_MARSELLA/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv' #atomic/data/processed_ASIST_data_study_id_000001_condition_id_000002_trial_id_000010_messages.csv' #'data/glasgow/processed_20200724_Participant1_Cond1.csv'
+# DATA_FILE = '/Users/christopherturner/Documents/GLASGOW-MARSELLA/fov_test.csv'#'/home/chris/Documents/GLASGOW_MARSELLA/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv' #atomic/data/processed_ASIST_data_study_id_000001_condition_id_000002_trial_id_000010_messages.csv' #'data/glasgow/processed_20200724_Participant1_Cond1.csv'
+DATA_FILE = '/Users/christopherturner/Documents/GLASGOW-MARSELLA/Data/ASU_2020_08/WithMissionTimer/processed_HSRData_TrialMessages_CondBtwn-TriageSignal_CondWin-FalconEasy-DynamicMap_Trial-57_Team-na_Member-30_Vers-3.csv'
+# DATA_FILE = '/Users/christopherturner/Documents/GLASGOW-MARSELLA/Data/ASU_2020_08/WithMissionTimer/processed_HSRData_TrialMessages_CondBtwn-TriageSignal_CondWin-FalconHard-StaticMap_Trial-89_Team-na_Member-41_Vers-3.csv'
+
 MAP = 'FalconEasy' #'sparky' #'falcon'
 
 YELLOW_VICTIM = 'Gold'
@@ -166,6 +170,9 @@ if __name__ == '__main__':
             player_cur_utility = player.getState("__REWARD__").domain()[0]
             player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility[m["name"]], player_cur_utility)
             player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility[m["name"]], player_cur_utility)
+            # player_appraisal.novelty = #TODO: figure out what the possible actions are (legal?) and how to rank them
+            # player_appraisal.accountable = ad.accountability(...) # TODO: figure out who should be the observer (maybe this doesn't work in single player?)
+            # player_appraisal.control = #TODO: figure out how to do the projected action stuff
             player_step_appraisal_info[step] = player_appraisal
 
         t = world.getState(WORLD, 'seconds', unique=True)

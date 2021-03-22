@@ -13,6 +13,9 @@ from model_learning.util.plot import plot_evolution
 from atomic.model_learning.parser import TrajectoryParser
 from atomic.definitions import victims, world_map
 
+
+from appraisal import appraisal_dimensions as ad
+
 __author__ = 'Pedro Sequeira'
 __email__ = 'pedrodbs@gmail.com'
 __description__ = 'Perform reward model inference in the ASIST world based on human player data.' \
@@ -24,7 +27,7 @@ __description__ = 'Perform reward model inference in the ASIST world based on hu
                   'belief over the models of the triaging agent via PsychSim inference. ' \
                   'A plot is show with the inference evolution.'
 
-DATA_FILE = '/home/chris/Documents/GLASGOW_MARSELLA/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv' #atomic/data/processed_ASIST_data_study_id_000001_condition_id_000002_trial_id_000010_messages.csv' #'data/glasgow/processed_20200724_Participant1_Cond1.csv'
+DATA_FILE = '/Users/christopherturner/Documents/GLASGOW-MARSELLA/Data/ASU_2020_08/WithMissionTimer/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv'#'/home/chris/Documents/GLASGOW_MARSELLA/processed_HSRData_TrialMessages_CondBtwn-NoTriageNoSignal_CondWin-FalconEasy-StaticMap_Trial-43_Team-na_Member-26_Vers-3.csv' #atomic/data/processed_ASIST_data_study_id_000001_condition_id_000002_trial_id_000010_messages.csv' #'data/glasgow/processed_20200724_Participant1_Cond1.csv'
 MAP = 'FalconEasy' #'sparky' #'falcon'
 
 YELLOW_VICTIM = 'Gold'
@@ -47,7 +50,7 @@ LOW_VAL = 10
 MEAN_VAL = (HIGH_VAL + LOW_VAL) / 2
 
 OUTPUT_DIR = 'output/reward-model-inference-data'
-DEBUG = True
+DEBUG = False#True
 SHOW = True
 INCLUDE_RANDOM_MODEL = False
 FULL_OBS = True  # False
@@ -129,11 +132,45 @@ if __name__ == '__main__':
 
 
     inference_data = []
-    NUM_STEPS = 2
+    NUM_STEPS = 14#len(aes)
     step = 0
+    player_step_appraisal_info = {} # TODO: figure out a better way to store this - maybe inherit a new agent class to store this info?
     while step < NUM_STEPS:
-        parser.runTimeless(world, step, step+1, 0, prune_threshold=PRUNE_THRESHOLD)
+        print(f"STEP: {step}")
+
+        observer_belief = observer.getBelief()
+        agent_beliefs = agent.getBelief()
+        agent_beliefs = next(iter(agent_beliefs.values()))
+        observer_belief = next(iter(observer_belief.values()))
+        player_loc_actual = world.getFeature(f"{agent.name}'s loc", agent.world.state)
+        player_loc_observer = world.getFeature(f"{agent.name}'s loc", observer_belief)
+        logging.info(f"Step: {step}, Player Location: {player_loc_actual}")
+
+        player_name = agent.name
+        player = agent#world.agents[player_name]
+
+        # get the pre-utility for each model
+        player_pre_utility = {}
+        player_reward = player.getReward() # NOTE: this is actually the reward function!!!
+        for m in player.models.keys():
+            player_pre_utility[m] = player.getState("__REWARD__").domain()[0] # we do [0] because we are assuming that the reward will always be just one number
+
+        #parser.runTimeless(world, step, step+1, 0, prune_threshold=PRUNE_THRESHOLD)
+        parser.runTimeless(world, step, len(parser.actions), len(parser.actions), permissive=True)
+        # parser.runTimeless(world, 0, 2, len(parser.actions), permissive=True)
         logging.info('Recorded {} state-action pairs'.format(len(parser.trajectory)))
+
+
+        for m in model_list:
+            # player_cur_utility = player.getReward(m)# this is actually the reward function!!
+            player_appraisal = ad.PlayerAppraisal()
+            player_cur_utility = player.getState("__REWARD__").domain()[0]
+            player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility[m["name"]], player_cur_utility)
+            player_appraisal.motivational_congruence = ad.motivational_congruence(player_pre_utility[m["name"]], player_cur_utility)
+            # player_appraisal.novelty = #TODO: figure out what the possible actions are (legal?) and how to rank them
+            # player_appraisal.accountable = ad.accountability(...) # TODO: figure out who should be the observer (maybe this doesn't work in single player?)
+            # player_appraisal.control = #TODO: figure out how to do the projected action stuff
+            player_step_appraisal_info[step] = player_appraisal
 
         t = world.getState(WORLD, 'seconds', unique=True)
         player_name = agent.name
@@ -144,7 +181,9 @@ if __name__ == '__main__':
         if len(beliefs) > 1:
             raise RuntimeError('Agent {} has {} possible models in true state'.format(observer.name, len(beliefs)))
         beliefs = next(iter(beliefs.values()))
+        world_state = agent.world.state
         player_model = world.getFeature(modelKey(player_name), beliefs)
+        player_loc = world.getFeature(f"{agent.name}'s loc", beliefs)
         for model in player_model.domain():
             entry = {'Timestep': t, 'Belief': player_model[model]}
             # Find root model (i.e., remove the auto-generated numbers from the name)
@@ -153,6 +192,9 @@ if __name__ == '__main__':
             entry['Model'] = model[len(player_name) + 1:]
             inference_data.append(entry)
         step = step+1
+    #------
+
+
 
     fig = px.line(inference_data, x='Timestep', y='Belief', color='Model', range_y=[0, 1],
                   title='Inference {}'.format(observer.name))

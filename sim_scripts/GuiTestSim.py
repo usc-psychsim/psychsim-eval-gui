@@ -6,8 +6,8 @@ Created on Wed Feb 19 14:35:40 2020
 """
 import sys
 print(sys.path)
-sys.path.insert(1, "../../../atomic")
-sys.path.insert(1, "../../../atomic_domain_definitions")
+sys.path.insert(1, "../../atomic")
+sys.path.insert(1, "../../atomic_domain_definitions")
 
 from psychsim.agent import ValueFunction
 from psychsim.world import World, WORLD
