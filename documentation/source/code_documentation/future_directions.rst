@@ -26,15 +26,6 @@ Known Bugs/issues
     **How to fix:**
     This should be fixed from the 'display_query' function in the ui/QueryDataPage.py file. I am not entirely sure how just yet but it probably is just a conditional somewhere.
 
-- Duplicate plot naming
-    **Issue:**
-    you can name two plots the same name. Plots are stored in a dictionary so only one key value pair will be saved. This will override your old plot.
-    If you delete the plot, one of the items will remain on the list but the key no longer exists in the dictionary
-
-    **How to fix:**
-    This is probably easy and just involves protecting against having two names the same on the list somehow. To be extra fancy, a new dialog with a message like
-    '<name> already exists!' could be shown to alert the user.
-
 - Plot stats
     **Issue1:**
     The stats are calculated for each value of the x-axis. and not across the x-axis. This means if you have multiple agents (or datapoints per x-axis)

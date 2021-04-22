@@ -26,6 +26,8 @@ class QueryDataDialog(QDialog, ui_queryDataView):
 
         self.set_pandas_model(model)
 
+
+
     def set_pandas_model(self, model):
         """
         Set the table model to handle pandas dataframes

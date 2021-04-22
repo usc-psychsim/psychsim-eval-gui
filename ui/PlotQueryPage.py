@@ -56,7 +56,7 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         """
         sending_window = self.sender().window()
         if plot:
-            new_key, accepted = SavePlotDialog.get_new_name()
+            new_key, accepted = SavePlotDialog.get_new_name(self.plot_data_dict.keys())
             if accepted:
                 self.plot_data_dict[new_key] = copy.deepcopy(plot)
                 item = QListWidgetItem(f"{new_key}")
