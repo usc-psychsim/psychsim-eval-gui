@@ -61,17 +61,6 @@ This should be fixed from the ‘display_query’ function in the ui/QueryDataPa
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>Duplicate plot naming</dt>
-<dd><p class="first"><strong>Issue:</strong>
-you can name two plots the same name. Plots are stored in a dictionary so only one key value pair will be saved. This will override your old plot.
-If you delete the plot, one of the items will remain on the list but the key no longer exists in the dictionary</p>
-<p class="last"><strong>How to fix:</strong>
-This is probably easy and just involves protecting against having two names the same on the list somehow. To be extra fancy, a new dialog with a message like
-‘&lt;name&gt; already exists!’ could be shown to alert the user.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
 <dt>Plot stats</dt>
 <dd><p class="first"><strong>Issue1:</strong>
 The stats are calculated for each value of the x-axis. and not across the x-axis. This means if you have multiple agents (or datapoints per x-axis)
