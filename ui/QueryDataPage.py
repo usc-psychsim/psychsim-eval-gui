@@ -166,8 +166,15 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             if not os.path.exists(output_directory):
                 os.makedirs(output_directory)
             output_path = os.path.join(output_directory, f"{query_id}_{dt_string}.csv")
-            self.query_data_dict[query_id].results.to_csv(output_path)
-            self.print_query_output(f"{query_id} saved to: {output_path}", "black")
+            output_name = QFileDialog.getSaveFileName(self,
+                                                      self.tr('Save File'),
+                                                      output_path,
+                                                      self.tr("pickle (*.pickle)"))[0]
+            if output_name:
+                if not QFileInfo(output_name).suffix():
+                    output_name += ".csv"
+                self.query_data_dict[query_id].results.to_csv(output_name)
+                self.print_query_output(f"{query_id} saved to: {output_name}", "black")
 
     def delete_query(self):
         """
