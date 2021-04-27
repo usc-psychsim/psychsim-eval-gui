@@ -87,18 +87,3 @@ Nice To Haves
     There needs to be an option to sample on the first step (or first of any continuous variable) that can be checked.
     The sample group would then need to be determined on that first step (or other first value) and the resulting group sampled over the whole dataset.
     Sampling is currently all done in the ui/QueryDataPage.py file in the 'sample_by_range' and 'sample_by_category' functions.
-
-- Saving queries to csv
-    **Issue:**
-    Currently, the queries are saved to csv to the default *sim_output* folder. This isn't flexible, and the only feedback is in the text area which might be missed.
-    It would be useful to pull up a save file dialog here to allow saving anywhere, and also give the user feedback as to if it is saved.
-
-    **How to fix:**
-    The save function is located in the *save_csv_query* of *ui/QueryDataPage.py*
-
-- Loading saved query results
-    **Issue:**
-    Currently, there is the ability to save query results as a csv. There isn't however, the ability to load saved query results.
-
-    **How to fix:**
-    This feature would likely be added in the ui/QueryDataPage.py file.

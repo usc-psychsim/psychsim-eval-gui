@@ -551,6 +551,20 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="save_pickle_query_button">
+            <property name="text">
+             <string>Save query as pickle</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="load_pickle_query_button">
+            <property name="text">
+             <string>Load query from pickle</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer_2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>

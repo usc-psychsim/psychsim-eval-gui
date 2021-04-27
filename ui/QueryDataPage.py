@@ -6,6 +6,7 @@ import traceback
 import inspect
 import os
 import re
+import pickle
 import sys
 import copy
 import importlib.util
@@ -56,6 +57,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.view_query_button.clicked.connect(self.view_query)
         self.view_query_combo.activated.connect(self.update_query_info)
         self.save_csv_query_button.clicked.connect(self.save_csv_query)
+        self.save_pickle_query_button.clicked.connect(self.save_pickle_query)
+        self.load_pickle_query_button.clicked.connect(self.load_pickle_query)
         self.delete_query_buton.clicked.connect(self.delete_query)
         self.diff_query_button.clicked.connect(self.diff_query)
         self.query_step_view_button.clicked.connect(self.show_step_through_window)
@@ -169,12 +172,57 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             output_name = QFileDialog.getSaveFileName(self,
                                                       self.tr('Save File'),
                                                       output_path,
-                                                      self.tr("pickle (*.pickle)"))[0]
+                                                      self.tr("csv (*.csv)"))[0]
             if output_name:
                 if not QFileInfo(output_name).suffix():
                     output_name += ".csv"
                 self.query_data_dict[query_id].results.to_csv(output_name)
                 self.print_query_output(f"{query_id} saved to: {output_name}", "black")
+
+    def save_pickle_query(self):
+        """
+        Write the query results as a pickle file to disk
+        """
+        query_id = self.view_query_combo.currentText()
+        if query_id in self.query_data_dict.keys():
+            dt_string, _ = pgh.get_time_stamp()
+            output_directory = 'sim_output'
+            if not os.path.exists(output_directory):
+                os.makedirs(output_directory)
+            output_path = os.path.join(output_directory, f"{query_id}_{dt_string}.pickle")
+            output_name = QFileDialog.getSaveFileName(self,
+                                                      self.tr('Save File'),
+                                                      output_path,
+                                                      self.tr("pickle (*.pickle)"))[0]
+            if output_name:
+                if not QFileInfo(output_name).suffix():
+                    output_name += ".pickle"
+                pickle.dump(self.query_data_dict[query_id], open(output_name, "wb"))
+                self.print_query_output(f"{query_id} saved to: {output_name}", "black")
+
+    def load_pickle_query(self):
+        """
+        load previously saved pickled query data
+        """
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(self,
+                                                  "Select data file",
+                                                  "",
+                                                  "query data (*.pickle)",
+                                                  options=options)
+        if fileName:
+            # load the psychsim libs to read the pickle objects
+            # self.sim_info_page.load_sim()
+            with open(fileName, 'rb') as f:
+                loaded_query = pickle.load(f)
+                if type(loaded_query) == pgh.PsySimQuery:
+                    self.update_query_data(loaded_query.id, loaded_query)
+                    self.print_query_output(f"{loaded_query.id} loaded", "black")
+                else:
+                    self.print_query_output(f"{fileName} is not a query", "red")
+
+
+
 
     def delete_query(self):
         """
