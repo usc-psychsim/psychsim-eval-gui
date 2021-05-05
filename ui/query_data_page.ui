@@ -273,6 +273,9 @@
               </widget>
              </item>
              <item>
+              <widget class="QTableWidget" name="query_param_table"/>
+             </item>
+             <item>
               <widget class="QFrame" name="frame_6">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -287,37 +290,10 @@
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_3">
-                <item row="1" column="3">
-                 <widget class="QComboBox" name="horizon_combo">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QLabel" name="label_9">
-                  <property name="text">
-                   <string>cycle</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="0" column="3">
                  <widget class="QLabel" name="label_5">
                   <property name="text">
                    <string>horizon</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="4">
-                 <widget class="QLabel" name="label_6">
-                  <property name="text">
-                   <string>state</string>
                   </property>
                  </widget>
                 </item>
@@ -328,10 +304,17 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0">
-                 <widget class="QComboBox" name="agent_combo">
+                <item row="0" column="4">
+                 <widget class="QLabel" name="label_6">
+                  <property name="text">
+                   <string>state</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="4">
+                 <widget class="QComboBox" name="state_combo">
                   <property name="enabled">
-                   <bool>true</bool>
+                   <bool>false</bool>
                   </property>
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -354,8 +337,8 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="4">
-                 <widget class="QComboBox" name="state_combo">
+                <item row="1" column="3">
+                 <widget class="QComboBox" name="horizon_combo">
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
@@ -378,6 +361,26 @@
                  <widget class="QComboBox" name="cycle_combo">
                   <property name="enabled">
                    <bool>false</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QLabel" name="label_9">
+                  <property name="text">
+                   <string>cycle</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QComboBox" name="agent_combo">
+                  <property name="enabled">
+                   <bool>true</bool>
                   </property>
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

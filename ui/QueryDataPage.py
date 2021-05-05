@@ -13,6 +13,7 @@ import importlib.util
 import pandas as pd
 import numpy as np
 from PyQt5.Qt import QStandardItemModel
+from functools import partial
 
 import psychsim_gui_helpers as pgh
 from functions.PsychSimQueryFunctions import PsychSimQueryFunctions
@@ -25,6 +26,7 @@ from ui.StepThroughQueryWindow import StepThroughResultsWindow
 from ui.DeleteAreYouSureDialog import DeleteAreYouSure
 from ui.QueryDataDialog import QueryDataDialog
 from ui.QueryDataTreeDialog import QueryDataTreeDialog
+from ui.SetParamDialog import SetParamDialog
 
 query_data_page_file = os.path.join("ui", "query_data_page.ui")
 ui_queryDataPage, QtBaseClass = uic.loadUiType(query_data_page_file)
@@ -466,6 +468,71 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         function = getattr(self.psychsim_query, function_name)
         param_list = inspect.getfullargspec(function)
         self.set_params(param_list)
+
+        # ---do the generic param stuff---
+        # clear the table
+        self.query_param_table.setRowCount(0)
+
+        # Set table cols
+        columns = ['name', 'set', 'expected type', 'value/view']
+        self.query_param_table.setColumnCount(len(columns))
+        self.query_param_table.setHorizontalHeaderLabels(columns)
+
+        # add row to the table
+        # get names
+        param_names = param_list.args
+        if 'self' in param_names:
+            param_names.remove('self')
+
+        for param in param_names:
+            new_row = {'name': param,
+                       'set': self._create_param_table_button("test_arg_val", "SET", self.set_param),
+                       'expected type': "...",
+                       'value': ".. Set type: set value/name .. "}
+
+            if param in param_list.annotations:
+                new_row["expected type"] = param_list.annotations[param].__name__
+
+            self._add_row_to_table(self.query_param_table, new_row.values())
+
+    def _create_param_table_button(self, arg_val, button_label, button_function):
+        """
+        TODO: refactor this out to helpers (it is also in the PsychSimGuiMainWindow.py)
+        Create the button to save data in the data table
+        :param data_id:
+        :return:
+        """
+        btn = QPushButton(self.query_param_table)
+        btn.setText(button_label)
+        btn.clicked.connect(partial(button_function, arg_val))
+        return btn
+
+    def _add_row_to_table(self, table, row):
+        """
+        TODO: refactor this out to helpers (it is also in the LoadedDataWindow.py)
+        Add a row to the data table
+        :param row: list of items to add to table
+        """
+        rowPosition = table.rowCount()
+        table.insertRow(rowPosition)
+        index = 0
+        for item in row:
+            if type(item) == QPushButton:
+                table.setCellWidget(rowPosition, index, item)
+            else:
+                table.setItem(rowPosition, index, QTableWidgetItem(item))
+            index = index + 1
+
+    def set_param(self, arg_val="test"):
+
+        self.print_query_output("SET THE PARAM!!", "red")
+        try:
+            are_you_sure_dialog = SetParamDialog(data_dict=self.sim_data_dict, query_dict=self.query_data_dict)
+            # are_you_sure_dialog.query_name.setText(query_id)
+            result = are_you_sure_dialog.exec_()
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
     def set_params(self, param_list):
         """
