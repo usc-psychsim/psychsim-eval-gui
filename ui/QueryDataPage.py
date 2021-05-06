@@ -80,6 +80,12 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Execute the query with the given params. The query function is defined in functions/PsychSimQueryFunctions.py
         """
+        #--------------
+        #TODO:
+        # Get the params for the function
+        # Display in the output if the params match the expected types or not (or if no type is defined)
+        # execute the query with the appropriate params
+        #-----------------
         # get the query function
         query_function = self.function_combo.currentText()
         # get the params
@@ -484,11 +490,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         if 'self' in param_names:
             param_names.remove('self')
 
-        for param in param_names:
+        for row_number, param in enumerate(param_names):
             new_row = {'name': param,
-                       'set': self._create_param_table_button("test_arg_val", "SET", self.set_param),
+                       'set': self._create_param_table_button(row_number, "SET", self.set_param),
                        'expected type': "...",
-                       'value': ".. Set type: set value/name .. "}
+                       'value': "... "}
 
             if param in param_list.annotations:
                 new_row["expected type"] = param_list.annotations[param].__name__
@@ -523,13 +529,17 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 table.setItem(rowPosition, index, QTableWidgetItem(item))
             index = index + 1
 
-    def set_param(self, arg_val="test"):
-
+    def set_param(self, button_row):
+        set_button = self.sender()
         self.print_query_output("SET THE PARAM!!", "red")
         try:
             are_you_sure_dialog = SetParamDialog(data_dict=self.sim_data_dict, query_dict=self.query_data_dict)
             # are_you_sure_dialog.query_name.setText(query_id)
             result = are_you_sure_dialog.exec_()
+            if result:
+                param = are_you_sure_dialog.selected_param_value.text()
+                item = QTableWidgetItem(param)   # create a new Item
+                self.query_param_table.setItem(button_row,3, item) #TODO: how to get the right row
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")

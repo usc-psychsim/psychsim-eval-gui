@@ -100,7 +100,7 @@ class PsychSimQueryFunctions:
                                 agent_dict['agent'].append(agent)
 
         output_data = pd.DataFrame.from_dict(agent_dict)
-        return TABLE_TYPE, output_data
+        return TABLE_TYPE, output_data.T
 
     def get_actions(self, data=None, agent=None, *args, **kwargs):
         """
@@ -120,7 +120,7 @@ class PsychSimQueryFunctions:
             print(tb)
 
         output_data = pd.DataFrame.from_dict(actions_dict)
-        return TABLE_TYPE, output_data
+        return TABLE_TYPE, output_data.T
 
     # def get_individual_agent_beliefs_numeric(self, data=None, agent=None, *args, **kwargs):
     #     """
