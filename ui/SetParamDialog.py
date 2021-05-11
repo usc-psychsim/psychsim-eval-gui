@@ -108,6 +108,10 @@ class SetParamDialog(QDialog, ui_obj):
         val = self.query_dict[param_name].results.loc[variable, :]
         pgh.update_combo(self.sel_val_combo, val.tolist())
 
+    def set_title(self, function_name, param_name):
+        self.setWindowTitle(f"Set \"{param_name}\" param for {function_name}")
+        self.function_name_label.setText(f"Function to set: {function_name}")
+        self.param_name_label.setText(f"Param to set: {param_name}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

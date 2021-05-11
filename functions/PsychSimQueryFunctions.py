@@ -61,9 +61,10 @@ class PsychSimQueryFunctions:
         :return: Tree data
         """
         try:
-            action_of_interest = data.data[action]["TRAJECTORY"][2][agent]
-            taken_action = str(data.data[action]["TRAJECTORY"][1]).split('\t')[1]
-            world = data.data[action]["TRAJECTORY"][0]
+            step = int(action.split(":")[0])
+            action_of_interest = data.data[step]["TRAJECTORY"][2][agent]
+            taken_action = str(data.data[step]["TRAJECTORY"][1]).split('\t')[1]
+            world = data.data[step]["TRAJECTORY"][0]
             output_data = pd.DataFrame()
             for la_key, legal_action in next(iter(action_of_interest["__decision__"].items()))[1]["V"].items():
                 for idx, hyp_action_set in enumerate(legal_action['__S__']):
@@ -115,7 +116,7 @@ class PsychSimQueryFunctions:
             for step, step_data in data.data.items():
                 actions_dict['step'].append(step)
                 action = str(step_data['TRAJECTORY'][1]).split('\t')[1]
-                actions_dict['action'].append(action)
+                actions_dict['action'].append(f"{step}:{action}")
         except:
             tb = traceback.format_exc()
             print(tb)

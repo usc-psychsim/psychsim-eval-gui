@@ -77,7 +77,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.set_sample_function_dropdown(["range", "category"])
 
     def _get_param_value(self, param_type, param_name):
-        if param_type == str:
+        if param_type == "str":
             return param_name
         elif param_type == pgh.PsychSimRun.__name__:
             return self.sim_data_dict[param_name]
@@ -105,10 +105,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 params[param_name] = self._get_param_value(param_type, param_value)
                 #TODO:
                 # Display in the output if the params match the expected types or not (or if no type is defined)
-# d = dict(p1=1, p2=2)
-# def f2(p1,p2):
-#     print p1, p2
-# f2(**d)
+
         #-----------------
         # get the query function
         query_function = self.function_combo.currentText()
@@ -561,6 +558,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         try:
             set_param_dialog = SetParamDialog(data_dict=self.sim_data_dict, query_dict=self.query_data_dict)
             # are_you_sure_dialog.query_name.setText(query_id)
+            param_name = self.query_param_table.item(button_row, 0).text()
+            function_name = self.function_combo.currentText()
+            set_param_dialog.set_title(function_name, param_name)
             result = set_param_dialog.exec_()
             if result:
                 param = set_param_dialog.selected_param_value.text()
