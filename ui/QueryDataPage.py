@@ -76,15 +76,39 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
         self.set_sample_function_dropdown(["range", "category"])
 
+    def _get_param_value(self, param_type, param_name):
+        if param_type == str:
+            return param_name
+        elif param_type == pgh.PsychSimRun.__name__:
+            return self.sim_data_dict[param_name]
+        elif param_type == pgh.PsySimQuery.__name__:
+            return self.query_data_dict[param_name]
+
     def execute_query(self):
         """
         Execute the query with the given params. The query function is defined in functions/PsychSimQueryFunctions.py
         """
         #--------------
-        #TODO:
         # Get the params for the function
-        # Display in the output if the params match the expected types or not (or if no type is defined)
-        # execute the query with the appropriate params
+        # no_params = self.query_param_table.rowCount()
+        # param_values = []
+        # param_names = []
+        # param_types = []
+        params = {}
+        for row in range(self.query_param_table.rowCount()):
+            _item = self.query_param_table.item(row, 3)
+            if _item:
+                # param_values.append(self.query_param_table.item(row, 3).text())
+                param_name = self.query_param_table.item(row, 0).text()
+                param_type = self.query_param_table.item(row, 3).text()
+                param_value = self.query_param_table.item(row, 4).text()
+                params[param_name] = self._get_param_value(param_type, param_value)
+                #TODO:
+                # Display in the output if the params match the expected types or not (or if no type is defined)
+# d = dict(p1=1, p2=2)
+# def f2(p1,p2):
+#     print p1, p2
+# f2(**d)
         #-----------------
         # get the query function
         query_function = self.function_combo.currentText()
@@ -94,8 +118,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         action_step = self.action_combo.currentData()  # This is actually the step value as it is easier to access the data by step rather than action
         data_id = self.data_combo.currentText()
         try:
-            query_result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
-                                                                  agent=agent, action=action_step, state=state)
+            # query_result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
+            #                                                       agent=agent, action=action_step, state=state)
+            query_result = getattr(self.psychsim_query, query_function)(**params)
             result_type = query_result[0]
             result = query_result[1]
             # result = result.apply(pd.to_numeric,
@@ -480,7 +505,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_param_table.setRowCount(0)
 
         # Set table cols
-        columns = ['name', 'set', 'expected type', 'value/view']
+        columns = ['name', 'set', 'expected type', 'received type', 'value']
         self.query_param_table.setColumnCount(len(columns))
         self.query_param_table.setHorizontalHeaderLabels(columns)
 
@@ -494,6 +519,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             new_row = {'name': param,
                        'set': self._create_param_table_button(row_number, "SET", self.set_param),
                        'expected type': "...",
+                       'received type': "...",
                        'value': "... "}
 
             if param in param_list.annotations:
@@ -533,13 +559,18 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         set_button = self.sender()
         self.print_query_output("SET THE PARAM!!", "red")
         try:
-            are_you_sure_dialog = SetParamDialog(data_dict=self.sim_data_dict, query_dict=self.query_data_dict)
+            set_param_dialog = SetParamDialog(data_dict=self.sim_data_dict, query_dict=self.query_data_dict)
             # are_you_sure_dialog.query_name.setText(query_id)
-            result = are_you_sure_dialog.exec_()
+            result = set_param_dialog.exec_()
             if result:
-                param = are_you_sure_dialog.selected_param_value.text()
-                item = QTableWidgetItem(param)   # create a new Item
-                self.query_param_table.setItem(button_row,3, item) #TODO: how to get the right row
+                param = set_param_dialog.selected_param_value.text()
+                param_type = set_param_dialog.param_type
+                param_val = set_param_dialog.param_val
+                # param = are_you_sure_dialog.param_val
+                name_item = QTableWidgetItem(param_type)   # create a new Item
+                self.query_param_table.setItem(button_row,3, name_item) #TODO: should the actual param be stored here, or the string of the type and the name?
+                name_item = QTableWidgetItem(param_val)   # create a new Item
+                self.query_param_table.setItem(button_row,4, name_item)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")

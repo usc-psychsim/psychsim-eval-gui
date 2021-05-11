@@ -83,21 +83,22 @@ class PsychSimQueryFunctions:
         except KeyError as e:
             print(f"No key data for {e}")
 
-    def get_agents(self, *args, **kwargs):
+    def get_agents(self, data: pd.DataFrame=None, *args, **kwargs):
         """
         get list of agents in the data. Data must be a PsychSimRun class
         :return: Dataframe containing the agents
         """
         agent_dict = dict(agent=[])
-        for key, value in kwargs.items():
-            if key == "data":
-                for step_data in value.data.values():
-                    if type(step_data['TRAJECTORY'][0].agents) == dict:
-                    # if type(step_data['AGENT_STATE']) == dict:
-                    #     for agent in list(step_data['AGENT_STATE'].keys()):
-                        for agent in step_data['TRAJECTORY'][0].agents.keys():
-                            if agent not in agent_dict['agent']:
-                                agent_dict['agent'].append(agent)
+        # for key, value in kwargs.items():
+        #     if key == "data":
+        if data:
+            for step_data in data.data.values():
+                if type(step_data['TRAJECTORY'][0].agents) == dict:
+                # if type(step_data['AGENT_STATE']) == dict:
+                #     for agent in list(step_data['AGENT_STATE'].keys()):
+                    for agent in step_data['TRAJECTORY'][0].agents.keys():
+                        if agent not in agent_dict['agent']:
+                            agent_dict['agent'].append(agent)
 
         output_data = pd.DataFrame.from_dict(agent_dict)
         return TABLE_TYPE, output_data.T

@@ -14,6 +14,8 @@ ui_obj, QtBaseClass = uic.loadUiType(ui_file)
 class SetParamDialog(QDialog, ui_obj):
     """
     Dialog to ask the user if they are sure about deleting a query
+    TODO:
+        refactor this - i think storing the params as names, then getting the params later might be a round about way
     """
     def __init__(self, data_dict=None, query_dict=None):
         super(SetParamDialog, self).__init__()
@@ -34,6 +36,10 @@ class SetParamDialog(QDialog, ui_obj):
 
         self.data_dict = data_dict
         self.query_dict = query_dict
+
+        self.param_type = None
+        self.param_val = None
+        self.param_name = None
 
     def populate_combo(self):
         radioButton = self.sender()
@@ -63,6 +69,8 @@ class SetParamDialog(QDialog, ui_obj):
         if result:
             param_name = select_string_dialog.selected_string
             self.selected_param_value.setText(f"{type(param_name).__name__}:{param_name}")
+            self.param_type = type(param_name).__name__
+            self.param_val = param_name
 
     def use_selected(self):
         radioButton = self.sender()
@@ -70,12 +78,16 @@ class SetParamDialog(QDialog, ui_obj):
             # if it is sel_obj then just pass the name of the object (to pass the whole object as a param)
             # if it is sel_str then just pass the string
             self.selected_param_value.setText(f"{type(self.selected_val).__name__}: {self.selected_val}")
+            self.param_type = type(self.selected_val).__name__
+            self.param_val = self.selected_val
 
     def get_param(self):
         # todo: refactor this
         param_name = self.sender().currentText()
         if self.select_data_radio.isChecked():
             self.selected_param_value.setText(f"{type(self.data_dict[param_name]).__name__}:{param_name}")
+            self.param_type = type(self.data_dict[param_name]).__name__
+            self.param_val = param_name
         elif self.select_query_radio.isChecked():
             # populate the sel_var_combo with cols
             variables = self.query_dict[param_name].results.index.values
@@ -85,6 +97,8 @@ class SetParamDialog(QDialog, ui_obj):
         param_name = self.sender().currentText()
         if self.select_query_radio.isChecked():
             self.selected_param_value.setText(f"{type(param_name).__name__}:{param_name}")
+            self.param_type = type(param_name).__name__
+            self.param_val = param_name
 
 
     def get_value_from_variable(self):
