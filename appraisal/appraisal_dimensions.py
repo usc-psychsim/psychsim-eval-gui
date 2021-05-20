@@ -120,7 +120,7 @@ def blame2(action, player_decision):
     return False
 
 
-def control(player_decision):
+def control(player_decision, player):
     """
     This is a probability. For each predicted action that delivers a positive utility change, sum the probabilities.
     that is the control
@@ -129,7 +129,8 @@ def control(player_decision):
     player_control = 0
     for action, predictions in player_decision['V'].items():
         if predictions['__EV__'] > 0:
-            player_control = player_control + player_decision['action'][action]
+            # player_control = player_control + player_decision['action'][action]
+            player_control = player_control + player.getState('__REWARD__').max()
     return player_control
 
 

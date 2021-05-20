@@ -16,7 +16,7 @@ from PyQt5.Qt import QStandardItemModel
 from functools import partial
 
 import psychsim_gui_helpers as pgh
-from functions.PsychSimQueryFunctions import PsychSimQueryFunctions
+from functions.PsychSimQueryFunctions2 import PsychSimQueryFunctions
 
 from ui.PandasModel import PandasModel, TreeModel
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
