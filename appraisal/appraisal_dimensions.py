@@ -62,7 +62,7 @@ def motivational_congruence(pre_utility, cur_utility):
 
 def blame(team_pre_utility, team_cur_utility):
     """
-    Did the actor take an action that netatively impacted the team?
+    Did the actor take an action that negatively impacted the team?
     i.e. did the action that the actor took
     return: scale of team utility difference
 

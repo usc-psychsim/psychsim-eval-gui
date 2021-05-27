@@ -130,7 +130,7 @@ class ForwardPlanningTom:
 
     def run_step(self):
 
-        result = {'Agent 1': {}, 'Agent 2': {}}
+        result = {self.agent1.name:  {}, self.agent2.name: {}}
         # decision per step (1 per agent): cooperate or defect?
         step = self.world.step(debug=result)
         for i in range(len(self.agents)):

@@ -20,7 +20,7 @@ __description__ = 'Example of using theory-of-mind in a game-theory scenario inv
                   'Both agents should choose the "go straight" action which is rationally optimal, independently of ' \
                   'the other agent\'s action.'
 
-NUM_STEPS = 3
+NUM_STEPS = 10
 TIEBREAK = 'random'  # when values of decisions are the same, choose randomly
 
 # decision labels
@@ -117,7 +117,7 @@ class GameTheoryTom:
 
 if __name__ == "__main__":
     sim = GameTheoryTom()
-    for step in range(10):
+    for step in range(NUM_STEPS):
         logging.info('====================================')
         logging.info(f'Step {step}')
         print(step)

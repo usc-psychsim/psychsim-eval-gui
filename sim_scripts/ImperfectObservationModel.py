@@ -20,7 +20,7 @@ __description__ = 'Example of setting a incorrect belief over another agent\'s f
                   'this way it will receive what it really needs. This simulates hoarding behavior under false beliefs.'
 
 # parameters
-NUM_STEPS = 4
+# NUM_STEPS = 4
 HORIZON = 2
 
 DEBUG = False
@@ -78,7 +78,7 @@ class ImperfectObservationModel:
         # this simulates over-stock cost, best is to receive max of 5, more than this has costs
         self.ag_consumer.setReward(
             makeTree({'if': thresholdRow(self.var_rcv_amnt, 5),
-                      True: multi_reward_matrix(self.ag_consumer, {CONSTANT: 10, self.var_rcv_amnt: -1}),
+                      True: multi_reward_matrix(self.ag_consumer, {CONSTANT: 10, self.var_rcv_amnt: -2}),
                       False: multi_reward_matrix(self.ag_consumer, {self.var_rcv_amnt: 1})}),
             1)
 
@@ -95,13 +95,14 @@ class ImperfectObservationModel:
         result = {'Consumer': {}, 'Producer': {}}
         step = self.world.step(debug=result)
         reward = self.ag_consumer.reward()
+        logging.info('action:\t\t\t\t{}'.format(str(self.world.getFeature(f"{self.ag_consumer.name}'s __ACTION__")).split("\t")[1]))
         logging.info('Half capacity:\t\t{}'.format(self.world.getValue(self.var_half_cap)))
         logging.info('Asked amount:\t\t{}'.format(self.world.getValue(self.var_ask_amnt)))
         logging.info('Received amount:\t{}'.format(self.world.getValue(self.var_rcv_amnt)))
         logging.info('Consumer reward:\t{}'.format(reward))
         self.total_rwd += reward
 
-        logging.info('________________________________')
+        logging.info('____________________________________')
         # world.explain(step, level=2)# todo step does not provide outcomes anymore
 
         return_result = {"WORLD": self.world,
