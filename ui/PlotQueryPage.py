@@ -71,7 +71,6 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
             self.test_data_dict = dict(iris=px.data.iris().T, wind=px.data.wind().T, gapminder=px.data.gapminder().T)
             for key, data in self.test_data_dict.items():
                 self.query_data_dict[key] = pgh.PsySimQuery(id=key,
-                                                            data_id=key,
                                                             params=[],
                                                             function="test",
                                                             result_type="table",

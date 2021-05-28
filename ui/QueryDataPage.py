@@ -88,12 +88,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Execute the query with the given params. The query function is defined in functions/PsychSimQueryFunctions.py
         """
-        #--------------
-        # Get the params for the function
-        # no_params = self.query_param_table.rowCount()
-        # param_values = []
-        # param_names = []
-        # param_types = []
         params = {}
         for row in range(self.query_param_table.rowCount()):
             _item = self.query_param_table.item(row, 3)
@@ -105,26 +99,16 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 params[param_name] = self._get_param_value(param_type, param_value)
                 #TODO:
                 # Display in the output if the params match the expected types or not (or if no type is defined)
-
-        #-----------------
-        # get the query function
         query_function = self.function_combo.currentText()
-        # get the params
-        agent = self.agent_combo.currentText()
-        state = self.state_combo.currentText()
-        action_step = self.action_combo.currentData()  # This is actually the step value as it is easier to access the data by step rather than action
-        data_id = self.data_combo.currentText()
         try:
-            # query_result = getattr(self.psychsim_query, query_function)(data=self.sim_data_dict[data_id], data_id=data_id,
-            #                                                       agent=agent, action=action_step, state=state)
             query_result = getattr(self.psychsim_query, query_function)(**params)
             result_type = query_result[0]
             result = query_result[1]
             # result = result.apply(pd.to_numeric,
             #                       errors='ignore')  # convert the resulting dataframe to numeric where possible
-            self.print_query_output(f"results for {query_function} on {self.data_combo.currentText()}:")
+            self.print_query_output(f"results for {query_function}:")
             self.print_query_output(str(result))
-            new_query = self.create_new_query_object(query_function, data_id, result, result_type=result_type)
+            new_query = self.create_new_query_object(query_function, params, result, result_type=result_type)
             self.update_query_data(new_query.id, new_query)
             self.display_query(new_query.id)
         except:
@@ -140,7 +124,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_data_dict[query_id] = query_data
         self.set_query_list_dropdown()
 
-    def create_new_query_object(self, query_function, data_id, query_data, result_type="table", query_id=None):
+    def create_new_query_object(self, query_function, params, query_data, result_type="table", query_id=None):
         """
         Create a new query object
         :param query_function: (str) name of query function
@@ -150,8 +134,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         dt_string, run_date = pgh.get_time_stamp()
         if not query_id:
-            query_id = f"{query_function}_{data_id}_{dt_string}"
-        return pgh.PsySimQuery(id=query_id, data_id=data_id, params=[], function=query_function,
+            query_id = f"{query_function}_{dt_string}"
+        return pgh.PsySimQuery(id=query_id, params=params, function=query_function,
                                results=query_data, result_type=result_type)
 
     def clear_query_info(self):
@@ -175,13 +159,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         selected_query_id = self.view_query_combo.currentText()
         selected_query = self.query_data_dict[selected_query_id]
         try:
-            if selected_query.data_id in self.sim_data_dict.keys():
-                selected_query_asc_data = self.sim_data_dict[selected_query.data_id]
-                self.sim_file_label.setText(selected_query_asc_data.sim_file)
-            else:
-                self.sim_file_label.setText("...")
+            self.sim_file_label.setText("...")
             self.query_name_label.setText(selected_query.id)
-            self.data_id_label.setText(selected_query.data_id)
             self.function_label.setText(selected_query.function)
             self.is_diff_label.setText(str(selected_query.diff_query))
         except:
@@ -251,13 +230,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 else:
                     self.print_query_output(f"{fileName} is not a query", "red")
 
-
-
-
     def delete_query(self):
         """
         Show dialog and remove the selected query from the main window query data dictionary if selected
         """
+        # TODO: fix bug that crashes program if all queries are deleted and try to delete again
         query_id = self.view_query_combo.currentText()
         try:
             if query_id in self.query_data_dict.keys():
@@ -495,7 +472,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         function_name = self.function_combo.currentText()
         function = getattr(self.psychsim_query, function_name)
         param_list = inspect.getfullargspec(function)
-        self.set_params(param_list)
 
         # ---do the generic param stuff---
         # clear the table
@@ -574,90 +550,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
-
-    def set_params(self, param_list):
-        """
-        Enable the params on the gui according to the param_list
-        :param param_list: list of parameters to enable
-        """
-        param_combo_boxes = dict(agent=self.agent_combo,
-                                 action=self.action_combo,
-                                 cycle=self.cycle_combo,
-                                 horizon=self.horizon_combo,
-                                 state=self.state_combo)
-
-        for name, combo in param_combo_boxes.items():
-            # 'agent' is the highest param in the heriachy so set this one first. set others after if necessesary
-            if "agent" in param_list.args:
-                self.set_agent_dropdown(param_list.args)
-            else:
-                combo.setEnabled(False)
-                combo.clear()
-
-    def set_agent_dropdown(self, param_list):
-        """
-        Set the agent dropdown based on the data
-        :param param_list: list of params that should be activated
-        """
-        self.agent_combo.setEnabled(True)
-        try:
-            data_id = self.data_combo.currentText()
-            if data_id:
-                _, agents = self.psychsim_query.get_agents(data=self.sim_data_dict[data_id], data_id=data_id)
-                self.agent_combo.clear()
-                self.agent_combo.addItems(agents['agent'].tolist())
-            self.set_action_dropdown(param_list)
-        except:
-            tb = traceback.format_exc()
-            self.print_query_output(tb, "red")
-
-    def set_action_dropdown(self, param_list):
-        """
-        Set the action dropdown with actions from the selected agent
-        :param param_list: list of params that should be activated
-        """
-        if "action" in param_list:
-            self.action_combo.setEnabled(True)
-            try:
-                data_id = self.data_combo.currentText()
-                if data_id:
-                    selected_agent = self.agent_combo.currentText()
-                    _, actions = self.psychsim_query.get_actions(data=self.sim_data_dict[data_id], agent=selected_agent)
-                    self.action_combo.clear()
-                    for index, row in actions.iterrows():
-                        self.action_combo.insertItem(index, row['action'], row['step'])
-                self.set_state_dropdown(param_list)
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
-
-    def set_cycle_dropdown(self):
-        # This isn't implemented yet as I don't have a function that needs it (I dont' know what the functions should be)
-        pass
-
-    def set_horizon_dropdown(self):
-        # This isn't implemented yet as I don't have a function that needs it (I dont' know what the functions should be)
-        pass
-
-    def set_state_dropdown(self, param_list):
-        """
-        Set the state dropdown based on predicted actions from the selected agent
-        :param param_list: list of params that should be activated
-        """
-        if "state" in param_list:
-            self.state_combo.setEnabled(True)
-            try:
-                data_id = self.data_combo.currentText()
-                action_id = self.action_combo.currentData()
-                if data_id is not None and action_id is not None:
-                    selected_agent = self.agent_combo.currentText()
-                    _, predicted_actions = self.psychsim_query.query_action(data=self.sim_data_dict[data_id],
-                                                                         agent=selected_agent, action=action_id)
-                    self.state_combo.clear()
-                    self.state_combo.addItems(predicted_actions['base_action'].unique().tolist())
-            except:
-                tb = traceback.format_exc()
-                self.print_query_output(tb, "red")
 
     def display_query(self, query_id):
         """
@@ -791,8 +683,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
-
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

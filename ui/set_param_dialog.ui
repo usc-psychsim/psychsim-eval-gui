@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>513</width>
-    <height>323</height>
+    <height>334</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -136,20 +136,6 @@
           </widget>
          </item>
         </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="use_obj_radio">
-        <property name="text">
-         <string>Use selected data or query object only</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="use_str_radio">
-        <property name="text">
-         <string>Use selected string from data or query object</string>
-        </property>
        </widget>
       </item>
       <item>

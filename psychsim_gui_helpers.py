@@ -26,7 +26,7 @@ class PsySimQuery:
     Class to hold information for each query that is created
     """
     id: str
-    data_id: str
+    # data_id: str
     params: list
     function: str
     results: pd.DataFrame

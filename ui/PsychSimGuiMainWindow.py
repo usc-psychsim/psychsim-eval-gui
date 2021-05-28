@@ -83,7 +83,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         :param data: PsychSimRun object
         """
         self.sim_data_dict[data_id] = data
-        pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
+        # pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
         self.update_data_table()
 
     def update_data_table(self):
