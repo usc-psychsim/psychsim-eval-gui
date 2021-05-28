@@ -19,7 +19,7 @@ class PsychSimQueryFunctions:
     def __init__(self):
         pass
 
-    def demo_function(self, data: pd.DataFrame=None, agent: str=None, action: str=None, *args, **kwargs) -> pd.DataFrame:
+    def demo_function(self, data: pgh.PsychSimRun=None, agent: str=None, action: str=None, *args, **kwargs) -> pd.DataFrame:
         """
         This is a test function to illustrate how these functions work.
         If a param is present in the parameter list, it will enable the corresponding dropdown on the GUI

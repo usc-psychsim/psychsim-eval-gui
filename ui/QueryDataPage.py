@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from PyQt5 import QtGui
 from PyQt5 import uic
 
 import traceback
@@ -75,6 +76,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.reload_func_source_button.clicked.connect(self.reolaod_func_source)
 
         self.set_sample_function_dropdown(["range", "category"])
+
+        self.type_match_label.setStyleSheet("background-color: #00FF00")
+        self.type_no_match_label.setStyleSheet("background-color: red")
+        self.type_unknown_label.setStyleSheet("background-color: yellow")
 
     def _get_param_value(self, param_type, param_name):
         if param_type == "str":
@@ -543,6 +548,13 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 param_val = set_param_dialog.param_val
                 # param = are_you_sure_dialog.param_val
                 name_item = QTableWidgetItem(param_type)   # create a new Item
+                expected_type = self.query_param_table.item(button_row, 2).text()
+                if param_type == expected_type:
+                    name_item.setBackground(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
+                elif expected_type == "...":
+                    name_item.setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+                else:
+                    name_item.setBackground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
                 self.query_param_table.setItem(button_row,3, name_item) #TODO: should the actual param be stored here, or the string of the type and the name?
                 name_item = QTableWidgetItem(param_val)   # create a new Item
                 self.query_param_table.setItem(button_row,4, name_item)
