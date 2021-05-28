@@ -530,7 +530,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def set_param(self, button_row):
         set_button = self.sender()
-        self.print_query_output("SET THE PARAM!!", "red")
         try:
             set_param_dialog = SetParamDialog(data_dict=self.sim_data_dict, query_dict=self.query_data_dict)
             # are_you_sure_dialog.query_name.setText(query_id)

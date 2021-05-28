@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
 import os
+import traceback
 
 import psychsim_gui_helpers as pgh
 
@@ -51,6 +52,7 @@ class SetParamDialog(QDialog, ui_obj):
             elif radioButton.name == "sel_query":
                 self._set_query_interface_enable(True)
                 pgh.update_combo(self.select_value_combo, self.query_dict.keys())
+        self.select_value_combo.activated.emit(0)
 
     def _set_query_interface_enable(self, enable):
         self.sel_val_label.setEnabled(enable)
@@ -83,15 +85,20 @@ class SetParamDialog(QDialog, ui_obj):
 
     def get_param(self):
         # todo: refactor this
-        param_name = self.sender().currentText()
-        if self.select_data_radio.isChecked():
-            self.selected_param_value.setText(f"{type(self.data_dict[param_name]).__name__}:{param_name}")
-            self.param_type = type(self.data_dict[param_name]).__name__
-            self.param_val = param_name
-        elif self.select_query_radio.isChecked():
-            # populate the sel_var_combo with cols
-            variables = self.query_dict[param_name].results.index.values
-            pgh.update_combo(self.sel_var_combo, variables)
+        try:
+            param_name = self.sender().currentText()
+            if self.select_data_radio.isChecked():
+                self.selected_param_value.setText(f"{type(self.data_dict[param_name]).__name__}:{param_name}")
+                self.param_type = type(self.data_dict[param_name]).__name__
+                self.param_val = param_name
+            elif self.select_query_radio.isChecked():
+                # populate the sel_var_combo with cols
+                variables = self.query_dict[param_name].results.index.values
+                pgh.update_combo(self.sel_var_combo, variables)
+            self.sel_var_combo.activated.emit(0)
+        except:
+            tb = traceback.format_exc()
+            print(tb)
 
     def update_param_name(self):
         param_name = self.sender().currentText()
@@ -100,13 +107,17 @@ class SetParamDialog(QDialog, ui_obj):
             self.param_type = type(param_name).__name__
             self.param_val = param_name
 
-
     def get_value_from_variable(self):
-        # populate the sel_var_combo with cols
-        variable = self.sel_var_combo.currentText()
-        param_name = self.select_value_combo.currentText()
-        val = self.query_dict[param_name].results.loc[variable, :]
-        pgh.update_combo(self.sel_val_combo, val.tolist())
+        try:
+            # populate the sel_var_combo with cols
+            variable = self.sel_var_combo.currentText()
+            param_name = self.select_value_combo.currentText()
+            val = self.query_dict[param_name].results.loc[variable, :]
+            pgh.update_combo(self.sel_val_combo, val.tolist())
+            self.sel_val_combo.activated.emit(0)
+        except:
+            tb = traceback.format_exc()
+            print(tb)
 
     def set_title(self, function_name, param_name):
         self.setWindowTitle(f"Set \"{param_name}\" param for {function_name}")
