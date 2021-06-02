@@ -8,6 +8,7 @@ import configparser
 import os
 import sys
 import re
+import copy
 
 from gui_threading import Worker
 import psychsim_gui_helpers as pgh
@@ -170,7 +171,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         output = dict()
         while self.thread_running:
             result = simulation.run_step()
-            output[step] = result
+            output[step] = copy.deepcopy(result)
             step = step + 1
             progress_callback.emit(step, simulation.sim_steps)
             if step == simulation.sim_steps:
