@@ -119,6 +119,26 @@ def blame2(action, player_decision):
             return True
     return False
 
+# FOR BLAME FUNCTIONS: what is the psychological model of blame?
+def blame3():
+    """
+    from perspective of one agent, could different agent take better action
+    """
+
+def blame4():
+    """
+    from perspective of one agent could different agent take action that was not negative for other agent but better for perspective agent
+    """
+
+def blame5():
+    """
+    does an different agent take an action that negatively affects perspective agent if there was an alternate action that positively benefited both agents
+    """
+
+def blame6():
+    """
+    perspective agent expected other agent to take action A which would produce benefit but they took action B which negatively affected perspective agent
+    """
 
 def control(player_decision, player):
     """
@@ -133,6 +153,16 @@ def control(player_decision, player):
             player_control = player_control + player.getState('__REWARD__').max()
     return player_control
 
+def preControl():
+    """
+    agent's sense they are in control BEFORE action
+    """
+
+def postControl():
+    """
+    agent's sense they are in control AFTER action
+    """
+    #TODO: look at Mei for this - similar to control1 but just number of leaves. this needs to capture unexpected action of other agents
 
 def novelty(num_possible_actions, action_rank):
     """
