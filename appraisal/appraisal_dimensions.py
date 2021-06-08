@@ -21,6 +21,8 @@ class PlayerAppraisal:
     novelty: float = None
     consistency: float = None
     control: float = None
+    preControl: float = None
+    postControl: float = None
 
 
 def extract_expected_action_reward(player_decision, player_name):
@@ -137,7 +139,6 @@ def blame1_2(world, agent, blamed_agent, debug):
     blamed_agent_decision_key = list(debug[blamed_agent.name]["__decision__"])[0]
     blamed_agent_action = debug[blamed_agent.name]["__decision__"][blamed_agent_decision_key]["action"]
 
-    # TODO: How do I the value of an agent's belief of another agent's action? (CHECK BELOW LINE WORKS)
     believed_action = world.getFeature("Producer's __ACTION__", agent_belief, unique=True)
     if cur_utility < cur_expected_utility:
         # someone is to blame
@@ -148,6 +149,10 @@ def blame1_2(world, agent, blamed_agent, debug):
         pass
     return 0
 
+def blame7():
+    """
+    did an agent take an action based on a false belief about the world that lead to a negative outcome?
+    """
 
 def blame3(agent, blamed_agent, action, player_decision):
     """
@@ -180,7 +185,7 @@ def control(player_decision, player):
     for action, predictions in player_decision['V'].items():
         if predictions['__EV__'] > 0:
             # player_control = player_control + player_decision['action'][action]
-            player_control = player_control + player.getState('__REWARD__').max()
+            player_control = player_control + player.getState('__REWARD__').max()#TODO: why is this reward different to what is expected?
     return player_control
 
 def preControl(player_decision, player):
@@ -191,15 +196,20 @@ def preControl(player_decision, player):
     player_control = 0
     for action, predictions in player_decision['V'].items():
         if predictions['__EV__'] > 0:
-            # player_control = player_control + player_decision['action'][action]
-            player_control = player_control + player.getState('__REWARD__').max() #TODO: why is this reward different to what is expected?
+            player_control = player_control + 1
     return player_control
 
-def postControl():
+def postControl(player_decision, player):
     """
     agent's sense they are in control AFTER action
+    similar to control1 but just number of leaves
     """
-    #TODO: look at Mei for this - similar to control1 but just number of leaves. this needs to capture unexpected action of other agents
+    #TODO: look at Mei for this - . this needs to capture unexpected action of other agents
+    player_control = 0
+    for action, predictions in player_decision['V'].items():
+        if predictions['__EV__'] > 0:
+            player_control = player_control + 1
+    return player_control
 
 def novelty(num_possible_actions, action_rank):
     """

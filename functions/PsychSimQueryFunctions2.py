@@ -194,10 +194,22 @@ class PsychSimQueryFunctions:
                                    blame1_2=[],
                                    intended_blame=[],
                                    novelty=[],
-                                   control=[])
+                                   control=[],
+                                   preControl=[],
+                                   postControl=[])
         player_pre_utility = 0.0 # Assume that the players start with 0 utility
         try:
             for step, step_data in data.data.items():
+
+                if step < len(data.data.items()) and step != len(data.data.items())-1:
+                    next_step = step+1
+                next_step_data = data.data[next_step]
+                next_traj_debug = next_step_data["AGENT_DEBUG"]
+                next_traj_agent = next_step_data['WORLD'].agents[agent]
+                next_player_decision_key = list(next_traj_debug[agent]["__decision__"])[0]
+
+
+
 
                 # traj_world = step_data["TRAJECTORY"][0]
                 traj_agent = step_data['WORLD'].agents[agent]
@@ -223,6 +235,8 @@ class PsychSimQueryFunctions:
                 player_appraisal.blame2 = ad.blame2(cur_action, traj_debug[agent]["__decision__"][player_decision_key])
                 player_appraisal.blame1_2 = ad.blame1_2(step_data["WORLD"], traj_agent, b_agent, traj_debug)
                 player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key], traj_agent)
+                player_appraisal.postControl = ad.postControl(traj_debug[agent]["__decision__"][player_decision_key], traj_agent)
+                player_appraisal.preControl = ad.preControl(next_traj_debug[agent]["__decision__"][next_player_decision_key], next_traj_agent)
 
                 # extract the possible actions and corresponding rewards from the trajectory
                 agent_decision = traj_debug[agent]["__decision__"]
@@ -250,6 +264,8 @@ class PsychSimQueryFunctions:
                 step_appraisal_info['intended_blame'].append(player_appraisal.intended_blame)
                 step_appraisal_info['novelty'].append(player_appraisal.novelty)
                 step_appraisal_info['control'].append(player_appraisal.control)
+                step_appraisal_info['postControl'].append(player_appraisal.postControl)
+                step_appraisal_info['preControl'].append(player_appraisal.preControl)
 
                 player_pre_utility = player_cur_utility # TODO: should this be cumulative?
 
