@@ -179,7 +179,7 @@ class PsychSimQueryFunctions:
             tb = traceback.format_exc()
             print(tb)
 
-    def get_appraisal_diemensions(self, data=None, agent=None, *args, **kwargs):
+    def get_appraisal_diemensions(self, data=None, agent=None, blame_agent=None, *args, **kwargs):
         """
         Get the appraisal dimensions
         """
@@ -191,6 +191,7 @@ class PsychSimQueryFunctions:
                                    congruence=[],
                                    blame=[],
                                    blame2=[],
+                                   blame1_2=[],
                                    intended_blame=[],
                                    novelty=[],
                                    control=[])
@@ -200,6 +201,7 @@ class PsychSimQueryFunctions:
 
                 # traj_world = step_data["TRAJECTORY"][0]
                 traj_agent = step_data['WORLD'].agents[agent]
+                b_agent = step_data['WORLD'].agents[blame_agent]
                 traj_debug = step_data["AGENT_DEBUG"]
                 # step_action = str(step_data["TRAJECTORY"][1]).split("\t")[1]
                 # step_action = list(step_data["TRAJECTORY"][1]._domain.values())[0]
@@ -207,9 +209,11 @@ class PsychSimQueryFunctions:
 
                 # player_loc = traj_world.getFeature(f"{agent}'s loc", traj_agent.world.state)
                 player_decision_key = list(traj_debug[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
-                player_cur_utility = traj_debug[agent]["__decision__"][player_decision_key]["V*"]
+                # player_cur_utility = traj_debug[agent]["__decision__"][player_decision_key]["V*"
+                player_cur_utility = traj_agent.reward()
                 legal_actions = traj_agent.getLegalActions()
-                cur_action = traj_agent.getState('__ACTION__').domain()[0]
+                # cur_action = traj_agent.getState('__ACTION__').domain()[0]
+                cur_action = traj_debug[agent]["__decision__"][player_decision_key]["action"]
 
                 player_appraisal = ad.PlayerAppraisal()
                 player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
@@ -217,6 +221,7 @@ class PsychSimQueryFunctions:
                 player_appraisal.blame = ad.blame(player_pre_utility, player_cur_utility)
                 player_appraisal.intended_blame = ad.intended_blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
                 player_appraisal.blame2 = ad.blame2(cur_action, traj_debug[agent]["__decision__"][player_decision_key])
+                player_appraisal.blame1_2 = ad.blame1_2(step_data["WORLD"], traj_agent, b_agent, traj_debug)
                 player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key], traj_agent)
 
                 # extract the possible actions and corresponding rewards from the trajectory
@@ -241,6 +246,7 @@ class PsychSimQueryFunctions:
                 step_appraisal_info['congruence'].append(player_appraisal.motivational_congruence)
                 step_appraisal_info['blame'].append(player_appraisal.blame)
                 step_appraisal_info['blame2'].append(player_appraisal.blame2)
+                step_appraisal_info['blame1_2'].append(player_appraisal.blame1_2)
                 step_appraisal_info['intended_blame'].append(player_appraisal.intended_blame)
                 step_appraisal_info['novelty'].append(player_appraisal.novelty)
                 step_appraisal_info['control'].append(player_appraisal.control)

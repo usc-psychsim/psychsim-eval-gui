@@ -17,6 +17,7 @@ class PlayerAppraisal:
     blame: float = None
     intended_blame: bool = False
     blame2: bool = False
+    blame1_2: bool = False
     novelty: float = None
     consistency: float = None
     control: float = None
@@ -120,10 +121,39 @@ def blame2(action, player_decision):
     return False
 
 # FOR BLAME FUNCTIONS: what is the psychological model of blame?
-def blame3():
+def blame1_2(world, agent, blamed_agent, debug):
     """
-    from perspective of one agent, could different agent take better action
+    Did the blamed_agent take an unexpected action that negatively affected the agent?
     """
+    # agent_action = agent.getState("__ACTION__")
+    agent_decision_key = list(debug[agent.name]["__decision__"])[0]
+    agent_action = debug[agent.name]["__decision__"][agent_decision_key]["action"]
+    agent_belief = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__beliefs__"]
+    agent_state = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__S__"]
+    cur_expected_utility = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__ER__"][0] #This is the expected reward for the current action
+    cur_utility = agent.reward()
+
+    # blamed_agent_action = blamed_agent.getState("__ACTION__")
+    blamed_agent_decision_key = list(debug[blamed_agent.name]["__decision__"])[0]
+    blamed_agent_action = debug[blamed_agent.name]["__decision__"][blamed_agent_decision_key]["action"]
+
+    # TODO: How do I the value of an agent's belief of another agent's action? (CHECK BELOW LINE WORKS)
+    believed_action = world.getFeature("Producer's __ACTION__", agent_belief, unique=True)
+    if cur_utility < cur_expected_utility:
+        # someone is to blame
+        # Does the action that agent1 believes agent 2 would take match what action agent 2 actually took?
+        if blamed_agent_action != believed_action:
+            # The agent to blame did not do what was expected so is to blame proportionally to utility loss
+            return cur_utility - cur_expected_utility
+        pass
+    return 0
+
+
+def blame3(agent, blamed_agent, action, player_decision):
+    """
+    from perspective of one agent1, could agent2 take better action
+    """
+    #TODO: how to figureo out other possible actions that agent2  could have made and their effect on agent1's utility? we only have the single action agent 1 believes agent 2 will take?
 
 def blame4():
     """
@@ -153,10 +183,17 @@ def control(player_decision, player):
             player_control = player_control + player.getState('__REWARD__').max()
     return player_control
 
-def preControl():
+def preControl(player_decision, player):
     """
     agent's sense they are in control BEFORE action
     """
+    #TODO: Is this just the control of the next step?
+    player_control = 0
+    for action, predictions in player_decision['V'].items():
+        if predictions['__EV__'] > 0:
+            # player_control = player_control + player_decision['action'][action]
+            player_control = player_control + player.getState('__REWARD__').max() #TODO: why is this reward different to what is expected?
+    return player_control
 
 def postControl():
     """
