@@ -231,7 +231,14 @@
               </widget>
              </item>
              <item>
-              <widget class="QTableWidget" name="query_param_table"/>
+              <widget class="QTableWidget" name="query_param_table">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="editTriggers">
+                <set>QAbstractItemView::NoEditTriggers</set>
+               </property>
+              </widget>
              </item>
              <item>
               <widget class="QFrame" name="frame_2">
