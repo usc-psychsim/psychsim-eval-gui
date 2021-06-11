@@ -150,7 +150,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         try:
             self.sim_file_label.setText("...")
             self.query_name_label.setText("...")
-            self.data_id_label.setText("...")
             self.function_label.setText("...")
             self.is_diff_label.setText("...")
         except:
@@ -313,12 +312,13 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Used to dete sample variable list depending on which data source is selected
         """
         selection = self.sample_query_combo.currentText()
-        current_query = self.query_data_dict[selection]
-        vars = current_query.results.T.columns.to_list() # Transpose to convert wide to long
-        vars = list(map(str, vars)) # make sure vars are string type
-        # vars = current_query.results.index.to_list() # use this for wide data (vars as row names)
-        self.sample_variable_combo.clear()
-        self.sample_variable_combo.addItems(vars)
+        if len(self.query_data_dict) < 0:
+            current_query = self.query_data_dict[selection]
+            vars = current_query.results.T.columns.to_list() # Transpose to convert wide to long
+            vars = list(map(str, vars)) # make sure vars are string type
+            # vars = current_query.results.index.to_list() # use this for wide data (vars as row names)
+            self.sample_variable_combo.clear()
+            self.sample_variable_combo.addItems(vars)
 
     def show_sample_dialog(self):
         """
