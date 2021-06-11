@@ -208,7 +208,6 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sim_data_dict[new_key] = self.sim_data_dict.pop(old_key)
         self.sim_data_dict[new_key].id = new_key
         self.update_data_table()
-        pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
         self.update_query_dataid(old_key=old_key, new_key=new_key)
 
     def update_query_dataid(self, old_key, new_key):
