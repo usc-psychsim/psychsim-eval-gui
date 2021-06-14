@@ -49,6 +49,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.func_module = None
         self.func_source = ""
         self.func_class_name = ""
+        self._param_table_cache = {}
 
         self.psychsim_query = PsychSimQueryFunctions()
 
@@ -105,6 +106,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 #TODO:
                 # Display in the output if the params match the expected types or not (or if no type is defined)
         query_function = self.function_combo.currentText()
+        self.cache_table(query_function, self.query_param_table)
         try:
             query_result = getattr(self.psychsim_query, query_function)(**params)
             result_type = query_result[0]
@@ -119,6 +121,24 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+    def cache_table(self, table_name, table):
+        try:
+            table_items = []
+            for row in range(table.rowCount()):
+                row_items = []
+                for col in range(table.columnCount()):
+                    cur_item = table.item(row, col)
+                    if cur_item:
+                        row_items.append(cur_item.text())
+                    if col == 2:
+                        row_items.append("set_button")
+                table_items.append(row_items)
+            self._param_table_cache[table_name] = table_items
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
+
 
     def update_query_data(self, query_id, query_data):
         """
@@ -475,6 +495,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :return:
         """
         function_name = self.function_combo.currentText()
+
         function = getattr(self.psychsim_query, function_name)
         param_list = inspect.getfullargspec(function)
 
@@ -489,21 +510,32 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
         # add row to the table
         # get names
-        param_names = param_list.args
-        if 'self' in param_names:
-            param_names.remove('self')
 
-        for row_number, param in enumerate(param_names):
-            new_row = {'name': param,
-                       'set': self._create_param_table_button(row_number, "SET", self.set_param),
-                       'expected type': "...",
-                       'received type': "...",
-                       'value': "... "}
+        # if a cached table exists, use that, otherwise make a new one
+        if function_name in self._param_table_cache.keys() and self._param_table_cache[function_name]:
+            for row in self._param_table_cache[function_name]:
+                new_row = {'name': row[0],
+                           'set': self._create_param_table_button(1, "SET", self.set_param),
+                           'expected type': row[2],
+                           'received type': row[3],
+                           'value': row[4]}
+                self._add_row_to_table(self.query_param_table, new_row.values())
+        else:
+            param_names = param_list.args
+            if 'self' in param_names:
+                param_names.remove('self')
 
-            if param in param_list.annotations:
-                new_row["expected type"] = param_list.annotations[param].__name__
+            for row_number, param in enumerate(param_names):
+                new_row = {'name': param,
+                           'set': self._create_param_table_button(row_number, "SET", self.set_param),
+                           'expected type': "...",
+                           'received type': "...",
+                           'value': "... "}
 
-            self._add_row_to_table(self.query_param_table, new_row.values())
+                if param in param_list.annotations:
+                    new_row["expected type"] = param_list.annotations[param].__name__
+
+                self._add_row_to_table(self.query_param_table, new_row.values())
 
     def _create_param_table_button(self, arg_val, button_label, button_function):
         """
@@ -529,6 +561,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         for item in row:
             if type(item) == QPushButton:
                 table.setCellWidget(rowPosition, index, item)
+            elif type(item) == QTableWidgetItem:
+                table.setItem(rowPosition, index, item)
             else:
                 table.setItem(rowPosition, index, QTableWidgetItem(item))
             index = index + 1
