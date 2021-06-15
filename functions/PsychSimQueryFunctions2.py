@@ -191,6 +191,7 @@ class PsychSimQueryFunctions:
                                    congruence=[],
                                    blame=[],
                                    blame2=[],
+                                   blame3=[],
                                    blame1_2=[],
                                    intended_blame=[],
                                    novelty=[],
@@ -234,6 +235,7 @@ class PsychSimQueryFunctions:
                 player_appraisal.intended_blame = ad.intended_blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
                 player_appraisal.blame2 = ad.blame2(cur_action, traj_debug[agent]["__decision__"][player_decision_key])
                 player_appraisal.blame1_2 = ad.blame1_2(step_data["WORLD"], traj_agent, b_agent, traj_debug)
+                player_appraisal.blame3 = ad.blame3(step_data["WORLD"], traj_agent, b_agent, traj_debug)
                 player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key], traj_agent)
                 player_appraisal.postControl = ad.postControl(traj_debug[agent]["__decision__"][player_decision_key], traj_agent)
                 player_appraisal.preControl = ad.preControl(next_traj_debug[agent]["__decision__"][next_player_decision_key], next_traj_agent)
@@ -261,6 +263,7 @@ class PsychSimQueryFunctions:
                 step_appraisal_info['blame'].append(player_appraisal.blame)
                 step_appraisal_info['blame2'].append(player_appraisal.blame2)
                 step_appraisal_info['blame1_2'].append(player_appraisal.blame1_2)
+                step_appraisal_info['blame3'].append(player_appraisal.blame3)
                 step_appraisal_info['intended_blame'].append(player_appraisal.intended_blame)
                 step_appraisal_info['novelty'].append(player_appraisal.novelty)
                 step_appraisal_info['control'].append(player_appraisal.control)

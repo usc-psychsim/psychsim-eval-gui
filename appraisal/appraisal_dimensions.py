@@ -4,6 +4,7 @@ Functions for appraisal dimensions
 import math
 from dataclasses import dataclass
 
+# TODO: REFACTOR THIS (think about creating psychsim access functions)
 
 @dataclass
 class PlayerAppraisal:
@@ -17,7 +18,8 @@ class PlayerAppraisal:
     blame: float = None
     intended_blame: bool = False
     blame2: bool = False
-    blame1_2: bool = False
+    blame3: float = None
+    blame1_2: float = None
     novelty: float = None
     consistency: float = None
     control: float = None
@@ -149,16 +151,39 @@ def blame1_2(world, agent, blamed_agent, debug):
         pass
     return 0
 
-def blame7():
-    """
-    did an agent take an action based on a false belief about the world that lead to a negative outcome?
-    """
-
-def blame3(agent, blamed_agent, action, player_decision):
+def blame3(world, agent, blamed_agent, debug):
     """
     from perspective of one agent1, could agent2 take better action
+    i.e. Did the blamed_agent take an unexpected action that negatively affected the agent AND could the balmed_agent have done something different?
     """
-    #TODO: how to figureo out other possible actions that agent2  could have made and their effect on agent1's utility? we only have the single action agent 1 believes agent 2 will take?
+    # agent_action = agent.getState("__ACTION__")
+    agent_decision_key = list(debug[agent.name]["__decision__"])[0]
+    agent_action = debug[agent.name]["__decision__"][agent_decision_key]["action"]
+    agent_belief = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__beliefs__"]
+    agent_state = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__S__"]
+    cur_expected_utility = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__ER__"][0] #This is the expected reward for the current action
+    cur_utility = agent.reward()
+
+    # blamed_agent_action = blamed_agent.getState("__ACTION__")
+    blamed_agent_decision_key = list(debug[blamed_agent.name]["__decision__"])[0]
+    blamed_agent_action = debug[blamed_agent.name]["__decision__"][blamed_agent_decision_key]["action"]
+
+    believed_action = world.getFeature("Producer's __ACTION__", agent_belief, unique=True)
+    # if cur_utility < cur_expected_utility:
+    # For all agent actions that lead to a higher utility - could blamed_agent have done something different?
+    possible_actions = debug[agent.name]["__decision__"][agent_decision_key]["V"]
+    cumulative_blame = 0
+    for k, p_action in possible_actions.items():
+        cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
+        if cur_utility != cur_predicted_utility:
+            blamed_predicted_action = world.getFeature("Consumer's __ACTION__", p_action["__S__"][0], unique=True)
+            if blamed_agent_action != blamed_predicted_action:
+                # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
+                cumulative_blame = cumulative_blame + (cur_utility - cur_expected_utility)
+    return cumulative_blame
+
+
+
 
 def blame4():
     """
@@ -175,6 +200,11 @@ def blame6():
     perspective agent expected other agent to take action A which would produce benefit but they took action B which negatively affected perspective agent
     """
 
+def blame7():
+    """
+    did an agent take an action based on a false belief about the world that lead to a negative outcome?
+    """
+
 def control(player_decision, player):
     """
     This is a probability. For each predicted action that delivers a positive utility change, sum the probabilities.
@@ -188,10 +218,16 @@ def control(player_decision, player):
             player_control = player_control + player.getState('__REWARD__').max()#TODO: why is this reward different to what is expected?
     return player_control
 
+def control2():
+    """
+    An agent has no control if they only have 1 action? or an agent only has control if they don't have positive actions?
+    """
+
 def preControl(player_decision, player):
     """
     agent's sense they are in control BEFORE action
     """
+    # TODO: make this a percentage
     #TODO: Is this just the control of the next step?
     player_control = 0
     for action, predictions in player_decision['V'].items():
@@ -204,6 +240,7 @@ def postControl(player_decision, player):
     agent's sense they are in control AFTER action
     similar to control1 but just number of leaves
     """
+    # TODO: forget about post control for now
     #TODO: look at Mei for this - . this needs to capture unexpected action of other agents
     player_control = 0
     for action, predictions in player_decision['V'].items():
