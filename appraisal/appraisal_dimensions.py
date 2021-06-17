@@ -141,7 +141,7 @@ def blame1_2(world, agent, blamed_agent, debug):
     blamed_agent_decision_key = list(debug[blamed_agent.name]["__decision__"])[0]
     blamed_agent_action = debug[blamed_agent.name]["__decision__"][blamed_agent_decision_key]["action"]
 
-    believed_action = world.getFeature("Producer's __ACTION__", agent_belief, unique=True)
+    believed_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", agent_belief, unique=True)
     if cur_utility < cur_expected_utility:
         # someone is to blame
         # Does the action that agent1 believes agent 2 would take match what action agent 2 actually took?
@@ -168,7 +168,7 @@ def blame3(world, agent, blamed_agent, debug):
     blamed_agent_decision_key = list(debug[blamed_agent.name]["__decision__"])[0]
     blamed_agent_action = debug[blamed_agent.name]["__decision__"][blamed_agent_decision_key]["action"]
 
-    believed_action = world.getFeature("Producer's __ACTION__", agent_belief, unique=True)
+    believed_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", agent_belief, unique=True)
     # if cur_utility < cur_expected_utility:
     # For all agent actions that lead to a higher utility - could blamed_agent have done something different?
     possible_actions = debug[agent.name]["__decision__"][agent_decision_key]["V"]
@@ -176,7 +176,7 @@ def blame3(world, agent, blamed_agent, debug):
     for k, p_action in possible_actions.items():
         cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
         if cur_utility != cur_predicted_utility:
-            blamed_predicted_action = world.getFeature("Consumer's __ACTION__", p_action["__S__"][0], unique=True)
+            blamed_predicted_action = world.getFeature(f"{agent.name}'s __ACTION__", p_action["__S__"][0], unique=True)
             if blamed_agent_action != blamed_predicted_action:
                 # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
                 cumulative_blame = cumulative_blame + (cur_utility - cur_expected_utility)
