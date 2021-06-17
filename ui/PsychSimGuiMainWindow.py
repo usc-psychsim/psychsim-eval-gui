@@ -146,7 +146,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 data = pickle.load(f)
                 self.sim_data_dict[data.id] = data
                 self.update_data_table()
-                pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
+                # pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
 
     def load_data_from_log(self):
         """
