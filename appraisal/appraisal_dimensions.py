@@ -179,7 +179,7 @@ def blame3(world, agent, blamed_agent, debug):
             blamed_predicted_action = world.getFeature(f"{agent.name}'s __ACTION__", p_action["__S__"][0], unique=True)
             if blamed_agent_action != blamed_predicted_action:
                 # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
-                cumulative_blame = cumulative_blame + (cur_utility - cur_expected_utility)
+                cumulative_blame = cumulative_blame + (cur_utility - cur_expected_utility) #TODO: make sure this bit actually makes sense
     return cumulative_blame
 
 
@@ -230,9 +230,9 @@ def preControl(player_decision, player):
     # TODO: make this a percentage
     #TODO: Is this just the control of the next step?
     player_control = 0
-    for action, predictions in player_decision['V'].items():
-        if predictions['__EV__'] > 0:
-            player_control = player_control + 1
+    # for action, predictions in player_decision['V'].items():
+    #     if predictions['__EV__'] > 0:
+    #         player_control = player_control + 1
     return player_control
 
 def postControl(player_decision, player):

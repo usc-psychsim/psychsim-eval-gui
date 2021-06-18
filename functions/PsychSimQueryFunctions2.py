@@ -184,7 +184,12 @@ class PsychSimQueryFunctions:
         Get the appraisal dimensions
         """
         step_appraisal_info = dict(step=[],
-                                   action=[],
+                                   a_loc=[],
+                                   b_loc=[],
+                                   a_role=[],
+                                   b_role=[],
+                                   a_action=[],
+                                   b_action=[],
                                    pre_utility=[],
                                    cur_utility=[],
                                    relevance=[],
@@ -202,12 +207,12 @@ class PsychSimQueryFunctions:
         try:
             for step, step_data in data.data.items():
 
-                if step < len(data.data.items()) and step != len(data.data.items())-1:
-                    next_step = step+1
-                next_step_data = data.data[next_step]
-                next_traj_debug = next_step_data["AGENT_DEBUG"]
-                next_traj_agent = next_step_data['WORLD'].agents[agent]
-                next_player_decision_key = list(next_traj_debug[agent]["__decision__"])[0]
+                # if step < len(data.data.items()) and step != len(data.data.items())-1:
+                #     next_step = step+1
+                # next_step_data = data.data[next_step]
+                # next_traj_debug = next_step_data["AGENT_DEBUG"]
+                # next_traj_agent = next_step_data['WORLD'].agents[agent]
+                # next_player_decision_key = list(next_traj_debug[agent]["__decision__"])[0]
 
 
 
@@ -219,14 +224,20 @@ class PsychSimQueryFunctions:
                 # step_action = str(step_data["TRAJECTORY"][1]).split("\t")[1]
                 # step_action = list(step_data["TRAJECTORY"][1]._domain.values())[0]
                 step_action = str(step_data["WORLD"].getFeature(f"{agent}'s __ACTION__")).split("\t")[1]
+                a_loc = self.__get_agent_loc(step_data["WORLD"], agent)
+                b_loc = self.__get_agent_loc(step_data["WORLD"], blame_agent)
+                a_role = self.__get_agent_role(step_data["WORLD"], agent)
+                b_role = self.__get_agent_role(step_data["WORLD"], blame_agent)
 
                 # player_loc = traj_world.getFeature(f"{agent}'s loc", traj_agent.world.state)
                 player_decision_key = list(traj_debug[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
+                blamed_decision_key = list(traj_debug[blame_agent]["__decision__"])[0]
                 # player_cur_utility = traj_debug[agent]["__decision__"][player_decision_key]["V*"
                 player_cur_utility = traj_agent.reward()
                 legal_actions = traj_agent.getLegalActions()
                 # cur_action = traj_agent.getState('__ACTION__').domain()[0]
                 cur_action = traj_debug[agent]["__decision__"][player_decision_key]["action"]
+                cur_blamed_action = traj_debug[blame_agent]["__decision__"][blamed_decision_key]["action"]
 
                 player_appraisal = ad.PlayerAppraisal()
                 player_appraisal.motivational_relevance = ad.motivational_relevance(player_pre_utility, player_cur_utility)
@@ -238,7 +249,7 @@ class PsychSimQueryFunctions:
                 player_appraisal.blame3 = ad.blame3(step_data["WORLD"], traj_agent, b_agent, traj_debug)
                 player_appraisal.control = ad.control(traj_debug[agent]["__decision__"][player_decision_key], traj_agent)
                 player_appraisal.postControl = ad.postControl(traj_debug[agent]["__decision__"][player_decision_key], traj_agent)
-                player_appraisal.preControl = ad.preControl(next_traj_debug[agent]["__decision__"][next_player_decision_key], next_traj_agent)
+                # player_appraisal.preControl = ad.preControl(next_traj_debug[agent]["__decision__"][next_player_decision_key], next_traj_agent)
 
                 # extract the possible actions and corresponding rewards from the trajectory
                 agent_decision = traj_debug[agent]["__decision__"]
@@ -255,7 +266,12 @@ class PsychSimQueryFunctions:
                 # player_appraisal.control = #TODO: figure out how to do the projected action stuff
 
                 step_appraisal_info['step'].append(step)
-                step_appraisal_info['action'].append(str(cur_action))
+                step_appraisal_info['a_loc'].append(str(a_loc))
+                step_appraisal_info['b_loc'].append(str(b_loc))
+                step_appraisal_info['a_role'].append(str(a_role))
+                step_appraisal_info['b_role'].append(str(b_role))
+                step_appraisal_info['a_action'].append(str(cur_action))
+                step_appraisal_info['b_action'].append(str(cur_blamed_action))
                 step_appraisal_info['pre_utility'].append(player_pre_utility)
                 step_appraisal_info['cur_utility'].append(player_cur_utility)
                 step_appraisal_info['relevance'].append(player_appraisal.motivational_relevance)
@@ -310,3 +326,16 @@ class PsychSimQueryFunctions:
         vds_values = vds_values.append(data)
         return vds_values
 
+    def __get_agent_loc(self, world_state, agent):
+        locations = [x for x in world_state.locals[agent].keys() if "Loc" in x]
+        for loc in locations:
+            p_loc = str(world_state.getFeature(f"{agent}'s {loc}")).split("\t")[1]
+            if p_loc == "True":
+                return loc
+
+    def __get_agent_role(self, world_state, agent):
+        roles = [x for x in world_state.locals[agent].keys() if "isRole" in x]
+        for r in roles:
+            p_role = str(world_state.getFeature(f"{agent}'s {r}")).split("\t")[1]
+            if p_role == "True":
+                return r
