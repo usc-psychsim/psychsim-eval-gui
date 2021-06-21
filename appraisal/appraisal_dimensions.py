@@ -185,16 +185,6 @@ def blame4(world,agent,blamed_agent,debug):
                 cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"]) #TODO: make sure this bit actually makes sense
     return cumulative_blame
 
-def blame5():
-    """
-    does an different agent take an action that negatively affects perspective agent if there was an alternate action that positively benefited both agents
-    """
-
-def blame6():
-    """
-    perspective agent expected other agent to take action A which would produce benefit but they took action B which negatively affected perspective agent
-    """
-
 def blame7():
     """
     did an agent take an action based on a false belief about the world that lead to a negative outcome?
