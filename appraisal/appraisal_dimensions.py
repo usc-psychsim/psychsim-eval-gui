@@ -156,6 +156,51 @@ def blame3(world, agent, blamed_agent, debug):
     from perspective of one agent1, could agent2 take better action
     i.e. Did the blamed_agent take an unexpected action that negatively affected the agent AND could the balmed_agent have done something different?
     """
+    blame_params = _get_blame_params(world,agent,blamed_agent,debug)
+    cumulative_blame = 0
+    for k, p_action in blame_params["possible_actions"].items():
+        cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
+        if blame_params["cur_utility"] <= cur_predicted_utility:
+            blamed_predicted_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", p_action["__S__"][0], unique=True)
+            if blame_params["blamed_agent_action"] != blamed_predicted_action:
+                # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
+                cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"]) #TODO: make sure this bit actually makes sense
+    return cumulative_blame
+
+
+def blame4(world,agent,blamed_agent,debug):
+    """
+    from perspective of one agent could different agent take action that was not negative for other agent but better for perspective agent
+    essentially this is the same as blame3 but with the added constraint that the action must have a positive outcome for the blame dagent (or at least non negative)
+    """
+    blame_params = _get_blame_params(world,agent,blamed_agent,debug)
+    cumulative_blame = 0
+    for k, p_action in blame_params["possible_actions"].items():
+        cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
+        if blame_params["cur_utility"] <= cur_predicted_utility:
+            blamed_predicted_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", p_action["__S__"][0], unique=True)
+            blamed_predicted_utility = world.getFeature(f"{blamed_agent.name}'s __REWARD__", p_action["__S__"][0], unique=True)
+            if blame_params["blamed_agent_action"] != blamed_predicted_action and blamed_predicted_utility >= 0:
+                # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
+                cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"]) #TODO: make sure this bit actually makes sense
+    return cumulative_blame
+
+def blame5():
+    """
+    does an different agent take an action that negatively affects perspective agent if there was an alternate action that positively benefited both agents
+    """
+
+def blame6():
+    """
+    perspective agent expected other agent to take action A which would produce benefit but they took action B which negatively affected perspective agent
+    """
+
+def blame7():
+    """
+    did an agent take an action based on a false belief about the world that lead to a negative outcome?
+    """
+
+def _get_blame_params(world, agent, blamed_agent, debug):
     # agent_action = agent.getState("__ACTION__")
     agent_decision_key = list(debug[agent.name]["__decision__"])[0]
     agent_action = debug[agent.name]["__decision__"][agent_decision_key]["action"]
@@ -172,38 +217,11 @@ def blame3(world, agent, blamed_agent, debug):
     # if cur_utility < cur_expected_utility:
     # For all agent actions that lead to a higher utility - could blamed_agent have done something different?
     possible_actions = debug[agent.name]["__decision__"][agent_decision_key]["V"]
-    cumulative_blame = 0
-    for k, p_action in possible_actions.items():
-        cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
-        if cur_utility != cur_predicted_utility:
-            blamed_predicted_action = world.getFeature(f"{agent.name}'s __ACTION__", p_action["__S__"][0], unique=True)
-            if blamed_agent_action != blamed_predicted_action:
-                # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
-                cumulative_blame = cumulative_blame + (cur_utility - cur_expected_utility) #TODO: make sure this bit actually makes sense
-    return cumulative_blame
 
-
-
-
-def blame4():
-    """
-    from perspective of one agent could different agent take action that was not negative for other agent but better for perspective agent
-    """
-
-def blame5():
-    """
-    does an different agent take an action that negatively affects perspective agent if there was an alternate action that positively benefited both agents
-    """
-
-def blame6():
-    """
-    perspective agent expected other agent to take action A which would produce benefit but they took action B which negatively affected perspective agent
-    """
-
-def blame7():
-    """
-    did an agent take an action based on a false belief about the world that lead to a negative outcome?
-    """
+    return dict(possible_actions=possible_actions,
+                cur_utility=cur_utility,
+                blamed_agent_action=blamed_agent_action,
+                cur_expected_utility=cur_expected_utility)
 
 def control(player_decision, player):
     """
