@@ -62,9 +62,9 @@ class GameTheoryTom:
 
         # create world and add agent
         self.world = World()
-        self.agent1 = Agent('Agent 1')
+        self.agent1 = Agent('Agent A')
         self.world.addAgent(self.agent1)
-        self.agent2 = Agent('Agent 2')
+        self.agent2 = Agent('Agent B')
         self.world.addAgent(self.agent2)
 
         self.agents_dec = []
