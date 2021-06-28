@@ -508,14 +508,18 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_param_table.setColumnCount(len(columns))
         self.query_param_table.setHorizontalHeaderLabels(columns)
 
+        param_names = param_list.args
+        if 'self' in param_names:
+            param_names.remove('self')
+
         # add row to the table
         # get names
 
         # if a cached table exists, use that, otherwise make a new one
         if function_name in self._param_table_cache.keys() and self._param_table_cache[function_name]:
-            for row in self._param_table_cache[function_name]:
+            for row_number, row in enumerate(self._param_table_cache[function_name]):
                 new_row = {'name': row[0],
-                           'set': self._create_param_table_button(1, "SET", self.set_param),
+                           'set': self._create_param_table_button(row_number, "SET", self.set_param),
                            'expected type': row[2],
                            'received type': row[3],
                            'value': row[4]}
@@ -592,6 +596,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 self.query_param_table.setItem(button_row,3, name_item) #TODO: should the actual param be stored here, or the string of the type and the name?
                 name_item = QTableWidgetItem(param_val)   # create a new Item
                 self.query_param_table.setItem(button_row,4, name_item)
+                # self.cache_table(function_name, self.query_param_table)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
