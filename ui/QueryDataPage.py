@@ -131,7 +131,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     cur_item = table.item(row, col)
                     if cur_item:
                         row_items.append(cur_item.text())
-                    if col == 2:
+                    if col == 1:
                         row_items.append("set_button")
                 table_items.append(row_items)
             self._param_table_cache[table_name] = table_items
@@ -524,6 +524,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                            'received type': row[3],
                            'value': row[4]}
                 self._add_row_to_table(self.query_param_table, new_row.values())
+                tab_item = self.query_param_table.item(row_number, 3)
+                self._color_table_params(row[3], row[2], tab_item)
         else:
             param_names = param_list.args
             if 'self' in param_names:
@@ -587,12 +589,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 # param = are_you_sure_dialog.param_val
                 name_item = QTableWidgetItem(param_type)   # create a new Item
                 expected_type = self.query_param_table.item(button_row, 2).text()
-                if param_type == expected_type:
-                    name_item.setBackground(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
-                elif expected_type == "...":
-                    name_item.setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
-                else:
-                    name_item.setBackground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
+                self._color_table_params(param_type, expected_type, name_item)
                 self.query_param_table.setItem(button_row,3, name_item) #TODO: should the actual param be stored here, or the string of the type and the name?
                 name_item = QTableWidgetItem(param_val)   # create a new Item
                 self.query_param_table.setItem(button_row,4, name_item)
@@ -600,6 +597,15 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
+    def _color_table_params(self, param_type, expected_type, tab_item):
+        if param_type == expected_type:
+            tab_item.setBackground(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
+        elif expected_type == "...":
+            tab_item.setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+        else:
+            tab_item.setBackground(QtGui.QBrush(QtGui.QColor(255, 0, 0)))
+        return tab_item
 
     def display_query(self, query_id):
         """
