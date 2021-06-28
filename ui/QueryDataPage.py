@@ -596,7 +596,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 self.query_param_table.setItem(button_row,3, name_item) #TODO: should the actual param be stored here, or the string of the type and the name?
                 name_item = QTableWidgetItem(param_val)   # create a new Item
                 self.query_param_table.setItem(button_row,4, name_item)
-                # self.cache_table(function_name, self.query_param_table)
+                self.cache_table(function_name, self.query_param_table)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
