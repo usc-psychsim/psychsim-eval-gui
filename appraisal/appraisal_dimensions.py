@@ -129,25 +129,13 @@ def blame1_2(world, agent, blamed_agent, debug):
     """
     Did the blamed_agent take an unexpected action that negatively affected the agent?
     """
-    # agent_action = agent.getState("__ACTION__")
-    agent_decision_key = list(debug[agent.name]["__decision__"])[0]
-    agent_action = debug[agent.name]["__decision__"][agent_decision_key]["action"]
-    agent_belief = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__beliefs__"]
-    agent_state = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__S__"]
-    cur_expected_utility = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__ER__"][0] #This is the expected reward for the current action
-    cur_utility = agent.reward()
-
-    # blamed_agent_action = blamed_agent.getState("__ACTION__")
-    blamed_agent_decision_key = list(debug[blamed_agent.name]["__decision__"])[0]
-    blamed_agent_action = debug[blamed_agent.name]["__decision__"][blamed_agent_decision_key]["action"]
-
-    believed_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", agent_belief, unique=True)
-    if cur_utility < cur_expected_utility:
+    blame_params = _get_blame_params(world,agent,blamed_agent,debug)
+    if blame_params["cur_utility"] < blame_params["cur_expected_utility"]:
         # someone is to blame
         # Does the action that agent1 believes agent 2 would take match what action agent 2 actually took?
-        if blamed_agent_action != believed_action:
+        if blame_params["blamed_agent_action"] != blame_params["believed_action"]:
             # The agent to blame did not do what was expected so is to blame proportionally to utility loss
-            return cur_utility - cur_expected_utility
+            return blame_params["cur_utility"] - blame_params["cur_expected_utility"]
         pass
     return 0
 
@@ -211,7 +199,8 @@ def _get_blame_params(world, agent, blamed_agent, debug):
     return dict(possible_actions=possible_actions,
                 cur_utility=cur_utility,
                 blamed_agent_action=blamed_agent_action,
-                cur_expected_utility=cur_expected_utility)
+                cur_expected_utility=cur_expected_utility,
+                believed_action=believed_action)
 
 def control(player_decision, player):
     """
