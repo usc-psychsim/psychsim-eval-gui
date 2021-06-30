@@ -87,11 +87,11 @@ class SetParamDialog(QDialog, ui_obj):
         # todo: refactor this
         try:
             param_name = self.sender().currentText()
-            if self.select_data_radio.isChecked():
+            if self.select_data_radio.isChecked() and param_name in self.data_dict.keys():
                 self.selected_param_value.setText(f"{type(self.data_dict[param_name]).__name__}:{param_name}")
                 self.param_type = type(self.data_dict[param_name]).__name__
                 self.param_val = param_name
-            elif self.select_query_radio.isChecked():
+            elif self.select_query_radio.isChecked() and param_name in self.query_dict.keys():
                 # populate the sel_var_combo with cols
                 variables = self.query_dict[param_name].results.index.values
                 pgh.update_combo(self.sel_var_combo, variables)
@@ -109,12 +109,17 @@ class SetParamDialog(QDialog, ui_obj):
 
     def get_value_from_variable(self):
         try:
+            if len(self.query_dict) == 0:
+                print("There are no queries to select from")
+            if len(self.data_dict) == 0:
+                print("There are no loaded data objects to select from")
             # populate the sel_var_combo with cols
             variable = self.sel_var_combo.currentText()
             param_name = self.select_value_combo.currentText()
-            val = self.query_dict[param_name].results.loc[variable, :]
-            pgh.update_combo(self.sel_val_combo, val.tolist())
-            self.sel_val_combo.activated.emit(0)
+            if self.select_query_radio.isChecked() and param_name in self.query_dict.keys():
+                val = self.query_dict[param_name].results.loc[variable, :]
+                pgh.update_combo(self.sel_val_combo, val.tolist())
+                self.sel_val_combo.activated.emit(0)
         except:
             tb = traceback.format_exc()
             print(tb)
