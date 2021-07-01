@@ -586,7 +586,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 name_item = QTableWidgetItem(param_type)   # create a new Item
                 expected_type = self.query_param_table.item(button_row, 2).text()
                 self._color_table_params(param_type, expected_type, name_item)
-                self.query_param_table.setItem(button_row,3, name_item) #TODO: should the actual param be stored here, or the string of the type and the name?
+                self.query_param_table.setItem(button_row,3, name_item)
                 name_item = QTableWidgetItem(param_val)   # create a new Item
                 self.query_param_table.setItem(button_row,4, name_item)
                 self.cache_table(function_name, self.query_param_table)
@@ -616,7 +616,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 elif selected_query.result_type == 'tree':
                     selected_query = self.show_query_tree_dialog(model=TreeModel(selected_query.results), query=selected_query)
                 self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
-                # TODO: fix bug that updates query list even if viewed
                 self.set_query_list_dropdown()
                 self.update_query_info()
         except:
