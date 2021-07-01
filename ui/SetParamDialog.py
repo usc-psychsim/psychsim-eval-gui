@@ -48,10 +48,10 @@ class SetParamDialog(QDialog, ui_obj):
             self.selected_param_value.setText(f"{type(self.selected_val).__name__}: {self.selected_val}")
             if radioButton.name == "sel_data":
                 self._set_query_interface_enable(False)
-                pgh.update_combo(self.select_value_combo, self.data_dict.keys())
+                pgh.update_combo(self.select_value_combo, self.data_dict.keys(), clear=True)
             elif radioButton.name == "sel_query":
                 self._set_query_interface_enable(True)
-                pgh.update_combo(self.select_value_combo, self.query_dict.keys())
+                pgh.update_combo(self.select_value_combo, self.query_dict.keys(), clear=True)
         self.select_value_combo.activated.emit(0)
 
     def _set_query_interface_enable(self, enable):
@@ -94,7 +94,7 @@ class SetParamDialog(QDialog, ui_obj):
             elif self.select_query_radio.isChecked() and param_name in self.query_dict.keys():
                 # populate the sel_var_combo with cols
                 variables = self.query_dict[param_name].results.index.values
-                pgh.update_combo(self.sel_var_combo, variables)
+                pgh.update_combo(self.sel_var_combo, variables, clear=True)
             self.sel_var_combo.activated.emit(0)
         except:
             tb = traceback.format_exc()
@@ -118,7 +118,7 @@ class SetParamDialog(QDialog, ui_obj):
             param_name = self.select_value_combo.currentText()
             if self.select_query_radio.isChecked() and param_name in self.query_dict.keys():
                 val = self.query_dict[param_name].results.loc[variable, :]
-                pgh.update_combo(self.sel_val_combo, val.tolist())
+                pgh.update_combo(self.sel_val_combo, val.tolist(), clear=True)
                 self.sel_val_combo.activated.emit(0)
         except:
             tb = traceback.format_exc()

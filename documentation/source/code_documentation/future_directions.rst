@@ -19,13 +19,6 @@ Known Bugs/issues
     **How to fix:**
     Once the mapping information becomes available, the functions can be edited in *functions/query_functions.py*
 
-- Query info updating
-    **Issue:**
-    The 'View Query Data' button automatically changes the query info back to the first query after close
-
-    **How to fix:**
-    This should be fixed from the 'display_query' function in the ui/QueryDataPage.py file. I am not entirely sure how just yet but it probably is just a conditional somewhere.
-
 - Plot stats
     **Issue1:**
     The stats are calculated for each value of the x-axis. and not across the x-axis. This means if you have multiple agents (or datapoints per x-axis)

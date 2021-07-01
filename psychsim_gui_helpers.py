@@ -167,15 +167,19 @@ def dataframe_columns_equal(df1, df2):
             return True
 
 
-def update_combo(combo_box, item_list):
+def update_combo(combo_box, item_list, clear=False):
     """
     Generic combo box update function
     :param combo_box: qcomboBox to be updated
     :param data_dict: dictionary containg data to populate the combo box with
     :return:
     """
-    combo_box.clear()
-    new_items = [str(item) for item in item_list]
+    all_items = []
+    if clear:
+        combo_box.clear()
+    else:
+        all_items = [combo_box.itemText(i) for i in range(combo_box.count())]
+    new_items = [str(item) for item in item_list if item not in all_items]
     combo_box.addItems(new_items)
 
 
