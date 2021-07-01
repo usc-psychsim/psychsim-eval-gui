@@ -103,8 +103,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 param_type = self.query_param_table.item(row, 3).text()
                 param_value = self.query_param_table.item(row, 4).text()
                 params[param_name] = self._get_param_value(param_type, param_value)
-                #TODO:
-                # Display in the output if the params match the expected types or not (or if no type is defined)
         query_function = self.function_combo.currentText()
         self.cache_table(query_function, self.query_param_table)
         try:
@@ -153,7 +151,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Create a new query object
         :param query_function: (str) name of query function
-        :param data_id: (str) id of data used
         :param query_data: (DataFrame) results of query
         :return: PsySimQuery object
         """
@@ -258,7 +255,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Show dialog and remove the selected query from the main window query data dictionary if selected
         """
-        # TODO: fix bug that crashes program if all queries are deleted and try to delete again
         query_id = self.view_query_combo.currentText()
         try:
             if query_id in self.query_data_dict.keys():
@@ -332,7 +328,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Used to dete sample variable list depending on which data source is selected
         """
         selection = self.sample_query_combo.currentText()
-        if len(self.query_data_dict) < 0:
+        if len(self.query_data_dict) > 0:
             current_query = self.query_data_dict[selection]
             vars = current_query.results.T.columns.to_list() # Transpose to convert wide to long
             vars = list(map(str, vars)) # make sure vars are string type
@@ -388,9 +384,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
                             f"{filt_min}-{filt_max} "
                 new_query = self.create_new_query_object(query_function=selected_query.function,
-                                                         data_id=selected_query.data_id,
                                                          query_data=sampled_query.T, #TODO: fix the shape of the data throughout the whole gui
-                                                         query_id=sample_id)
+                                                         query_id=sample_id,
+                                                         params=None)
                 self.update_query_data(new_query.id, new_query)
                 self.print_query_output(f"sample saved as: {sample_id}", "black")
         else:
@@ -423,9 +419,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
                         f"{dt_string}"
             new_query = self.create_new_query_object(query_function=selected_query.function,
-                                                     data_id=selected_query.data_id,
                                                      query_data=sampled_query.T,
-                                                     query_id=sample_id)
+                                                     query_id=sample_id,
+                                                     params=None)
             self.update_query_data(new_query.id, new_query)
             self.print_query_output(f"sample saved as: {sample_id}", "black")
 
