@@ -47,12 +47,6 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         dropdown_view = plot_window.query_combo.view()
 
         dropdown_view.setMinimumWidth(dropdown_view.sizeHintForColumn(0))
-#         plot_window.query_combo.setStyleSheet('''*
-# QComboBox QAbstractItemView
-#     {
-#     min-width: 300px;
-#     }
-# ''')
         # emit the query_combo activated signal to populate the other dropdowns when this window opens
         plot_window.query_combo.activated.emit(0)
         plot_window.show()
