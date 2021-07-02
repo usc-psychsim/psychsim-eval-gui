@@ -25,7 +25,7 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         """
         Open dialog to get file name of data to load (pickle files)
         """
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.pickle)")
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.pickle)") # TODO: make default for this output /data path
         with open(fileName, 'rb') as f:
             return pickle.load(f)
 

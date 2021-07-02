@@ -133,6 +133,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         """
         load previously saved pickle data
         """
+        # TODO: put this in exception handling block - make sure only valid data is loaded (otherwise it'll crash)
+        #   check the data type like ->        if type(loaded_query) == pgh.PsySimQuery:
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self,
                                                   "Select data file",

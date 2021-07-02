@@ -178,8 +178,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Update the query info on the gui with appropriate values
         """
         selected_query_id = self.view_query_combo.currentText()
-        selected_query = self.query_data_dict[selected_query_id]
         try:
+            selected_query = self.query_data_dict[selected_query_id]
             self.sim_file_label.setText("...")
             self.query_name_label.setText(selected_query.id)
             self.function_label.setText(selected_query.function)
@@ -255,6 +255,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Show dialog and remove the selected query from the main window query data dictionary if selected
         """
+        # TODO: make sure queries are removed from dropdowns when deleted
         query_id = self.view_query_combo.currentText()
         try:
             if query_id in self.query_data_dict.keys():
@@ -490,6 +491,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Get the parameters from the function definitions in functions/PsychSimQueryFunctions.py
         :return:
         """
+        # TODO: exception handle this - specifically for AttributeError: 'DemoFunctions' object has no attribute 'get_actions (i.e. if a function is selected that doesn't exist in the functions file)
+        # TODO: make this happen on loading (emit the signal for the first function to be activated from the function combo)
         function_name = self.function_combo.currentText()
 
         function = getattr(self.psychsim_query, function_name)
@@ -685,7 +688,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Set the path to the simulation script (self.sim_path) and update the gui labels
         """
-        new_path = pgh.get_file_path(path_label=self.func_source_label)
+        # TODO: update function dropdown when new function source is loaded (so can't select function that doesn't exist
+        # TODO: set this on loading so we know what the pre-loaded source is
+        new_path = pgh.get_file_path(path_label=self.func_source_label) # TODO: make the default location for this the function dir
         if new_path:
             self.func_source = new_path
             # self.func_source_label.setText("...")

@@ -109,7 +109,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         """
         Set the path to the simulation script (self.sim_path) and update the gui labels
         """
-        new_path = pgh.get_file_path(path_label=self.sim_path_label)
+        new_path = pgh.get_file_path(path_label=self.sim_path_label) # TODO: make default for this the simulation path
         if new_path:
             self.sim_path = new_path
             self.sim_loaded_state.setText("...")
