@@ -63,14 +63,14 @@ def set_directory(path_label, path_var, caption):
         path_var = new_path
 
 
-def get_file_path(path_label, file_type="Python Files (*.py)"):
+def get_file_path(path_label, file_type="Python Files (*.py)", default_dir=""):
     """
     Get the path to a file from the native file selection dialog
     :param path_label: (Qlabel) displays path string on GUI
     :param file_type: (str) type of files to be selected
     :return: (str) selected file name
     """
-    fileName, _ = QFileDialog.getOpenFileName(None, "Select Sim", "", file_type)
+    fileName, _ = QFileDialog.getOpenFileName(None, "Select Sim", default_dir, file_type)
     if fileName:
         path_label.setText(str(fileName).split('/')[-1])
     return fileName
