@@ -80,10 +80,9 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         # TODO: print all the config stuff to the print area
         try:
             # read in the config in path if it exists, otherwise read the default
-            if path:
-                config.read(path)
-            else:
-                config.read('config.ini')
+            if not path:
+                path = 'config.ini'
+            config.read(path)
 
             # set the path variables
             self.psychsim_path = config['PATHS']['psychsim']
@@ -92,7 +91,12 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             self.sim_path = config['PATHS']['simulation']
             # set the paths on the gui
             self.sim_path_label.setText(str(self.sim_path).split('/')[-1])
-            self.print_sim_output("config loaded", "green")
+            self.print_sim_output("loading config .....", "green")
+            self.print_sim_output(f"psychsim path: {self.psychsim_path}", "green")
+            self.print_sim_output(f"definitions path: {self.definitions_path}", "green")
+            self.print_sim_output(f"model learning path: {self.model_learning_path}", "green")
+            self.print_sim_output(f"sim path: {self.sim_path}", "green")
+            self.print_sim_output(f"config loaded {path}", "green")
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")

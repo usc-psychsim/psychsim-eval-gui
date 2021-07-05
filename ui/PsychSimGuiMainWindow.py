@@ -68,6 +68,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.actionquery.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(1))
         self.actionplot.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(2))
         self.actionmanual.triggered.connect(lambda: self.show_doc_window("index.html"))
+        self.actionLoad_config.triggered.connect(self.select_and_load_config)
 
         # help buttons
         self.sim_info_page.sim_info_button.clicked.connect(lambda: self.show_doc_window("manual/simulation_script.html"))
@@ -85,6 +86,14 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sim_data_dict[data_id] = data
         # pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
         self.update_data_table()
+
+    def select_and_load_config(self):
+        """
+        Select a config file to load. Load the config file once selected.
+        """
+        fileName, _ = QFileDialog.getOpenFileName(None, "Select Config File", "", filter="Config files (*.ini)")
+        if fileName:
+            self.sim_info_page.load_config(path=fileName)
 
     def update_data_table(self):
         """
