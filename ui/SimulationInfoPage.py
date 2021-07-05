@@ -61,13 +61,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
 
-    #todo: check if these buttons actually do anything... (do they actually change the path )
-        self.sel_psychsim_dir.clicked.connect(lambda: pgh.set_directory(path_label=self.psychsim_dir_path,
-                                                                        path_var=self.psychsim_path,
-                                                                        caption="Select Psychsim Directory"))
-        self.sel_def_dir.clicked.connect(lambda: pgh.set_directory(path_label=self.def_dir_path,
-                                                                   path_var=self.definitions_path,
-                                                                   caption="Select Definitions Directory"))
+        # TODO: add a 'reload config' button to reset paths and things.
 
         self.select_sim.clicked.connect(self.set_file_path)
         self.load_sim_button.clicked.connect(self.load_sim)
@@ -83,7 +77,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         :param path: (str) path to config file
         """
         config = configparser.ConfigParser()
-
+        # TODO: print all the config stuff to the print area
         try:
             # read in the config in path if it exists, otherwise read the default
             if path:
@@ -97,8 +91,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             self.model_learning_path = config['PATHS']['model_learning']
             self.sim_path = config['PATHS']['simulation']
             # set the paths on the gui
-            self.psychsim_dir_path.setText(self.psychsim_path)
-            self.def_dir_path.setText(self.definitions_path)
             self.sim_path_label.setText(str(self.sim_path).split('/')[-1])
             self.print_sim_output("config loaded", "green")
         except:
