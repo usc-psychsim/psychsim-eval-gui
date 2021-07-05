@@ -60,10 +60,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.run_sim_button.setEnabled(True)
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
-
-        # TODO: add a 'reload config' button to reset paths and things.
-
-        self.select_sim.clicked.connect(self.set_file_path)
+        self.select_sim.clicked.connect(lambda: self.set_file_path("sim_scripts"))
         self.load_sim_button.clicked.connect(self.load_sim)
         self.run_sim_button.pressed.connect(self.start_sim_thread)
         self.stop_sim_button.pressed.connect(self.stop_thread)
@@ -77,7 +74,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         :param path: (str) path to config file
         """
         config = configparser.ConfigParser()
-        # TODO: print all the config stuff to the print area
         try:
             # read in the config in path if it exists, otherwise read the default
             if not path:
@@ -101,11 +97,11 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")
 
-    def set_file_path(self):
+    def set_file_path(self, default_dir=""):
         """
         Set the path to the simulation script (self.sim_path) and update the gui labels
         """
-        new_path = pgh.get_file_path(path_label=self.sim_path_label) # TODO: make default for this the simulation path
+        new_path = pgh.get_file_path(path_label=self.sim_path_label, default_dir=default_dir)
         if new_path:
             self.sim_path = new_path
             self.sim_loaded_state.setText("...")
