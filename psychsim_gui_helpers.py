@@ -181,6 +181,8 @@ def update_combo(combo_box, item_list, clear=False):
         all_items = [combo_box.itemText(i) for i in range(combo_box.count())]
     new_items = [str(item) for item in item_list if item not in all_items]
     combo_box.addItems(new_items)
+    dropdown_view = combo_box.view()
+    dropdown_view.setMinimumWidth(dropdown_view.sizeHintForColumn(0))
 
 
 if __name__ == "__main__":
