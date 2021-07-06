@@ -17,7 +17,7 @@ from PyQt5.Qt import QStandardItemModel
 from functools import partial
 
 import psychsim_gui_helpers as pgh
-from functions.PsychSimQueryFunctions2 import PsychSimQueryFunctions
+# from functions.PsychSimQueryFunctions2 import PsychSimQueryFunctions
 
 from ui.PandasModel import PandasModel, TreeModel
 from ui.QuerySampleCategoryDialog import QuerySampleCategoryDialog
@@ -51,9 +51,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.func_class_name = ""
         self._param_table_cache = {}
 
-        self.psychsim_query = PsychSimQueryFunctions()
+        # self.psychsim_query = PsychSimQueryFunctions()
 
-        self.set_function_dropdown()
+        # self.set_function_dropdown()
 
         # Setup buttons
         self.function_combo.activated.connect(self.handle_params)
@@ -74,7 +74,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_doc_button.clicked.connect(self.get_query_doc)
 
         self.set_func_source_button.clicked.connect(self.set_func_source)
-        self.reload_func_source_button.clicked.connect(self.reolaod_func_source)
+        self.reload_func_source_button.clicked.connect(self.relaod_func_source)
 
         self.set_sample_function_dropdown(["range", "category"])
 
@@ -477,7 +477,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
                          and '__' not in method_name]
-        pgh.update_combo(self.function_combo, query_methods)
+        pgh.update_combo(self.function_combo, query_methods, clear=True)
+        # self.func_source_label.setText(new_path)
 
     def set_sample_function_dropdown(self, function_list):
         """
@@ -490,7 +491,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Get the parameters from the function definitions in functions/PsychSimQueryFunctions.py
         :return:
         """
-        # TODO: exception handle this - specifically for AttributeError: 'DemoFunctions' object has no attribute 'get_actions (i.e. if a function is selected that doesn't exist in the functions file)
         # TODO: make this happen on loading (emit the signal for the first function to be activated from the function combo)
         function_name = self.function_combo.currentText()
 
@@ -695,14 +695,12 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Set the path to the simulation script (self.sim_path) and update the gui labels
         """
-        # TODO: update function dropdown when new function source is loaded (so can't select function that doesn't exist
-        # TODO: set this on loading so we know what the pre-loaded source is
-        new_path = pgh.get_file_path(path_label=self.func_source_label) # TODO: make the default location for this the function dir
+        new_path = pgh.get_file_path(path_label=self.func_source_label, default_dir="functions")
         if new_path:
             self.func_source = new_path
-            # self.func_source_label.setText("...")
+            # self.func_source_label.setText(new_path)
 
-    def reolaod_func_source(self):
+    def relaod_func_source(self):
         """
         import the functions script
         """

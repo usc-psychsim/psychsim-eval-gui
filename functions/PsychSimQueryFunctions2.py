@@ -15,7 +15,7 @@ TREE_TYPE = 'tree'
 TABLE_TYPE = 'table'
 
 
-class PsychSimQueryFunctions:
+class PsychSimQueryFunctions2:
     def __init__(self):
         pass
 

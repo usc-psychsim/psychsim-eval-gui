@@ -51,7 +51,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.setup_buttons()
 
         # LOAD CONFIG
-        self.load_config()
+        self.config = self.load_config()
 
     def setup_buttons(self):
         """
@@ -73,6 +73,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         Load the config file and set the paths for psychsim and the sim file
         :param path: (str) path to config file
         """
+        #TODO: tidy this up - this funciton might go in the main window...
         config = configparser.ConfigParser()
         try:
             # read in the config in path if it exists, otherwise read the default
@@ -93,6 +94,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             self.print_sim_output(f"model learning path: {self.model_learning_path}", "green")
             self.print_sim_output(f"sim path: {self.sim_path}", "green")
             self.print_sim_output(f"config loaded {path}", "green")
+            return config
         except:
             tb = traceback.format_exc()
             self.print_sim_output(tb, "red")

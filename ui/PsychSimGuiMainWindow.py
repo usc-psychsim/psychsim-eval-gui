@@ -55,6 +55,9 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
         # Set up the query data page
         self.query_data_page = QueryDataPage(self.sim_data_dict, self.query_data_dict)
+        self.query_data_page.func_source = self.sim_info_page.config['PATHS']['function_source']
+        self.query_data_page.relaod_func_source()
+        self.query_data_page.func_source_label.setText(self.sim_info_page.config['PATHS']['function_source'])
 
         # Set up the plot page
         self.plot_query_page = PlotQueryPage(self.query_data_dict, self.plot_data_dict)
