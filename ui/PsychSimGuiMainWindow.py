@@ -20,10 +20,15 @@ from ui.DocWindow import DocWindow
 qtCreatorFile = os.path.join("ui", "psychsim-gui-main.ui")
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
+
+# TODO: add logging instead of all the print statements in all files
+# TODO: remove all functions that aren't used
+
+
 class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     """
-    This class is responsible for initialising child widgets and windows, and creating connections between signals and slots between these
-    Internal signal and slots for each page is maintained by the respective classes
+    This class is responsible for initialising child widgets and windows, and creating connections between signals and
+    slots between these Internal signal and slots for each page is maintained by the respective classes
     It also initialises variables for use between each of the sections e.g. for storing data
     """
 
@@ -71,11 +76,16 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.actionLoad_config.triggered.connect(self.select_and_load_config)
 
         # help buttons
-        self.sim_info_page.sim_info_button.clicked.connect(lambda: self.show_doc_window("manual/simulation_script.html"))
-        self.sim_info_page.sim_help_button.clicked.connect(lambda: self.show_doc_window("manual/gui_functionality.html", "simulation"))
-        self.query_data_page.query_help_button.clicked.connect(lambda: self.show_doc_window("manual/gui_functionality.html", "query"))
-        self.query_data_page.function_info_button.clicked.connect(lambda: self.show_doc_window("manual/function_definitions.html"))
-        self.plot_query_page.plot_help_button.clicked.connect(lambda: self.show_doc_window("manual/gui_functionality.html", "plot"))
+        self.sim_info_page.sim_info_button.clicked.connect(
+            lambda: self.show_doc_window("manual/simulation_script.html"))
+        self.sim_info_page.sim_help_button.clicked.connect(
+            lambda: self.show_doc_window("manual/gui_functionality.html", "simulation"))
+        self.query_data_page.query_help_button.clicked.connect(
+            lambda: self.show_doc_window("manual/gui_functionality.html", "query"))
+        self.query_data_page.function_info_button.clicked.connect(
+            lambda: self.show_doc_window("manual/function_definitions.html"))
+        self.plot_query_page.plot_help_button.clicked.connect(
+            lambda: self.show_doc_window("manual/gui_functionality.html", "plot"))
 
     def update_data_info(self, data_id, data):
         """
@@ -91,9 +101,9 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         """
         Select a config file to load. Load the config file once selected.
         """
-        fileName, _ = QFileDialog.getOpenFileName(None, "Select Config File", "", filter="Config files (*.ini)")
-        if fileName:
-            self.sim_info_page.load_config(path=fileName)
+        file_name, _ = QFileDialog.getOpenFileName(None, "Select Config File", "", filter="Config files (*.ini)")
+        if file_name:
+            self.sim_info_page.load_config(path=file_name)
 
     def update_data_table(self):
         """
@@ -109,7 +119,9 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def create_data_table_button(self, data_id, button_label, button_function):
         """
         Create the button to save data in the data table
-        :param data_id:
+        :param data_id: id of data
+        :button_label: text to be displayed on the button
+        :Button_Function: function to connect to the button
         :return:
         """
         btn = QPushButton(self.loaded_data_window.loaded_data_table)
@@ -119,7 +131,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
 
     def save_data_window(self, data_id):
         """
-        Show the save data window (when save buttin in data table is clicked
+        Show the save data window (when save button in data table is clicked
         :param data_id: id of data to save
         """
         dt_string, _ = pgh.get_time_stamp()
@@ -142,40 +154,42 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         """
         load previously saved pickle data
         """
-        # TODO: put this in exception handling block - make sure only valid data is loaded (otherwise it'll crash)
-        #   check the data type like ->        if type(loaded_query) == pgh.PsySimQuery:
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self,
-                                                  "Select data file",
-                                                  "",
-                                                  "psychsim data (*.pickle)",
-                                                  options=options)
-        if fileName:
+        file_name, _ = QFileDialog.getOpenFileName(self,
+                                                   "Select data file",
+                                                   "sim_output",
+                                                   "psychsim data (*.pickle)",
+                                                   options=options)
+        if file_name:
             # load the psychsim libs to read the pickle objects
             self.sim_info_page.load_sim()
-            with open(fileName, 'rb') as f:
+            with open(file_name, 'rb') as f:
                 data = pickle.load(f)
-                self.sim_data_dict[data.id] = data
-                self.update_data_table()
-                # pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
+                if type(data) == pgh.PsychSimRun:
+                    self.sim_data_dict[data.id] = data
+                    self.update_data_table()
+                    # pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
+                else:
+                    print(f"{file_name} is of type {type(data).__name__} and not a valid psychSim run.")
 
     def load_data_from_log(self):
+        # TODO: remove this
         """
         load previously saved log data
         """
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self,
+        file_name, _ = QFileDialog.getOpenFileName(self,
                                                   "Select data file",
                                                   "",
                                                   "psychsim log data (*.log)",
                                                   options=options)
-        if fileName:
+        if file_name:
             # parse the log file
             print("PARSING")
             regex = '(<property name="(.*?)">(.*?)<\/property>)'
 
             match_list = []
-            with open(fileName, "r") as file:
+            with open(file_name, "r") as file:
                 for line in file:
                     line_data = re.split("\[(.*?)]\s|:\s", line)
                     if len(line_data) > 3:
@@ -191,15 +205,12 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
                 #         match_list.append(match_text)
                 #         print(match_text)
 
-
-
             # self.sim_info_page.load_sim()
             # with open(fileName, 'rb') as f:
             #     data = pickle.load(f)
             #     self.sim_data_dict[data.id] = data
             #     self.update_data_table()
             #     pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
-
 
     def show_rename_dialog(self, old_key):
         """
