@@ -255,7 +255,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         Show dialog and remove the selected query from the main window query data dictionary if selected
         """
-        # TODO: make sure queries are removed from dropdowns when deleted
         query_id = self.view_query_combo.currentText()
         try:
             if query_id in self.query_data_dict.keys():
@@ -275,7 +274,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         self.query_data_dict.pop(query_id)
         self.clear_query_info()
-        self.set_query_list_dropdown()  # update the query lists across the gui
+        self.set_query_list_dropdown(clear=True)  # update the query lists across the gui
 
     def diff_query(self):
         """
@@ -459,15 +458,15 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         sample_dialog.sample_combo_mult.addItems(values_string)
         return sample_dialog
 
-    def set_query_list_dropdown(self):
+    def set_query_list_dropdown(self, clear=False):
         """
         Update the query lists across the whole gui
         """
-        pgh.update_combo(self.view_query_combo, self.query_data_dict.keys())
-        pgh.update_combo(self.sample_query_combo, self.query_data_dict.keys())
-        pgh.update_combo(self.query_diff_1, self.query_data_dict.keys())
-        pgh.update_combo(self.query_diff_2, self.query_data_dict.keys())
-        pgh.update_combo(self.step_query_combo, self.query_data_dict.keys())
+        pgh.update_combo(self.view_query_combo, self.query_data_dict.keys(), clear)
+        pgh.update_combo(self.sample_query_combo, self.query_data_dict.keys(), clear)
+        pgh.update_combo(self.query_diff_1, self.query_data_dict.keys(), clear)
+        pgh.update_combo(self.query_diff_2, self.query_data_dict.keys(), clear)
+        pgh.update_combo(self.step_query_combo, self.query_data_dict.keys(), clear)
         # emit the query_combo activated signal to populate the other dropdowns
         self.sample_query_combo.activated.emit(0)
 
@@ -611,6 +610,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Display the query in a dialog and rename if necessesary
         :param query_id: id of query to display
         """
+        sender = self.sender()
         try:
             if query_id in self.query_data_dict.keys():
                 selected_query = self.query_data_dict[query_id]
@@ -618,9 +618,16 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
                 elif selected_query.result_type == 'tree':
                     selected_query = self.show_query_tree_dialog(model=TreeModel(selected_query.results), query=selected_query)
-                self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
-                self.set_query_list_dropdown()
-                self.update_query_info()
+
+                if selected_query.id not in self.query_data_dict.keys():
+                    self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
+                    clear = False
+                    if sender.objectName() == "execute_query_button":
+                        clear = True
+                    self.set_query_list_dropdown(clear=clear)
+                    self.update_query_info()
+                else:
+                    self.print_query_output(f"{selected_query.id} already exists! saved instead as {query_id}", "red")
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
