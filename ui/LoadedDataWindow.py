@@ -1,7 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
 import sys
-import pickle
 import os
 
 loaded_data_view_file = os.path.join("ui", "loaded_data_view.ui")
@@ -21,27 +20,19 @@ class LoadedDataWindow(QMainWindow, ui_loadedDataView):
         self.loaded_data_table.setColumnCount(len(columns))
         self.loaded_data_table.setHorizontalHeaderLabels(columns)
 
-    def load_data_from_pickle(self):
-        """
-        Open dialog to get file name of data to load (pickle files)
-        """
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select Sim", "","psychsim csv (*.pickle)") # TODO: make default for this output /data path
-        with open(fileName, 'rb') as f:
-            return pickle.load(f)
-
     def add_row_to_table(self, row):
         """
         Add a row to the data table
         :param row: list of items to add to table
         """
-        rowPosition = self.loaded_data_table.rowCount()
-        self.loaded_data_table.insertRow(rowPosition)
+        row_position = self.loaded_data_table.rowCount()
+        self.loaded_data_table.insertRow(row_position)
         index = 0
         for item in row:
             if type(item) == QPushButton:
-                self.loaded_data_table.setCellWidget(rowPosition, index, item)
+                self.loaded_data_table.setCellWidget(row_position, index, item)
             else:
-                self.loaded_data_table.setItem(rowPosition, index, QTableWidgetItem(item))
+                self.loaded_data_table.setItem(row_position, index, QTableWidgetItem(item))
             index = index + 1
 
     def clear_table(self):
