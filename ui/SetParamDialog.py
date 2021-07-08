@@ -6,8 +6,6 @@ import traceback
 
 import psychsim_gui_helpers as pgh
 
-from ui.QueryStringSelect import QueryStringSelect #Todo: remove this (completely from project)
-
 ui_file = os.path.join("ui", "set_param_dialog.ui")
 ui_obj, QtBaseClass = uic.loadUiType(ui_file)
 
@@ -28,7 +26,6 @@ class SetParamDialog(QDialog, ui_obj):
         self.select_query_radio.name = "sel_query"
         self.select_data_radio.toggled.connect(self.populate_combo)
         self.select_data_radio.name = "sel_data"
-        # self.select_string_button.clicked.connect(self.select_string)
         self.select_value_combo.activated.connect(self.get_param)
         self.sel_var_combo.activated.connect(self.get_value_from_variable)
         self.sel_val_combo.activated.connect(self.update_param_name)
@@ -59,20 +56,6 @@ class SetParamDialog(QDialog, ui_obj):
         self.sel_var_label.setEnabled(enable)
         self.sel_val_combo.setEnabled(enable)
         self.sel_var_combo.setEnabled(enable)
-
-    def select_string(self):
-        data = None
-        if self.select_query_radio.isChecked():
-            query_name = self.select_value_combo.currentText()
-            if query_name:
-                data = self.query_dict[query_name]
-        select_string_dialog = QueryStringSelect(data=data)
-        result = select_string_dialog.exec_()
-        if result:
-            param_name = select_string_dialog.selected_string
-            self.selected_param_value.setText(f"{type(param_name).__name__}:{param_name}")
-            self.param_type = type(param_name).__name__
-            self.param_val = param_name
 
     def use_selected(self):
         radioButton = self.sender()
