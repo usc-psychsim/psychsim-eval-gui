@@ -479,6 +479,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                          and '__' not in method_name]
         pgh.update_combo(self.function_combo, query_methods, clear=True)
         # self.func_source_label.setText(new_path)
+        # Make the function param table appear on loading
+        self.function_combo.activated.emit(0)
 
     def set_sample_function_dropdown(self, function_list):
         """
@@ -491,7 +493,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Get the parameters from the function definitions in functions/PsychSimQueryFunctions.py
         :return:
         """
-        # TODO: make this happen on loading (emit the signal for the first function to be activated from the function combo)
         function_name = self.function_combo.currentText()
 
         function = getattr(self.psychsim_query, function_name)
