@@ -49,7 +49,7 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
             row_2 = q2.results.iloc[index_i, :]
             # get the difference row (we only really need one because the absolute difference is the same on both sides
             diff_rows.append(row_1 == row_2)
-            index_i = index_i +1
+            index_i = index_i + 1
         # combine the diff rows to a new dataframe
         diff_output = pd.concat(diff_rows, axis=1, keys=[s.name for s in diff_rows]).T
         # Use the new diff dataframe to format the table (color the cells)

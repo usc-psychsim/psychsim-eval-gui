@@ -31,10 +31,11 @@ class PsySimQuery:
     function: str
     results: pd.DataFrame
     result_type: str
-    diff_query: bool=False
+    diff_query: bool = False
 
     def get_steps(self):
         return self.results.index.to_list()
+
 
 @dataclass
 class PsySimPlot:
@@ -49,37 +50,25 @@ class PsySimPlot:
     y_name: str
 
 
-def set_directory(path_label, path_var, caption):
-    """
-    Set the directory passed in path_var if a directory is selected
-    :param path_label: (Qlabel) displays path string on GUI
-    :param path_var: (str) class variable to hold the set path
-    :param caption: (str) caption to display on path selection dialog
-    """
-    psychsim_path = QFileDialog.getExistingDirectory(None, caption)
-    new_path = f"{str(psychsim_path)}"
-    if psychsim_path:
-        path_label.setText(new_path)
-        path_var = new_path
-
-
 def get_file_path(path_label, file_type="Python Files (*.py)", default_dir=""):
     """
     Get the path to a file from the native file selection dialog
     :param path_label: (Qlabel) displays path string on GUI
     :param file_type: (str) type of files to be selected
+    :param default_dir: (str) directory to open as default
     :return: (str) selected file name
     """
-    fileName, _ = QFileDialog.getOpenFileName(None, "Select Sim", default_dir, file_type)
-    if fileName:
-        path_label.setText(str(fileName).split('/')[-1])
-    return fileName
+    file_name, _ = QFileDialog.getOpenFileName(None, "Select Sim", default_dir, file_type)
+    if file_name:
+        path_label.setText(str(file_name).split('/')[-1])
+    return file_name
 
 
 def get_time_stamp():
     """
     get formatted time stamp
-    :return: dt_string: nicely formatted string for uniquely identifying data; run_date: nicely formatted date for display purposes
+    :return: dt_string: nicely formatted string for uniquely identifying data; run_date: nicely formatted date for
+             display purposes
     """
     now = datetime.now()
     dt_string = now.strftime("%Y%m%d_%H%M%S")
@@ -171,7 +160,8 @@ def update_combo(combo_box, item_list, clear=False):
     """
     Generic combo box update function
     :param combo_box: qcomboBox to be updated
-    :param data_dict: dictionary containg data to populate the combo box with
+    :param item_list: list data to populate the combo box with
+    :param clear: flag to clear the combo before repopulating
     :return:
     """
     all_items = []
