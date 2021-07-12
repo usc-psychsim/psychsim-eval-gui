@@ -57,8 +57,8 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         """
         Set the type and stat combo box with fixed options
         """
-        pgh.update_combo(self.stat_combo, ["none", "mean", "median"])
-        pgh.update_combo(self.type_combo, ["Line", "Scatter", "Histogram", "Bar", "Violin"])
+        pgh.update_combo(self.stat_combo, ["none", "mean", "median"], clear=True)
+        pgh.update_combo(self.type_combo, ["Line", "Scatter", "Histogram", "Bar", "Violin"], clear=True)
 
     def set_axis_dropdowns(self):
         """
@@ -67,11 +67,11 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         try:
             data_key = self.query_combo.currentText()
             axis_values = sorted(self.query_data_dict[data_key].results.index.values)
-            pgh.update_combo(self.y_combo, axis_values)
-            pgh.update_combo(self.x_combo, axis_values)
+            pgh.update_combo(self.y_combo, axis_values, clear=True)
+            pgh.update_combo(self.x_combo, axis_values, clear=True)
             axis_values.insert(0, "none")
-            pgh.update_combo(self.x_alias_combo, axis_values)
-            pgh.update_combo(self.group_combo, axis_values)
+            pgh.update_combo(self.x_alias_combo, axis_values, clear=True)
+            pgh.update_combo(self.group_combo, axis_values, clear=True)
         except:
             tb = traceback.format_exc()
             print(tb)
