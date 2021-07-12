@@ -2,10 +2,10 @@
 Code from: https://gis.stackexchange.com/questions/350148/qcombobox-multiple-selection-pyqt5/351152#351152
 """
 
-
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+
 
 class CheckableComboBox(QComboBox):
     """

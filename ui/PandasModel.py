@@ -1,6 +1,7 @@
 """
 Model used to display pandas dataframes in qt tableview widget
-# useful documentation on custom models: https://www.learnpyqt.com/courses/model-views/qtableview-modelviews-numpy-pandas/
+# useful documentation on custom models:
+https://www.learnpyqt.com/courses/model-views/qtableview-modelviews-numpy-pandas/
 
 """
 
@@ -9,12 +10,13 @@ from PyQt5.QtGui import *
 
 import pandas as pd
 
+
 class PandasModel(QAbstractTableModel):
 
     def __init__(self, data, diff=None, diff_colour="blue"):
         QAbstractTableModel.__init__(self)
         self._data = data
-        if type(data) == pd.MultiIndex: # This allows hierarchical tree data to be displayed in a table
+        if type(data) == pd.MultiIndex:  # This allows hierarchical tree data to be displayed in a table
             self._data = data.to_frame()
         self._diff = diff
         self._diff_colour = diff_colour
@@ -41,7 +43,6 @@ class PandasModel(QAbstractTableModel):
                 if pd.api.types.is_string_dtype(value):
                     pass
 
-
                 # return value
                 return str(self._data.iloc[index.row(), index.column()])
 
@@ -49,11 +50,13 @@ class PandasModel(QAbstractTableModel):
                 row = index.row()
                 col = index.column()
                 try:
-                    diff_val = self._diff.iloc[index.row(), index.column()]#.iloc[index.row()][index.column()]
-                    if not diff_val: # colour if the diff value is FALSE (i.e. the values aren't the same between the two dataframes)
+                    diff_val = self._diff.iloc[index.row(), index.column()]  # .iloc[index.row()][index.column()]
+                    if not diff_val:
+                        # colour if the diff value is FALSE (i.e. the values aren't the same between the two dataframes)
                         return QColor(self._diff_colour)
                 except:
-                    print("error") #TODO FIX THIS. (it can be forced by diffing two query_actions of differnet lengths)
+                    print(
+                        "error")  # TODO FIX THIS. (it can be forced by diffing two query_actions of differnet lengths)
 
         return None
 
@@ -65,6 +68,7 @@ class PandasModel(QAbstractTableModel):
 
             if orientation == Qt.Vertical:
                 return str(self._data.index[section])
+
 
 # https://gist.github.com/danieljfarrell/6e94aa6f8c3c437d901fd15b7b931afb
 class CustomNode(object):
@@ -81,7 +85,7 @@ class CustomNode(object):
         self._row = 0
 
     def data(self, column):
-        if column >= 0 and column < len(self._data):
+        if 0 <= column < len(self._data):
             return self._data[column]
 
     def columnCount(self):
@@ -91,7 +95,7 @@ class CustomNode(object):
         return len(self._children)
 
     def child(self, row):
-        if row >= 0 and row < self.childCount():
+        if 0 <= row < self.childCount():
             return self._children[row]
 
     def parent(self):

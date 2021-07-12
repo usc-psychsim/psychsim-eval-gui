@@ -14,6 +14,7 @@ class DocWindow(QMainWindow, ui_docWindow):
     """
     def __init__(self, parent=None):
         super(DocWindow, self).__init__(parent)
+        self.web_widget = QWebEngineView()
         self.setupUi(self)
         self.setWindowTitle("Manual")
         self.setup_web_engine()
@@ -22,7 +23,6 @@ class DocWindow(QMainWindow, ui_docWindow):
         """
         create an instance of QWebEngineView and set the html code
         """
-        self.web_widget = QWebEngineView()
         vbox_layout = QVBoxLayout()
         vbox_layout.addWidget(self.web_widget)
         self.doc_frame.setLayout(vbox_layout)

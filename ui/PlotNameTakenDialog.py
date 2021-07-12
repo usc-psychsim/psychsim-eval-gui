@@ -19,6 +19,6 @@ class PlotNameTakenDialog(QDialog, ui_Dialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = SavePlotDialog()
+    window = PlotNameTakenDialog()
     window.show()
     sys.exit(app.exec_())

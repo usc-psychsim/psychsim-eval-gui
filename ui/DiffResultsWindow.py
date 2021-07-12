@@ -25,17 +25,6 @@ class DiffResultsWindow(QMainWindow, ui_diffResultsWindow):
         self.changed_t2_label.setStyleSheet("color: blue")
         # self.unique_t2_label.setStyleSheet("background-color : lightblue")
 
-    def set_table_headers(self, table, data):
-        """
-        Set the header of a table from the provided csv header
-        :param table: table to set headers on
-        :param data: table data
-        """
-        table.setColumnCount(data.shape[1])
-        table.setRowCount(data.shape[0])
-        table.setHorizontalHeaderLabels(data.columns)
-        table.setVerticalHeaderLabels(data.index.array)
-
     def execute_diff(self, q1, q2):
         """
         Execute the diff operation

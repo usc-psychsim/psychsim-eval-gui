@@ -179,3 +179,15 @@ if __name__ == "__main__":
     df = pd.DataFrame()
     test_data = PsychSimRun(id="test_id", run_date="date", data=df, sim_file="simfile", steps=9)
     print(asdict(test_data))
+
+
+def set_table_headers(table, data):
+    """
+    Set the header of a table from the provided csv header
+    :param table: table to set headers on
+    :param data: table data
+    """
+    table.setColumnCount(data.shape[1])
+    table.setRowCount(data.shape[0])
+    table.setHorizontalHeaderLabels(data.columns)
+    table.setVerticalHeaderLabels(data.index.array)
