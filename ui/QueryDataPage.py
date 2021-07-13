@@ -627,7 +627,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                         clear = True
                     self.set_query_list_dropdown(clear=clear)
                     self.update_query_info()
-                else:
+                elif selected_query.id in self.query_data_dict.keys() and selected_query.id != query_id:
                     self.print_query_output(f"{selected_query.id} already exists! saved instead as {query_id}", "red")
         except:
             tb = traceback.format_exc()
