@@ -183,9 +183,9 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         elif plot_type == "Bar":
             fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, name=name))
         elif plot_type == "Violin":
-            for x_unique in data[x_name].unique():
-                fig.add_trace(go.Violin(x=data[x_name][data[x_name] == x_unique],
-                                        y=data[y_name][data[x_name] == x_unique],
+            for x_unique in data.loc[x_name].unique():
+                fig.add_trace(go.Violin(x=data.loc[x_name][data.loc[x_name] == x_unique],
+                                        y=data.loc[y_name][data.loc[x_name] == x_unique],
                                         name=f"{x_unique}-{y_name}",
                                         box_visible=True,
                                         meanline_visible=True))
