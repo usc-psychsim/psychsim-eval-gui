@@ -23,6 +23,7 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
 
     def __init__(self, query_data_dict, plot_data_dict, parent=None):
         super().__init__(parent)
+        self.test_data_dict = dict(iris=px.data.iris().T, wind=px.data.wind().T, gapminder=px.data.gapminder().T)
         self.setupUi(self)
         self.query_data_dict = query_data_dict
         self.plot_data_dict = plot_data_dict
@@ -68,7 +69,6 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         Create queries from test data sets to enable test plotting
         """
         if self.test_check.isChecked():
-            self.test_data_dict = dict(iris=px.data.iris().T, wind=px.data.wind().T, gapminder=px.data.gapminder().T)
             for key, data in self.test_data_dict.items():
                 self.query_data_dict[key] = pgh.PsySimQuery(id=key,
                                                             params=[],
@@ -108,6 +108,7 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
                 self.plot_data_dict.pop(item.text())
         except:
             print("plot not in dict")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

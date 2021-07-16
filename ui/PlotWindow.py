@@ -7,6 +7,8 @@ import plotly
 import traceback
 import copy
 import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
 
 import psychsim_gui_helpers as pgh
 
@@ -100,16 +102,26 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                             group_data = data.T[data.T[self.group_combo.currentText()] == group].T
                             fig = self.set_figure(data=group_data, fig=fig, plot_type=plot_type, name=name)
                     else:
-                        # if there is a group and also a stat groupby the x-axis and apply the stat to that data
-                        data = getattr(data.groupby(data[self.x_combo.currentText()]), stat)()
-                        data[self.x_combo.currentText()] = data.index
-                        # name = f"{self.y_combo.currentText()}_{stat}_{self.query_combo.currentText()}"
-                        name = f"{self.y_combo.currentText()}_{stat}"
-                        fig = self.set_figure(data, fig, plot_type, name)
+                        for group in data.T[self.group_combo.currentText()].unique().tolist():
+                            name = f"{group}"
+                            group_data = data.T[data.T[self.group_combo.currentText()] == group].T
+                            group_data = group_data.apply(pd.to_numeric, errors='coerce', axis=0)
+                            group_data = getattr(group_data.T.groupby(group_data.loc[self.x_combo.currentText()]), stat)().T
+                            group_data[self.x_combo.currentText()] = group_data.index
+                            name = f"{self.y_combo.currentText()}_{stat}"
+                            fig = self.set_figure(group_data, fig, plot_type, name)
+
+                        # # if there is a group and also a stat groupby the x-axis and apply the stat to that data
+                        # data = getattr(data.groupby(data[self.x_combo.currentText()]), stat)()
+                        # data[self.x_combo.currentText()] = data.index
+                        # # name = f"{self.y_combo.currentText()}_{stat}_{self.query_combo.currentText()}"
+                        # name = f"{self.y_combo.currentText()}_{stat}"
+                        # fig = self.set_figure(data, fig, plot_type, name)
                 else:
                     if stat not in ["none"]:
                         # if there is no group but a stat
-                        data = getattr(data.groupby(data[self.x_combo.currentText()]), stat)()
+                        data = data.apply(pd.to_numeric, errors='coerce', axis=0)
+                        data = getattr(data.T.groupby(data.loc[self.x_combo.currentText()]), stat)().T
                         data[self.x_combo.currentText()] = data.index
                     # name = f"{self.y_combo.currentText()}_{self.query_combo.currentText()}"
                     name = f"{self.y_combo.currentText()}"
