@@ -110,21 +110,15 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                             group_data[self.x_combo.currentText()] = group_data.index
                             name = f"{self.y_combo.currentText()}_{stat}"
                             fig = self.set_figure(group_data, fig, plot_type, name)
-
-                        # # if there is a group and also a stat groupby the x-axis and apply the stat to that data
-                        # data = getattr(data.groupby(data[self.x_combo.currentText()]), stat)()
-                        # data[self.x_combo.currentText()] = data.index
-                        # # name = f"{self.y_combo.currentText()}_{stat}_{self.query_combo.currentText()}"
-                        # name = f"{self.y_combo.currentText()}_{stat}"
-                        # fig = self.set_figure(data, fig, plot_type, name)
                 else:
                     if stat not in ["none"]:
                         # if there is no group but a stat
                         data = data.apply(pd.to_numeric, errors='coerce', axis=0)
                         data = getattr(data.T.groupby(data.loc[self.x_combo.currentText()]), stat)().T
                         data[self.x_combo.currentText()] = data.index
-                    # name = f"{self.y_combo.currentText()}_{self.query_combo.currentText()}"
-                    name = f"{self.y_combo.currentText()}"
+                        name = f"{self.y_combo.currentText()}_{stat}"
+                    else:
+                        name = f"{self.y_combo.currentText()}"
                     fig = self.set_figure(data, fig, plot_type, name)
 
                 self.update_class_plot_info(fig, plot_type)
