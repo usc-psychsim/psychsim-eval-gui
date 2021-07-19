@@ -85,13 +85,13 @@ def print_diff(text_output_obj, d1, d2, diff_var):
     :param diff_var: member of query object to diff over
     """
     if getattr(d1, diff_var) == getattr(d2, diff_var):
-        text_output_obj.append(f"{_green_str('NO DIFF IN')}: {_green_str(diff_var)}")
-        text_output_obj.append(f"{d1.id}: {_green_str(getattr(d1, diff_var))}")
-        text_output_obj.append(f"{d2.id}: {_green_str(getattr(d2, diff_var))}")
+        text_output_obj.append(f"{green_str('NO DIFF IN')}: {green_str(diff_var)}")
+        text_output_obj.append(f"{d1.id}: {green_str(getattr(d1, diff_var))}")
+        text_output_obj.append(f"{d2.id}: {green_str(getattr(d2, diff_var))}")
     else:
-        text_output_obj.append(f"{_red_str('DIFF IN')}: {_red_str(diff_var)}")
-        text_output_obj.append(f"{d1.id}: {_red_str(getattr(d1, diff_var))}")
-        text_output_obj.append(f"{d2.id}: {_red_str(getattr(d2, diff_var))}")
+        text_output_obj.append(f"{red_str('DIFF IN')}: {red_str(diff_var)}")
+        text_output_obj.append(f"{d1.id}: {red_str(getattr(d1, diff_var))}")
+        text_output_obj.append(f"{d2.id}: {red_str(getattr(d2, diff_var))}")
 
 
 def print_output(text_output_obj, msg, color):
@@ -99,19 +99,19 @@ def print_output(text_output_obj, msg, color):
     text_output_obj.append(msg)
 
 
-def _green_str(s):
+def green_str(s):
     return f'<span style=\" color: #008000;\">{s}</span>'
 
 
-def _red_str(s):
+def red_str(s):
     return f'<span style=\" color: #ff0000;\">{s}</span>'
 
 
-def _black_str(s):
+def black_str(s):
     return f'<span style=\" color: #000000;\">{s}</span>'
 
 
-def _blue_str(s):
+def blue_str(s):
     return f'<span style=\" color: #0000ff ;\">{s}</span>'
 
 

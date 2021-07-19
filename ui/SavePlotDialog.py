@@ -42,8 +42,6 @@ class SavePlotDialog(QDialog, ui_savePlotDialog):
         return new_name, result
 
 
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = SavePlotDialog()

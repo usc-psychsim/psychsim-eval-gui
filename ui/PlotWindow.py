@@ -8,7 +8,6 @@ import traceback
 import copy
 import plotly.graph_objects as go
 import pandas as pd
-import numpy as np
 
 import psychsim_gui_helpers as pgh
 
@@ -23,6 +22,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
     def __init__(self, query_data_dict, window_name="New Plot", parent=None):
         super(PlotWindow, self).__init__(parent)
+        self.plot_widget = QWebEngineView()
         self.setupUi(self)
         self.setWindowTitle(window_name)
         self.query_data_dict = query_data_dict
@@ -50,7 +50,6 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         """
         create an instance of QWebEngineView and place it in the window
         """
-        self.plot_widget = QWebEngineView()
         vbox_layout = QVBoxLayout()
         vbox_layout.addWidget(self.plot_widget)
         self.plot_frame.setLayout(vbox_layout)
@@ -64,7 +63,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
     def set_axis_dropdowns(self):
         """
-        Update the relevent dropdowns based on the selected query
+        Update the relevant dropdowns based on the selected query
         """
         try:
             data_key = self.query_combo.currentText()
@@ -96,14 +95,13 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
                 if self.group_combo.currentText() not in ["none"]:
                     if stat in ["none"]:
-                        # if there is a group and no stat, loop over the unique elements in the group and add a new trace for each
-                        for group in data.T[self.group_combo.currentText()].unique().tolist(): #TODO: figure out how to determine if the data is wide or long
+                        # if group and no stat, loop over the unique elements in group and add new trace for each
+                        for group in data.T[self.group_combo.currentText()].unique().tolist():  # TODO: figure out how to determine if the data is wide or long
                             name = f"{group}"
                             group_data = data.T[data.T[self.group_combo.currentText()] == group].T
                             fig = self.set_figure(data=group_data, fig=fig, plot_type=plot_type, name=name)
                     else:
                         for group in data.T[self.group_combo.currentText()].unique().tolist():
-                            name = f"{group}"
                             group_data = data.T[data.T[self.group_combo.currentText()] == group].T
                             group_data = group_data.apply(pd.to_numeric, errors='coerce', axis=0)
                             group_data = getattr(group_data.T.groupby(group_data.loc[self.x_combo.currentText()]), stat)().T
@@ -199,7 +197,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
 
     def render_plot_to_gui(self, fig, title="", x_name="", y_name="", x_alias=None):
         """
-        Create the html code for the plot to disply on the qwebengine widget
+        Create the html code for the plot to display on the qwebengine widget
         :param fig: plotly plot to display
         :param title: title of the plot
         :param x_name: x_axis name
@@ -274,7 +272,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
     def get_fig_as_html(self, fig):
         """
         Convert the figure to html
-        :param fig: figure containng plot
+        :param fig: figure containing plot
         :return: figure as html (string)
         """
         html = '<html><body>'

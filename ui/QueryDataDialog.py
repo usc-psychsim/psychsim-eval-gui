@@ -14,6 +14,7 @@ class QueryDataDialog(QDialog, ui_queryDataView):
     """
     def __init__(self, query_data, model):
         super(QueryDataDialog, self).__init__()
+        self.model = model
         self.setupUi(self)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
@@ -26,14 +27,11 @@ class QueryDataDialog(QDialog, ui_queryDataView):
 
         self.set_pandas_model(model)
 
-
-
     def set_pandas_model(self, model):
         """
         Set the table model to handle pandas dataframes
         :param model: pandas model to set
         """
-        self.model = model
         self.Query_data_table.setModel(model)
         self.Query_data_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
 

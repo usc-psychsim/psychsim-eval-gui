@@ -13,7 +13,6 @@ import copy
 import importlib.util
 import pandas as pd
 import numpy as np
-from PyQt5.Qt import QStandardItemModel
 from functools import partial
 
 import psychsim_gui_helpers as pgh
@@ -38,6 +37,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
     This class is for all functions relating to the query data page of the GUI
     This includes:
     """
+
     def __init__(self, sim_data_dict, query_data_dict, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -74,7 +74,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_doc_button.clicked.connect(self.get_query_doc)
 
         self.set_func_source_button.clicked.connect(self.set_func_source)
-        self.reload_func_source_button.clicked.connect(self.relaod_func_source)
+        self.reload_func_source_button.clicked.connect(self.reload_func_source)
 
         self.set_sample_function_dropdown(["range", "category"])
 
@@ -137,7 +137,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-
     def update_query_data(self, query_id, query_data):
         """
         Update the query data dictionary with new data, and update the query lists across the entire gui
@@ -152,6 +151,9 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         Create a new query object
         :param query_function: (str) name of query function
         :param query_data: (DataFrame) results of query
+        :param params: (dict) parameters of query function defined in functions file
+        :param result_type: (str) "table" to display results in table. "tree" to display results as tree
+        :param query_id: (str) id of query to find it in the query dict
         :return: PsySimQuery object
         """
         dt_string, run_date = pgh.get_time_stamp()
@@ -235,21 +237,21 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         load previously saved pickled query data
         """
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self,
-                                                  "Select data file",
-                                                  "",
-                                                  "query data (*.pickle)",
-                                                  options=options)
-        if fileName:
+        file_name, _ = QFileDialog.getOpenFileName(self,
+                                                   "Select data file",
+                                                   "",
+                                                   "query data (*.pickle)",
+                                                   options=options)
+        if file_name:
             # load the psychsim libs to read the pickle objects
             # self.sim_info_page.load_sim()
-            with open(fileName, 'rb') as f:
+            with open(file_name, 'rb') as f:
                 loaded_query = pickle.load(f)
                 if type(loaded_query) == pgh.PsySimQuery:
                     self.update_query_data(loaded_query.id, loaded_query)
                     self.print_query_output(f"{loaded_query.id} loaded", "black")
                 else:
-                    self.print_query_output(f"{fileName} is not a query", "red")
+                    self.print_query_output(f"{file_name} is not a query", "red")
 
     def delete_query(self):
         """
@@ -287,7 +289,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             # check that the columns match regardless of order
             if pgh.dataframe_columns_equal(q1.results, q2.results):
                 self.print_query_output(
-                    f"DIFFING: {pgh._blue_str(q1.id)} and {pgh._blue_str(q2.id)}")
+                    f"DIFFING: {pgh.blue_str(q1.id)} and {pgh.blue_str(q2.id)}")
                 self.diff_query_objects(q1, q2)
                 self.diff_query_results(q1, q2)
             else:
@@ -305,8 +307,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param q2: object to diff
         """
         for member in [i for i in dir(q1) if not i.startswith("_") and
-                                             not i.startswith("get") and
-                                             not i.startswith("results")]:
+                       not i.startswith("get") and
+                       not i.startswith("results")]:
             pgh.print_diff(self.query_output, q1, q2, member)
 
     def diff_query_results(self, q1, q2):
@@ -325,16 +327,16 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def handle_sample_query_dropdown(self):
         """
-        Used to dete sample variable list depending on which data source is selected
+        Used to update sample variable list depending on which data source is selected
         """
         selection = self.sample_query_combo.currentText()
         if len(self.query_data_dict) > 0:
             current_query = self.query_data_dict[selection]
-            vars = current_query.results.T.columns.to_list() # Transpose to convert wide to long
-            vars = list(map(str, vars)) # make sure vars are string type
+            variables = current_query.results.T.columns.to_list()  # Transpose to convert wide to long
+            variables = list(map(str, variables))  # make sure vars are string type
             # vars = current_query.results.index.to_list() # use this for wide data (vars as row names)
             self.sample_variable_combo.clear()
-            self.sample_variable_combo.addItems(vars)
+            self.sample_variable_combo.addItems(variables)
 
     def show_sample_dialog(self):
         """
@@ -343,7 +345,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         """
         query_selection = self.sample_query_combo.currentText()
         selected_query = copy.deepcopy(self.query_data_dict[query_selection])
-        selected_query.results = selected_query.results.T # Transpose to account for wide data (this is a bit of a hack because the code was written for long data)
+
+        # Transpose to account for wide data (this is a bit of a hack because the code was written for long data)
+        selected_query.results = selected_query.results.T
+
         variable_selection = self.sample_variable_combo.currentText()
         try:
             if self.sample_function_combo.currentText() == "range":
@@ -361,7 +366,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param variable_selection: variable of query results to sample over
         """
         # get max and min values for specific variable
-        range_max = selected_query.results[variable_selection].max() # use this for variables as columns
+        range_max = selected_query.results[variable_selection].max()  # use this for variables as columns
         range_min = selected_query.results[variable_selection].min()
         # range_max = selected_query.results.loc[variable_selection, :].max()
         # range_min = selected_query.results.loc[variable_selection, :].min()
@@ -374,7 +379,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 filt_max = sample_dialog.max_spin.value()
 
                 # apply the sampling
-                # TODO: make this more sophisiticated to enable sampling of only first step (if selected)
+                # TODO: make this more sophisticated to enable sampling of only first step (if selected)
                 sampled_query = copy.deepcopy(selected_query.results)
                 sampled_query = sampled_query.loc[sampled_query[variable_selection] <= filt_max]
                 sampled_query = sampled_query.loc[sampled_query[variable_selection] >= filt_min]
@@ -384,7 +389,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                 sample_id = f"{selected_query.id}_{variable_selection}_{self.sample_function_combo.currentText()}_" \
                             f"{filt_min}-{filt_max} "
                 new_query = self.create_new_query_object(query_function=selected_query.function,
-                                                         query_data=sampled_query.T, #TODO: fix the shape of the data throughout the whole gui
+                                                         query_data=sampled_query.T,
+                                                         # TODO: fix the shape of the data throughout the whole gui
                                                          query_id=sample_id,
                                                          params=None)
                 self.update_query_data(new_query.id, new_query)
@@ -409,7 +415,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             sampled_query[variable_selection] = sampled_query[variable_selection].astype(str)
 
             # apply the sampling
-            # TODO: make this more sophisiticated to enable sampling of only first step (if selected)
+            # TODO: make this more sophisticated to enable sampling of only first step (if selected)
             sampled_query = pd.concat(
                 [sampled_query.loc[sampled_query[variable_selection] == i] for i in cat_values])
             sampled_query.reset_index(inplace=True, drop=True)
@@ -452,7 +458,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         sample_dialog = QuerySampleCategoryDialog()
         sample_dialog.name_label.setText(f"{selected_query.id}")
         sample_dialog.value_label.setText(f"{variable_selection}")
-        values_raw = selected_query.results[variable_selection].unique() # use this for variable as cols
+        values_raw = selected_query.results[variable_selection].unique()  # use this for variable as cols
         # values_raw = selected_query.results.loc[variable_selection, :].unique() # use this for variables as rows
         values_string = [str(i) for i in values_raw]
         sample_dialog.sample_combo_mult.addItems(values_string)
@@ -573,7 +579,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             index = index + 1
 
     def set_param(self, button_row):
-        set_button = self.sender()
         try:
             set_param_dialog = SetParamDialog(data_dict=self.sim_data_dict, query_dict=self.query_data_dict)
             # are_you_sure_dialog.query_name.setText(query_id)
@@ -582,16 +587,15 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             set_param_dialog.set_title(function_name, param_name)
             result = set_param_dialog.exec_()
             if result:
-                param = set_param_dialog.selected_param_value.text()
                 param_type = set_param_dialog.param_type
                 param_val = set_param_dialog.param_val
                 # param = are_you_sure_dialog.param_val
-                name_item = QTableWidgetItem(param_type)   # create a new Item
+                name_item = QTableWidgetItem(param_type)  # create a new Item
                 expected_type = self.query_param_table.item(button_row, 2).text()
                 self._color_table_params(param_type, expected_type, name_item)
-                self.query_param_table.setItem(button_row,3, name_item)
-                name_item = QTableWidgetItem(param_val)   # create a new Item
-                self.query_param_table.setItem(button_row,4, name_item)
+                self.query_param_table.setItem(button_row, 3, name_item)
+                name_item = QTableWidgetItem(param_val)  # create a new Item
+                self.query_param_table.setItem(button_row, 4, name_item)
                 self.cache_table(function_name, self.query_param_table)
         except:
             tb = traceback.format_exc()
@@ -608,7 +612,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def display_query(self, query_id):
         """
-        Display the query in a dialog and rename if necessesary
+        Display the query in a dialog and rename if necessary
         :param query_id: id of query to display
         """
         sender = self.sender()
@@ -616,9 +620,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             if query_id in self.query_data_dict.keys():
                 selected_query = self.query_data_dict[query_id]
                 if selected_query.result_type == 'table':
-                    selected_query = self.show_query_dialog(model=PandasModel(selected_query.results), query=selected_query)
+                    selected_query = self.show_query_dialog(model=PandasModel(selected_query.results),
+                                                            query=selected_query)
                 elif selected_query.result_type == 'tree':
-                    selected_query = self.show_query_tree_dialog(model=TreeModel(selected_query.results), query=selected_query)
+                    selected_query = self.show_query_tree_dialog(model=TreeModel(selected_query.results),
+                                                                 query=selected_query)
 
                 if selected_query.id not in self.query_data_dict.keys():
                     self.query_data_dict[selected_query.id] = self.query_data_dict.pop(query_id)
@@ -652,12 +658,12 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         :param model: PandasModel with query results
         :param query: PsySimQuery object of selected query
         """
-        #----
-        #for standardItem lists
+        # ----
+        # for standardItem lists
         # rootNode = model.invisibleRootItem()
         # for node in query.results:
         #     rootNode.appendRow(node)
-        #----
+        # ----
         query_dialog = QueryDataTreeDialog(query, model)
         query_dialog.Query_data_tree.expandAll()
         result = query_dialog.exec_()
@@ -679,7 +685,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def view_query(self):
         """
-        Display the query selectedon the GUI
+        Display the query selection on the GUI
         """
         query_id = self.view_query_combo.currentText()
         self.display_query(query_id)
@@ -701,11 +707,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             self.func_source = new_path
             # self.func_source_label.setText(new_path)
 
-    def relaod_func_source(self):
+    def reload_func_source(self):
         """
         import the functions script
         """
-        #todo: refactor with similar function in simulationInfoPage?
+        # todo: refactor with similar function in simulationInfoPage?
         self.add_to_sys_path()
         self.print_query_output(f"attempting to load functions from: {self.func_source}", "green")
         try:
@@ -715,7 +721,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             self.func_spec.loader.exec_module(self.func_module)
             # update buttons and print output
             self.print_query_output(f"functions loaded: {self.func_source}", "green")
-            #update functions dropdown
+            # update functions dropdown
             self.psychsim_query = getattr(self.func_module, self.func_class_name)()
             self.set_function_dropdown()
         except:
@@ -745,6 +751,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

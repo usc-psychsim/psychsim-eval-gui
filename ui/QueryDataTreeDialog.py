@@ -25,6 +25,7 @@ class QueryDataTreeDialog(QDialog, ui_queryDataView):
         self.query_id_input.setText(query_data.id)
 
         self.set_pandas_model(model)
+        self.model = None
 
     def set_pandas_model(self, model):
         """

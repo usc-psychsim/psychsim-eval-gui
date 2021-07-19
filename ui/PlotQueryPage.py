@@ -101,9 +101,10 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         Remove a plot from the saved lists and from the plot_data_dict
         """
         try:
-            listItems = self.plot_listwidget.selectedItems()
-            if not listItems: return
-            for item in listItems:
+            list_items = self.plot_listwidget.selectedItems()
+            if not list_items:
+                return
+            for item in list_items:
                 self.plot_listwidget.takeItem(self.plot_listwidget.row(item))
                 self.plot_data_dict.pop(item.text())
         except:
