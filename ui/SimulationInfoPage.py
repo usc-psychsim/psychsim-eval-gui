@@ -44,6 +44,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.run_sim = False
         self.psychsim_path = ""
         self.definitions_path = ""
+        self.model_learning_path = ""
         self.sim_path = ""
         self.sim_name = ""
 
@@ -73,7 +74,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         Load the config file and set the paths for psychsim and the sim file
         :param path: (str) path to config file
         """
-        #TODO: tidy this up - this funciton might go in the main window...
+        # TODO: tidy this up - this function might go in the main window...
         config = configparser.ConfigParser()
         try:
             # read in the config in path if it exists, otherwise read the default
@@ -199,7 +200,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         """
         Print the progress of the simulation thread to the gui
         :param step: current step the simulation is on
-        :param max_step: the mamimum number of steps the simulation has
+        :param max_step: the maximum number of steps the simulation has
         """
         self.print_sim_output(f"{step}/{max_step} steps completed", "black")
 

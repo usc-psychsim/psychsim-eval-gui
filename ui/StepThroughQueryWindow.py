@@ -3,7 +3,6 @@ from PyQt5 import uic
 import sys
 import os
 import traceback
-import pandas as pd
 
 from ui.PandasModel import PandasModel
 from ui.CheckableComboBox import CheckableComboBox
@@ -35,10 +34,10 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
 
         # connect the buttons
         self.veiw_data_button.clicked.connect(self.view_data)
-        self.step_forward_button.clicked.connect(lambda: self.step_through_data(type="forward"))
-        self.step_back_button.clicked.connect(lambda: self.step_through_data(type="backward"))
-        self.to_end_button.clicked.connect(lambda: self.step_through_data(type="end"))
-        self.to_start_button.clicked.connect(lambda: self.step_through_data(type="start"))
+        self.step_forward_button.clicked.connect(lambda: self.step_through_data(step_type="forward"))
+        self.step_back_button.clicked.connect(lambda: self.step_through_data(step_type="backward"))
+        self.to_end_button.clicked.connect(lambda: self.step_through_data(step_type="end"))
+        self.to_start_button.clicked.connect(lambda: self.step_through_data(step_type="start"))
         self.no_steps_spin.valueChanged.connect(self.set_no_steps)
         self.no_steps_view_spin.valueChanged.connect(self.set_no_steps_view)
 
@@ -76,27 +75,24 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
             tb = traceback.format_exc()
             print(tb)
 
-    def step_through_data(self, type):
+    def step_through_data(self, step_type):
         # todo refactor this with the view_data function
         cat_values = self.variable_combo_mult.currentData()
         display_data = self.query.results.loc[cat_values]
         try:
             # create a new dataframe with the new selection window
-            if type == "forward":
+            if step_type == "forward":
                 step_start = self.selection_window[0] + self.no_steps
                 step_end = self.selection_window[1] + self.no_steps
-            elif type == "backward":
+            elif step_type == "backward":
                 step_start = self.selection_window[0] - self.no_steps
                 step_end = self.selection_window[1] - self.no_steps
-            elif type == "start":
+            elif step_type == "start":
                 step_start = 0
                 step_end = 0 + self.no_steps_view
-            elif type == "end":
+            elif step_type == "end":
                 step_start = display_data.shape[1] - self.no_steps_view
                 step_end = display_data.shape[1]
-
-
-
 
             # deal with viewing the extreme ends (and stopping)
             if step_start < 0:
@@ -116,9 +112,6 @@ class StepThroughResultsWindow(QMainWindow, ui_window):
         except:
             tb = traceback.format_exc()
             print(tb)
-
-
-
 
 
 if __name__ == "__main__":
