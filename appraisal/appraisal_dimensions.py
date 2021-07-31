@@ -25,6 +25,7 @@ class PlayerAppraisal:
     control: float = None
     preControl: float = None
     postControl: float = None
+    surprise: bool = False
 
 
 def extract_expected_action_reward(player_decision, player_name):
@@ -267,3 +268,41 @@ def consistency(num_possible_actions, action_rank):
         denom = denom + math.exp(i)
     return math.exp(action_rank) / denom
 
+
+def surprise(action, projected_action):
+    """
+    Compare an actual action taken by a player to a projected action as calculated by psychsim
+    return: True if there is a difference, False if not
+    """
+    if action == projected_action:
+        return False
+    return True
+
+def get_appraisals_for_step(agent, blame_agent, world, debug_dict, debug_pred_dict):
+    """
+    Populate all appraisal dimensions for a specific step
+    """
+
+    a_agent = world.agents[agent]
+    b_agent = world.agents[blame_agent]
+    step_action = str(world.getFeature(f"{agent}'s __ACTION__")).split("\t")[1]
+
+    player_decision_key = list(debug_dict[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
+    blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
+    player_cur_utility = a_agent.reward()
+    cur_action = debug_dict[agent]["__decision__"][player_decision_key]["action"]
+    proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"]
+    cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
+
+    player_appraisal = PlayerAppraisal()
+    player_appraisal.motivational_relevance = motivational_relevance(player_pre_utility, player_cur_utility)
+    player_appraisal.motivational_congruence = motivational_congruence(player_pre_utility, player_cur_utility)
+    player_appraisal.blame = blame(player_pre_utility, player_cur_utility)
+    player_appraisal.intended_blame = intended_blame(player_pre_utility, player_cur_utility, player_pre_utility, player_cur_utility)
+    player_appraisal.blame2 = blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key])
+    player_appraisal.blame3 = blame3(world, a_agent, b_agent, debug_dict)
+    player_appraisal.blame1_2 = blame1_2(world, a_agent, b_agent, debug_dict)
+    player_appraisal.control = control(debug_dict[agent]["__decision__"][player_decision_key], a_agent)
+    player_appraisal.surprise = surprise(cur_action, proj_action)
+
+    return player_appraisal
