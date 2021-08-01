@@ -31,9 +31,9 @@ class PlayerAppraisal:
 
 class AppraisalDimensions:
     def __init__(self):
-        self.pre_utility: float = 0.0
+        self.player_pre_utility: float = 0.0
         self.player_appraisal = PlayerAppraisal()
-        step_appraisal_info = dict(step=[],
+        self.step_appraisal_info = dict(step=[],
                                    a_loc=[],
                                    b_loc=[],
                                    a_role=[],
@@ -155,7 +155,7 @@ class AppraisalDimensions:
         """
         Did the blamed_agent take an unexpected action that negatively affected the agent?
         """
-        blame_params = _get_blame_params(world,agent,blamed_agent,debug)
+        blame_params = self._get_blame_params(world,agent,blamed_agent,debug)
         if blame_params["cur_utility"] < blame_params["cur_expected_utility"]:
             # someone is to blame
             # Does the action that agent1 believes agent 2 would take match what action agent 2 actually took?
@@ -170,7 +170,7 @@ class AppraisalDimensions:
         from perspective of one agent1, could agent2 take better action
         i.e. Did the blamed_agent take an unexpected action that negatively affected the agent AND could the balmed_agent have done something different?
         """
-        blame_params = _get_blame_params(world,agent,blamed_agent,debug)
+        blame_params = self._get_blame_params(world,agent,blamed_agent,debug)
         cumulative_blame = 0
         for k, p_action in blame_params["possible_actions"].items():
             cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
@@ -187,7 +187,7 @@ class AppraisalDimensions:
         from perspective of one agent could different agent take action that was not negative for other agent but better for perspective agent
         essentially this is the same as blame3 but with the added constraint that the action must have a positive outcome for the blame dagent (or at least non negative)
         """
-        blame_params = _get_blame_params(world,agent,blamed_agent,debug)
+        blame_params = self._get_blame_params(world,agent,blamed_agent,debug)
         cumulative_blame = 0
         for k, p_action in blame_params["possible_actions"].items():
             cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
