@@ -3,6 +3,9 @@ Functions for appraisal dimensions
 """
 import math
 from dataclasses import dataclass
+import csv
+import os
+import ast
 
 # TODO: REFACTOR THIS (think about creating psychsim access functions)
 
@@ -324,8 +327,8 @@ class AppraisalDimensions:
         player_decision_key = list(debug_dict[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
         blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
         player_cur_utility = a_agent.reward()
-        cur_action = debug_dict[agent]["__decision__"][player_decision_key]["action"]
-        proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"]
+        cur_action = debug_dict[agent]["__decision__"][player_decision_key]["action"] # **This should be the actual action taken by the player
+        proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"] # **This should be the action projected by psychsim
         cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
 
         params = self._extract_vars_from_psychim(world, a_agent, b_agent, debug_dict)
@@ -348,40 +351,47 @@ class AppraisalDimensions:
 
         self.player_pre_utility = player_cur_utility
 
-    def get_appraisals_for_step_csv(self, csv):
+    def get_appraisals_for_step_csv(self, csv_file):
         """
         Populate all appraisal dimensions for a specific step from a csv file
         """
+        # read csv for agent a
+        with open(csv_file, newline='') as csvfile:
+            csv_reader = csv.DictReader(csvfile)
+            for row in csv_reader:
+                # TODO: refactor this (also for the psychsim based func) there are a few reused params going on...
+                cur_action = row['b_action']
+                player_cur_utility = float(row['b_current_utility'])
+                cur_blamed_action = row['a_action']
+                proj_action = row['a_proj_action']
+                params = dict(possible_actions=ast.literal_eval(row['b_possible_actions']),
+                              cur_utility=float(row['b_current_utility']),
+                              blamed_agent_action=row['a_action'],
+                              cur_expected_utility=float(row['b_expected_utility']),
+                              believed_action=row['b_believed_other_agent_action'],
+                              agent_max_reward=float(row['b_max_reward']))
 
-        # TODO: make the appraisals a dict / pandas dataframe for easy use in the GUI
-        a_agent = world.agents[agent]
+                self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
+                self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
+                self.step_appraisal_info['blame'].append(self.blame(self.player_pre_utility, player_cur_utility))
+                self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
+                # self.step_appraisal_info['blame2'].append(self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key]))
+                self.step_appraisal_info['blame3'].append(self.blame3(params))
+                self.step_appraisal_info['blame4'].append(self.blame4(params))
+                self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
+                self.step_appraisal_info['control'].append(self.control(params))
+                self.step_appraisal_info['surprise'].append(self.surprise(cur_action, proj_action))
 
-        b_agent = world.agents[blame_agent]
-        step_action = str(world.getFeature(f"{agent}'s __ACTION__")).split("\t")[1]
+                self.step_appraisal_info['b_action'].append(cur_blamed_action)
+                self.step_appraisal_info['a_action'].append(cur_action)
+                self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
+                self.step_appraisal_info['cur_utility'].append(player_cur_utility)
 
-        player_decision_key = list(debug_dict[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
-        blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
-        player_cur_utility = a_agent.reward()
-        cur_action = debug_dict[agent]["__decision__"][player_decision_key]["action"]
-        proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"]
-        cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
+                self.player_pre_utility = player_cur_utility
 
-        params = self._extract_vars_from_psychim(world, a_agent, b_agent, player_decision_key, blamed_decision_key, debug_dict)
 
-        self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
-        self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
-        self.step_appraisal_info['blame'].append(self.blame(self.player_pre_utility, player_cur_utility))
-        self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
-        # self.step_appraisal_info['blame2'].append(self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key]))
-        self.step_appraisal_info['blame3'].append(self.blame3(params))
-        self.step_appraisal_info['blame4'].append(self.blame4(params))
-        self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
-        self.step_appraisal_info['control'].append(self.control(params))
-        self.step_appraisal_info['surprise'].append(self.surprise(cur_action, proj_action))
-
-        self.step_appraisal_info['b_action'].append(cur_blamed_action)
-        self.step_appraisal_info['a_action'].append(cur_action)
-        self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
-        self.step_appraisal_info['cur_utility'].append(player_cur_utility)
-
-        self.player_pre_utility = player_cur_utility
+if __name__ == "__main__":
+    ad = AppraisalDimensions()
+    csv_file = os.path.join("2agent_test_blame.csv")
+    ad.get_appraisals_for_step_csv(csv_file)
+    pass
