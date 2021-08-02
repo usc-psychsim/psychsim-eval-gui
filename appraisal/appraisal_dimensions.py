@@ -53,19 +53,19 @@ class AppraisalDimensions:
                                    control=[],
                                    surprise=[])
 
-    def extract_expected_action_reward(self, player_decision, player_name):
-        """
-        Return a dictionary with actions: expected_reward
-        player_decision = decision object returned by psychsim
-        player_name = name of player
-        """
-        actions = {}
-        for k, v in player_decision.items():
-            if player_name in k:
-                for k1, v1 in v.items():
-                    if k1 == "V":
-                        actions = {k2: v2["__ER__"][-1] for k2, v2 in v1.items()}
-        return actions
+    # def extract_expected_action_reward(self, player_decision, player_name):
+    #     """
+    #     Return a dictionary with actions: expected_reward
+    #     player_decision = decision object returned by psychsim
+    #     player_name = name of player
+    #     """
+    #     actions = {}
+    #     for k, v in player_decision.items():
+    #         if player_name in k:
+    #             for k1, v1 in v.items():
+    #                 if k1 == "V":
+    #                     actions = {k2: v2["__ER__"][-1] for k2, v2 in v1.items()}
+    #     return actions
 
 
     def motivational_relevance(self, pre_utility, cur_utility):
@@ -151,11 +151,10 @@ class AppraisalDimensions:
         return False
 
     # FOR BLAME FUNCTIONS: what is the psychological model of blame?
-    def blame1_2(self, world, agent, blamed_agent, debug):
+    def blame1_2(self, blame_params):
         """
         Did the blamed_agent take an unexpected action that negatively affected the agent?
         """
-        blame_params = self._get_blame_params(world,agent,blamed_agent,debug)
         if blame_params["cur_utility"] < blame_params["cur_expected_utility"]:
             # someone is to blame
             # Does the action that agent1 believes agent 2 would take match what action agent 2 actually took?
@@ -165,36 +164,31 @@ class AppraisalDimensions:
             pass
         return 0
 
-    def blame3(self, world, agent, blamed_agent, debug):
+    def blame3(self, blame_params):
         """
         from perspective of one agent1, could agent2 take better action
         i.e. Did the blamed_agent take an unexpected action that negatively affected the agent AND could the balmed_agent have done something different?
         """
-        blame_params = self._get_blame_params(world,agent,blamed_agent,debug)
         cumulative_blame = 0
         for k, p_action in blame_params["possible_actions"].items():
             cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
             if blame_params["cur_utility"] <= cur_predicted_utility:
-                blamed_predicted_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", p_action["__S__"][0], unique=True)
-                if blame_params["blamed_agent_action"] != blamed_predicted_action:
+                if blame_params["blamed_agent_action"] != p_action["blamed_predicted_action"]:
                     # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
                     cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"]) #TODO: make sure this bit actually makes sense
         return cumulative_blame
 
 
-    def blame4(self, world,agent,blamed_agent,debug):
+    def blame4(self, blame_params):
         """
         from perspective of one agent could different agent take action that was not negative for other agent but better for perspective agent
         essentially this is the same as blame3 but with the added constraint that the action must have a positive outcome for the blame dagent (or at least non negative)
         """
-        blame_params = self._get_blame_params(world,agent,blamed_agent,debug)
         cumulative_blame = 0
         for k, p_action in blame_params["possible_actions"].items():
             cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
             if blame_params["cur_utility"] <= cur_predicted_utility:
-                blamed_predicted_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", p_action["__S__"][0], unique=True)
-                blamed_predicted_utility = world.getFeature(f"{blamed_agent.name}'s __REWARD__", p_action["__S__"][0], unique=True)
-                if blame_params["blamed_agent_action"] != blamed_predicted_action and blamed_predicted_utility >= 0:
+                if blame_params["blamed_agent_action"] != p_action["blamed_predicted_action"] and p_action["blamed_predicted_utility"] >= 0:
                     # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
                     cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"]) #TODO: make sure this bit actually makes sense
         return cumulative_blame
@@ -204,7 +198,7 @@ class AppraisalDimensions:
         did an agent take an action based on a false belief about the world that lead to a negative outcome?
         """
 
-    def _get_blame_params(self, world, agent, blamed_agent, debug):
+    def _extract_vars_from_psychim(self, world, agent, blamed_agent, a_decision_key, b_decision_key, debug):
         # agent_action = agent.getState("__ACTION__")
         agent_decision_key = list(debug[agent.name]["__decision__"])[0]
         agent_action = debug[agent.name]["__decision__"][agent_decision_key]["action"]
@@ -220,25 +214,38 @@ class AppraisalDimensions:
         believed_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", agent_belief, unique=True)
         # if cur_utility < cur_expected_utility:
         # For all agent actions that lead to a higher utility - could blamed_agent have done something different?
+
+        # get the possible actions in a nicer format
         possible_actions = debug[agent.name]["__decision__"][agent_decision_key]["V"]
+        for action, value in possible_actions.items():
+            value["blamed_predicted_action"] = world.getFeature(f"{blamed_agent.name}'s __ACTION__", value["__S__"][0], unique=True)
+            value["blamed_predicted_utility"] = world.getFeature(f"{blamed_agent.name}'s __REWARD__", value["__S__"][0], unique=True)
+
+        # get the agent decisions
+        agent_decision = debug[agent.name]["__decision__"][a_decision_key]
+
+        # get the max reward for the agent
+        agent_max_reward = agent.getState('__REWARD__').max()#TODO: why is this reward different to what is expected?
 
         return dict(possible_actions=possible_actions,
                     cur_utility=cur_utility,
                     blamed_agent_action=blamed_agent_action,
                     cur_expected_utility=cur_expected_utility,
-                    believed_action=believed_action)
+                    believed_action=believed_action,
+                    agent_decision=agent_decision,
+                    agent_max_reward=agent_max_reward)
 
-    def control(self, player_decision, player):
+    def control(self, control_params):
         """
         This is a probability. For each predicted action that delivers a positive utility change, sum the probabilities.
         that is the control
         player_decision: decision object of the player from psychsim
         """
         player_control = 0
-        for action, predictions in player_decision['V'].items():
+        for action, predictions in control_params["agent_decision"]['V'].items():
             if predictions['__EV__'] > 0:
                 # player_control = player_control + player_decision['action'][action]
-                player_control = player_control + player.getState('__REWARD__').max()#TODO: why is this reward different to what is expected?
+                player_control = player_control + control_params["agent_max_reward"]
         return player_control
 
     def control2(self):
@@ -311,6 +318,7 @@ class AppraisalDimensions:
 
         # TODO: make the appraisals a dict / pandas dataframe for easy use in the GUI
         a_agent = world.agents[agent]
+
         b_agent = world.agents[blame_agent]
         step_action = str(world.getFeature(f"{agent}'s __ACTION__")).split("\t")[1]
 
@@ -321,16 +329,21 @@ class AppraisalDimensions:
         proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"]
         cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
 
-        self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
-        self.step_appraisal_info['congruence'] = self.motivational_congruence(self.player_pre_utility, player_cur_utility)
-        self.step_appraisal_info['blame'] = self.blame(self.player_pre_utility, player_cur_utility)
-        self.step_appraisal_info['intended_blame'] = self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility)
-        self.step_appraisal_info['blame2'] = self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key])
-        self.step_appraisal_info['blame3'] = self.blame3(world, a_agent, b_agent, debug_dict)
-        self.step_appraisal_info['blame1_2'] = self.blame1_2(world, a_agent, b_agent, debug_dict)
-        self.step_appraisal_info['control'] = self.control(debug_dict[agent]["__decision__"][player_decision_key], a_agent)
-        self.step_appraisal_info['surprise'] = self.surprise(cur_action, proj_action)
+        params = self._extract_vars_from_psychim(world, a_agent, b_agent, player_decision_key, blamed_decision_key, debug_dict)
 
+        self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
+        self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
+        self.step_appraisal_info['blame'].append(self.blame(self.player_pre_utility, player_cur_utility))
+        self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
+        # self.step_appraisal_info['blame2'].append(self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key]))
+        self.step_appraisal_info['blame3'].append(self.blame3(params))
+        self.step_appraisal_info['blame4'].append(self.blame4(params))
+        self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
+        self.step_appraisal_info['control'].append(self.control(params))
+        self.step_appraisal_info['surprise'].append(self.surprise(cur_action, proj_action))
+
+        self.step_appraisal_info['b_action'].append(cur_blamed_action)
+        self.step_appraisal_info['a_action'].append(cur_action)
         self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
         self.step_appraisal_info['cur_utility'].append(player_cur_utility)
 
