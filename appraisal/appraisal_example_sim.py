@@ -20,7 +20,7 @@ def get_appraisal_dimensions(data=None, agent=None, *args, **kwargs):
     """
     player_appraisals = ad.AppraisalDimensions()
     for step, step_data in data.items():
-        player_appraisals.get_appraisals_for_step(agent, agent, step_data["WORLD"], step_data["AGENT_DEBUG"], step_data["AGENT_DEBUG"])
+        player_appraisals.get_appraisals_for_step_psychsim(agent, agent, step_data["WORLD"], step_data["AGENT_DEBUG"], step_data["AGENT_DEBUG"])
         player_appraisals.step_appraisal_info['step'].append(step)
 
     return player_appraisals

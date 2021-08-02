@@ -198,7 +198,7 @@ class AppraisalDimensions:
         did an agent take an action based on a false belief about the world that lead to a negative outcome?
         """
 
-    def _extract_vars_from_psychim(self, world, agent, blamed_agent, a_decision_key, b_decision_key, debug):
+    def _extract_vars_from_psychim(self, world, agent, blamed_agent, debug):
         # agent_action = agent.getState("__ACTION__")
         agent_decision_key = list(debug[agent.name]["__decision__"])[0]
         agent_action = debug[agent.name]["__decision__"][agent_decision_key]["action"]
@@ -222,7 +222,7 @@ class AppraisalDimensions:
             value["blamed_predicted_utility"] = world.getFeature(f"{blamed_agent.name}'s __REWARD__", value["__S__"][0], unique=True)
 
         # get the agent decisions
-        agent_decision = debug[agent.name]["__decision__"][a_decision_key]
+        # agent_decision = debug[agent.name]["__decision__"][a_decision_key]
 
         # get the max reward for the agent
         agent_max_reward = agent.getState('__REWARD__').max()#TODO: why is this reward different to what is expected?
@@ -232,7 +232,6 @@ class AppraisalDimensions:
                     blamed_agent_action=blamed_agent_action,
                     cur_expected_utility=cur_expected_utility,
                     believed_action=believed_action,
-                    agent_decision=agent_decision,
                     agent_max_reward=agent_max_reward)
 
     def control(self, control_params):
@@ -242,7 +241,7 @@ class AppraisalDimensions:
         player_decision: decision object of the player from psychsim
         """
         player_control = 0
-        for action, predictions in control_params["agent_decision"]['V'].items():
+        for action, predictions in control_params["possible_actions"].items():
             if predictions['__EV__'] > 0:
                 # player_control = player_control + player_decision['action'][action]
                 player_control = player_control + control_params["agent_max_reward"]
@@ -311,9 +310,47 @@ class AppraisalDimensions:
             return False
         return True
 
-    def get_appraisals_for_step(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
+    def get_appraisals_for_step_psychsim(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
         """
-        Populate all appraisal dimensions for a specific step
+        Populate all appraisal dimensions for a specific step from psychsim data
+        """
+
+        # TODO: make the appraisals a dict / pandas dataframe for easy use in the GUI
+        a_agent = world.agents[agent]
+
+        b_agent = world.agents[blame_agent]
+        step_action = str(world.getFeature(f"{agent}'s __ACTION__")).split("\t")[1]
+
+        player_decision_key = list(debug_dict[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
+        blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
+        player_cur_utility = a_agent.reward()
+        cur_action = debug_dict[agent]["__decision__"][player_decision_key]["action"]
+        proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"]
+        cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
+
+        params = self._extract_vars_from_psychim(world, a_agent, b_agent, debug_dict)
+
+        self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
+        self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
+        self.step_appraisal_info['blame'].append(self.blame(self.player_pre_utility, player_cur_utility))
+        self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
+        # self.step_appraisal_info['blame2'].append(self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key]))
+        self.step_appraisal_info['blame3'].append(self.blame3(params))
+        self.step_appraisal_info['blame4'].append(self.blame4(params))
+        self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
+        self.step_appraisal_info['control'].append(self.control(params))
+        self.step_appraisal_info['surprise'].append(self.surprise(cur_action, proj_action))
+
+        self.step_appraisal_info['b_action'].append(cur_blamed_action)
+        self.step_appraisal_info['a_action'].append(cur_action)
+        self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
+        self.step_appraisal_info['cur_utility'].append(player_cur_utility)
+
+        self.player_pre_utility = player_cur_utility
+
+    def get_appraisals_for_step_csv(self, csv):
+        """
+        Populate all appraisal dimensions for a specific step from a csv file
         """
 
         # TODO: make the appraisals a dict / pandas dataframe for easy use in the GUI
