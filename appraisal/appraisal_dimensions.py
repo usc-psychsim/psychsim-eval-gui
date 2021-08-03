@@ -50,19 +50,19 @@ class AppraisalDimensions:
                                    a_proj_action=[],
                                    a_expected_b=[],
                                    b_action=[],
-                                   b_expected_a=[],
+                                   # b_expected_a=[],
                                    pre_utility=[],
                                    cur_utility=[],
                                    relevance=[],
                                    congruence=[],
                                    # blame=[],
                                    # blame2=[],
-                                   blame3=[],
+                                   a_blames_b=[],
                                    # blame4=[],
                                    # blame1_2=[],
                                    # intended_blame=[],
                                    # control=[],
-                                   surprise=[])
+                                   a_surprised_at_b=[])
 
     # def extract_expected_action_reward(self, player_decision, player_name):
     #     """
@@ -384,7 +384,7 @@ class AppraisalDimensions:
                 self.step_appraisal_info['step'].append(row['step'])
 
                 self.step_appraisal_info['a_expected_b'].append(row['a_believed_other_agent_action'])
-                self.step_appraisal_info['b_expected_a'].append(row['b_believed_other_agent_action'])
+                # self.step_appraisal_info['b_expected_a'].append(row['b_believed_other_agent_action'])
                 self.step_appraisal_info['a_proj_action'].append(row['a_proj_action'])
 
                 self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
@@ -392,11 +392,11 @@ class AppraisalDimensions:
                 # self.step_appraisal_info['blame'].append(self.blame(self.player_pre_utility, player_cur_utility))
                 # self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
                 # self.step_appraisal_info['blame2'].append(self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key]))
-                self.step_appraisal_info['blame3'].append(self.blame3(params))
+                self.step_appraisal_info['a_blames_b'].append(self.blame3(params))
                 # self.step_appraisal_info['blame4'].append(self.blame4(params))
                 # self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
                 # self.step_appraisal_info['control'].append(self.control(params))
-                self.step_appraisal_info['surprise'].append(self.surprise(cur_action, proj_action))
+                self.step_appraisal_info['a_surprised_at_b'].append(self.surprise(row['b_action'], row['b_believed_other_agent_action']))
 
                 self.step_appraisal_info['b_action'].append(cur_blamed_action)
                 self.step_appraisal_info['a_action'].append(cur_action)
@@ -404,7 +404,16 @@ class AppraisalDimensions:
                 self.step_appraisal_info['cur_utility'].append(player_cur_utility)
 
                 self.player_pre_utility = player_cur_utility
+
+        self.normalise_appraisals("a_blames_b")
         pass
+
+    def normalise_appraisals(self, appraisal_key):
+        for i, value in enumerate(self.step_appraisal_info[appraisal_key]):
+            if isinstance(value, (int, float)) and value > 0:
+                self.step_appraisal_info[appraisal_key][i] = 1
+            elif isinstance(value, (int, float)) and  value < 0:
+                self.step_appraisal_info[appraisal_key][i] = -1
 
 def save_query_pickle(query):
     dt_string, _ = pgh.get_time_stamp()
