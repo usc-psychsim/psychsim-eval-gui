@@ -62,6 +62,8 @@ class AppraisalDimensions:
                                    # blame1_2=[],
                                    # intended_blame=[],
                                    # control=[],
+                                   cur_action_desired=[],
+                                   desired_action=[],
                                    a_surprised_at_b=[])
 
     # def extract_expected_action_reward(self, player_decision, player_name):
@@ -321,6 +323,24 @@ class AppraisalDimensions:
             return False
         return True
 
+    def desirability(self, cur_action, possible_actions):
+        """
+        is the current action the best possible action that could be taken?
+        return: true if cur action was desired, false otherwise
+        """
+        base_utility = 0
+        desired_action = None
+        for action_name, action_value in possible_actions.items():
+            if action_value["__EV__"] >= base_utility:
+                desired_action = action_name
+
+        if desired_action == cur_action:
+            return True, cur_action
+        return False, desired_action
+
+
+
+
     def get_appraisals_for_step_psychsim(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
         """
         Populate all appraisal dimensions for a specific step from psychsim data
@@ -402,6 +422,8 @@ class AppraisalDimensions:
                 self.step_appraisal_info['a_action'].append(cur_action)
                 self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
                 self.step_appraisal_info['cur_utility'].append(player_cur_utility)
+                self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['b_possible_actions'])[0])
+                self.step_appraisal_info['desired_action'].append(self.desirability(cur_action, row['b_possible_actions'])[1])
 
                 self.player_pre_utility = player_cur_utility
 
