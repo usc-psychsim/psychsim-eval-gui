@@ -53,6 +53,7 @@ class AppraisalDimensions:
                                    # b_expected_a=[],
                                    pre_utility=[],
                                    cur_utility=[],
+                                   cur_expected_utility=[],
                                    # relevance=[],
                                    # congruence=[],
                                    # blame=[],
@@ -64,8 +65,8 @@ class AppraisalDimensions:
                                    # control=[],
                                    general_control=[],
                                    specific_control=[],
-                                   cur_action_desired=[],
-                                   desired_action=[],
+                                   # cur_action_desired=[],
+                                   desirability=[],
                                    a_surprised_at_b=[])
 
     # def extract_expected_action_reward(self, player_decision, player_name):
@@ -351,23 +352,16 @@ class AppraisalDimensions:
             return False
         return True
 
-    def desirability(self, cur_action, possible_actions):
+    def desirability(self, params):
         """
-        is the current action the best possible action that could be taken?
-        return: true if cur action was desired, false otherwise
+        This is a measure of how much utility has been lost by an unexpected negative action
         """
-        base_utility = 0
-        desired_action = None
-        for action_name, action_value in possible_actions.items():
-            if action_value["__EV__"] >= base_utility:
-                desired_action = action_name
-
-        if desired_action == cur_action:
-            return True, cur_action
-        return False, desired_action
-
-
-
+        # If you blame the other agent (they did something bad for you but could have done something better)
+        lost_utility = 0
+        if self.blame3(params):
+            # Calculate the difference in utility and what we should have gotten if the other agent did the right thing
+            lost_utility = params["blamed_agent_possible_actions"][params["believed_action"]]["__EV__"]
+        return -lost_utility
 
     def get_appraisals_for_step_psychsim(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
         """
@@ -460,8 +454,9 @@ class AppraisalDimensions:
                 self.step_appraisal_info['a_action'].append(cur_action)
                 self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
                 self.step_appraisal_info['cur_utility'].append(player_cur_utility)
-                self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['a_possible_actions'])[0])
-                self.step_appraisal_info['desired_action'].append(self.desirability(cur_action, row['a_possible_actions'])[1])
+                self.step_appraisal_info['cur_expected_utility'].append(player_cur_expected_utility)
+                # self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['a_possible_actions'])[0])
+                self.step_appraisal_info['desirability'].append(self.desirability(params))
                 self.step_appraisal_info['general_control'].append(self.control2(params))
                 self.step_appraisal_info['specific_control'].append(self.control3(params))
 
