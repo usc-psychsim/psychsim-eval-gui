@@ -62,6 +62,8 @@ class AppraisalDimensions:
                                    # blame1_2=[],
                                    # intended_blame=[],
                                    # control=[],
+                                   general_control=[],
+                                   specific_control=[],
                                    cur_action_desired=[],
                                    desired_action=[],
                                    a_surprised_at_b=[])
@@ -260,11 +262,37 @@ class AppraisalDimensions:
                 player_control = player_control + control_params["agent_max_reward"]
         return player_control
 
-    def control2(self):
+    def control2(self, params):
         """
-        An agent has no control if they only have 1 action? or an agent only has control if they don't have positive actions?
+        If something bad has happened (negatively unexpected utility), does the agent have an action to rectify it (i.e. have any positive effect on their utility)?
         """
-        pass
+        # TODO: make sure all these params are relevant to one agent looking at another agent
+        # are we in a 'bad' situation (we have less utility than we expected)
+        control = 0
+        if params["cur_utility"] < params["cur_expected_utility"]:
+            for k, p_action in params["possible_actions"].items():
+                predicted_utility = p_action["__ER__"][0]
+                if predicted_utility > 0:
+                    # There is an action that can at least start to rectify the 'bad' situation
+                    control += 1
+        return control
+
+    def control3(self, params):
+        """
+        If an agent didn't do a specific expected action that should have had a positive utility, can this agent do that action?
+        """
+        control = False
+        # Did the other agent do something we didn't expect?
+        if params["blamed_agent_action"] != params["believed_action"]:
+            # are we in a 'bad' situation (we have less utility than we expected)?
+            if params["cur_utility"] < params["cur_expected_utility"]:
+                for p_action_name, p_action in params["possible_actions"].items(): # TODO: (This should be our possible actions)
+                    if p_action_name == params["believed_action"]:
+                        # We can do the action the other agent didn't do
+                        control = True
+        return control
+
+
 
     def preControl(self, player_decision, player):
         """
@@ -424,6 +452,8 @@ class AppraisalDimensions:
                 self.step_appraisal_info['cur_utility'].append(player_cur_utility)
                 self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['b_possible_actions'])[0])
                 self.step_appraisal_info['desired_action'].append(self.desirability(cur_action, row['b_possible_actions'])[1])
+                self.step_appraisal_info['general_control'].append(self.control2(params))
+                self.step_appraisal_info['specific_control'].append(self.control3(params))
 
                 self.player_pre_utility = player_cur_utility
 
