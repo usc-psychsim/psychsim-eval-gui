@@ -53,8 +53,8 @@ class AppraisalDimensions:
                                    # b_expected_a=[],
                                    pre_utility=[],
                                    cur_utility=[],
-                                   relevance=[],
-                                   congruence=[],
+                                   # relevance=[],
+                                   # congruence=[],
                                    # blame=[],
                                    # blame2=[],
                                    a_blames_b=[],
@@ -185,7 +185,7 @@ class AppraisalDimensions:
         i.e. Did the blamed_agent take an unexpected action that negatively affected the agent AND could the balmed_agent have done something different?
         """
         cumulative_blame = 0
-        for k, p_action in blame_params["possible_actions"].items():
+        for k, p_action in blame_params["blamed_agent_possible_actions"].items():
             cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
             if blame_params["cur_utility"] <= cur_predicted_utility:
                 if blame_params["blamed_agent_action"] != p_action["blamed_predicted_action"]:
@@ -409,25 +409,35 @@ class AppraisalDimensions:
         """
         Populate all appraisal dimensions for a specific step from a csv file
         """
-        # read csv for agent a
+        # TODO: refactor this (also for the psychsim based func) there are a few reused params going on...
+        # read csv for agents
         csv_data = {}
         with open(csv_file, newline='') as csvfile:
             csv_reader = csv.DictReader(csvfile)
             for step, row in enumerate(csv_reader):
                 csv_data[step] = row
+                # Convert the possible_action strings to actual dict objects
                 csv_data[step]['b_possible_actions'] = ast.literal_eval(row['b_possible_actions'])
                 csv_data[step]['a_possible_actions'] = ast.literal_eval(row['a_possible_actions'])
-                # TODO: refactor this (also for the psychsim based func) there are a few reused params going on...
-                cur_action = row['b_action']
-                player_cur_utility = float(row['b_current_utility'])
-                cur_blamed_action = row['a_action']
+                cur_action = row['a_action'] # agent a is the target agent, b is the blamed agent
+                player_cur_utility = float(row['a_current_utility'])
+                player_cur_expected_utility = float(row['a_expected_utility'])
+                cur_blamed_action = row['b_action']
                 proj_action = row['a_proj_action']
-                params = dict(possible_actions=csv_data[step]['a_possible_actions'],
-                              cur_utility=float(row['b_current_utility']),
-                              blamed_agent_action=row['a_action'],
-                              cur_expected_utility=float(row['b_expected_utility']),
-                              believed_action=row['b_believed_other_agent_action'],
-                              agent_max_reward=float(row['b_max_reward']))
+
+                # Add the blamed actions to the possible actions
+                for action, action_value in csv_data[step]['b_possible_actions'].items():
+                    action_value["blamed_predicted_action"] = row['b_believed_other_agent_action']
+                    action_value["blamed_predicted_utility"] = row['b_expected_utility']
+
+                params = dict(blamed_agent_possible_actions=csv_data[step]['b_possible_actions'],
+                              possible_actions=csv_data[step]['a_possible_actions'],
+                              cur_utility=player_cur_utility,
+                              blamed_agent_action=cur_blamed_action,
+                              cur_expected_utility=player_cur_expected_utility,
+                              believed_action=row['a_believed_other_agent_action'],
+                              agent_max_reward=float(row['a_max_reward']))
+                # TODO: populate the blamed action in the possible actions from the believed action column
 
                 self.step_appraisal_info['step'].append(row['step'])
 
@@ -435,8 +445,8 @@ class AppraisalDimensions:
                 # self.step_appraisal_info['b_expected_a'].append(row['b_believed_other_agent_action'])
                 self.step_appraisal_info['a_proj_action'].append(row['a_proj_action'])
 
-                self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
-                self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
+                # self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
+                # self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
                 # self.step_appraisal_info['blame'].append(self.blame(self.player_pre_utility, player_cur_utility))
                 # self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
                 # self.step_appraisal_info['blame2'].append(self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key]))
@@ -444,14 +454,14 @@ class AppraisalDimensions:
                 # self.step_appraisal_info['blame4'].append(self.blame4(params))
                 # self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
                 # self.step_appraisal_info['control'].append(self.control(params))
-                self.step_appraisal_info['a_surprised_at_b'].append(self.surprise(row['b_action'], row['b_believed_other_agent_action']))
+                self.step_appraisal_info['a_surprised_at_b'].append(self.surprise(row['b_action'], row['a_believed_other_agent_action']))
 
                 self.step_appraisal_info['b_action'].append(cur_blamed_action)
                 self.step_appraisal_info['a_action'].append(cur_action)
                 self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
                 self.step_appraisal_info['cur_utility'].append(player_cur_utility)
-                self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['b_possible_actions'])[0])
-                self.step_appraisal_info['desired_action'].append(self.desirability(cur_action, row['b_possible_actions'])[1])
+                self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['a_possible_actions'])[0])
+                self.step_appraisal_info['desired_action'].append(self.desirability(cur_action, row['a_possible_actions'])[1])
                 self.step_appraisal_info['general_control'].append(self.control2(params))
                 self.step_appraisal_info['specific_control'].append(self.control3(params))
 
