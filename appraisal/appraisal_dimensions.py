@@ -42,32 +42,38 @@ class AppraisalDimensions:
         self.player_pre_utility: float = 0.0
         self.player_appraisal = PlayerAppraisal()
         self.step_appraisal_info = dict(step=[],
-                                   # a_loc=[],
-                                   # b_loc=[],
-                                   # a_role=[],
-                                   # b_role=[],
-                                   a_action=[],
-                                   a_proj_action=[],
-                                   a_expected_b=[],
-                                   b_action=[],
-                                   # b_expected_a=[],
-                                   pre_utility=[],
-                                   cur_utility=[],
-                                   cur_expected_utility=[],
-                                   # relevance=[],
-                                   # congruence=[],
-                                   # blame=[],
-                                   # blame2=[],
-                                   a_blames_b=[],
-                                   # blame4=[],
-                                   # blame1_2=[],
-                                   # intended_blame=[],
-                                   # control=[],
-                                   general_control=[],
-                                   specific_control=[],
-                                   # cur_action_desired=[],
-                                   desirability=[],
-                                   a_surprised_at_b=[])
+                                       # a_loc=[],
+                                       # b_loc=[],
+                                       # a_role=[],
+                                       # b_role=[],
+                                       a_action=[],
+                                       a_proj_action=[],
+                                       a_expected_b=[],
+                                       b_action=[],
+                                       # b_expected_a=[],
+                                       pre_utility=[],
+                                       cur_utility=[],
+                                       cur_expected_utility=[],
+                                       # relevance=[],
+                                       # congruence=[],
+                                       # blame=[],
+                                       # blame2=[],
+                                       a_blames_b=[],
+                                       # blame4=[],
+                                       # blame1_2=[],
+                                       # intended_blame=[],
+                                       # control=[],
+                                       general_control=[],
+                                       specific_control=[],
+                                       memory_control=[],
+                                       # cur_action_desired=[],
+                                       desirability=[],
+                                       a_surprised_at_b=[])
+        self.actions_todo = []
+
+        # TODO: add in decay factors for each dimension.
+        #   at first, these will be very simple, and will simply reduce after each step by a certain factor.
+
 
     # def extract_expected_action_reward(self, player_decision, player_name):
     #     """
@@ -293,7 +299,47 @@ class AppraisalDimensions:
                         control = True
         return control
 
+    def control4(self, params):
+        """
+        Similar to control3 BUT:
+        A player has 'memory' so if they blame someone for a bad action, they will not feel in control until they have it
+        in their power to rectify the situation, that might come a few actions later.
+        This is done by checking at each step if they need to resolve something, if another player does it, and if they can do it
+        """
+        # todo: maybe get rid of control3 as this basically does the same thing...
+        control = False
+        # Did the other agent do something we didn't expect?
+        if params["blamed_agent_action"] != params["believed_action"]:
+            # are we in a 'bad' situation (we have less utility than we expected)?
+            if params["cur_utility"] < params["cur_expected_utility"]:
+                for p_action_name, p_action in params["possible_actions"].items(): # TODO: (This should be our possible actions)
+                    if p_action_name == params["believed_action"]:
+                        # We can immediately do the action the other agent didn't do
+                        control = True
+                    else:
+                        # we need to remember to come back to this later
+                        self.actions_todo.append(params["believed_action"]) # todo: make this also have a decay factor (priority might be in their reward function so don't worry bout it)
+                        control = False
+        return control
 
+    def control5(self, params):
+        """
+        This checks the 'memory' at each step to see if we now have control
+        """
+        # TODO: combine this with other control functions
+
+        # Check to see if we can rectify any of the issues in our "to_do" list
+        for idx, action in  enumerate(self.actions_todo):
+            # First, check to see if the other agent is doing that action
+            if action == params["blamed_agent_action"]:
+                # remove that action and exit with no control
+                self.actions_todo.pop(idx)
+                return False
+            # Second, check to see if we have the capability of fixing the issue
+            if action in params["possible_actions"]:
+                # we have the power to fix the issue we encountered before, therefore we have control
+                return True
+        return False
 
     def preControl(self, player_decision, player):
         """
@@ -458,7 +504,8 @@ class AppraisalDimensions:
                 # self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['a_possible_actions'])[0])
                 self.step_appraisal_info['desirability'].append(self.desirability(params))
                 self.step_appraisal_info['general_control'].append(self.control2(params))
-                self.step_appraisal_info['specific_control'].append(self.control3(params))
+                self.step_appraisal_info['specific_control'].append(self.control4(params))
+                self.step_appraisal_info['memory_control'].append(self.control5(params))
 
                 self.player_pre_utility = player_cur_utility
 
