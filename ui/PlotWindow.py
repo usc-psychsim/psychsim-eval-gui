@@ -120,7 +120,10 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                     fig = self.set_figure(data, fig, plot_type, name)
 
                 self.update_class_plot_info(fig, plot_type)
-                self.render_plot_to_gui(fig=fig, title="", x_name=self.x_combo.currentText(),
+                x_name = self.x_combo.currentText()
+                if x_alias:
+                    x_name = self.x_alias_combo.currentText()
+                self.render_plot_to_gui(fig=fig, title="", x_name=x_name,
                                         y_name=self.y_combo.currentText(), x_alias=x_alias)
         except:
             tb = traceback.format_exc()
@@ -204,7 +207,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         :param y_name: y_axis name
         :param x_alias: labels to give to x_axis ticks
         """
-        self.update_y_axis_name(y_name)
+        y_name = self.update_y_axis_name(y_name)
         self.setup_plot_layout(fig, title, x_name, y_name, x_alias)
         html = self.get_fig_as_html(fig)
         self.plot_widget.setHtml(html)
