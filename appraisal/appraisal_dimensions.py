@@ -2,7 +2,7 @@
 Functions for appraisal dimensions
 """
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import csv
 import os
 import ast
@@ -13,13 +13,22 @@ import pandas as pd
 import psychsim_gui_helpers as pgh
 
 # TODO: REFACTOR THIS (think about creating psychsim access functions)
+# TODO: get rid of appraisal dimensions that aren't used or broken
 
-# TODO: make this whole thing a class
+
 @dataclass
-class PlayerAppraisal:
+class PlayerAppraisalInfo:
     """
     Class to hold appraisal dimension info
     """
+    step: int = None
+    a_action: str = None
+    a_proj_action: str = None
+    a_expected_b: str = None
+    b_action: str = None
+    pre_utility: float = None
+    cur_utility: float = None
+    cur_expected_utility: float = None
     motivational_relevance: float = None
     motivational_congruence: float = None
     coerced: bool = False
@@ -35,59 +44,16 @@ class PlayerAppraisal:
     preControl: float = None
     postControl: float = None
     surprise: bool = False
+    desirability: float = None
+    general_control: float = None
+    specific_control: bool = False
+    memory_control: float = None
 
 
 class AppraisalDimensions:
     def __init__(self):
         self.player_pre_utility: float = 0.0
-        self.player_appraisal = PlayerAppraisal()
-        self.step_appraisal_info = dict(step=[],
-                                       # a_loc=[],
-                                       # b_loc=[],
-                                       # a_role=[],
-                                       # b_role=[],
-                                       a_action=[],
-                                       a_proj_action=[],
-                                       a_expected_b=[],
-                                       b_action=[],
-                                       # b_expected_a=[],
-                                       pre_utility=[],
-                                       cur_utility=[],
-                                       cur_expected_utility=[],
-                                       # relevance=[],
-                                       # congruence=[],
-                                       # blame=[],
-                                       # blame2=[],
-                                       a_blames_b=[],
-                                       # blame4=[],
-                                       # blame1_2=[],
-                                       # intended_blame=[],
-                                       # control=[],
-                                       general_control=[],
-                                       specific_control=[],
-                                       memory_control=[],
-                                       # cur_action_desired=[],
-                                       desirability=[],
-                                       a_surprised_at_b=[])
         self.actions_todo = []
-
-        # TODO: add in decay factors for each dimension.
-        #   at first, these will be very simple, and will simply reduce after each step by a certain factor.
-
-
-    # def extract_expected_action_reward(self, player_decision, player_name):
-    #     """
-    #     Return a dictionary with actions: expected_reward
-    #     player_decision = decision object returned by psychsim
-    #     player_name = name of player
-    #     """
-    #     actions = {}
-    #     for k, v in player_decision.items():
-    #         if player_name in k:
-    #             for k1, v1 in v.items():
-    #                 if k1 == "V":
-    #                     actions = {k2: v2["__ER__"][-1] for k2, v2 in v1.items()}
-    #     return actions
 
 
     def motivational_relevance(self, pre_utility, cur_utility):
@@ -215,46 +181,6 @@ class AppraisalDimensions:
                     cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"]) #TODO: make sure this bit actually makes sense
         return cumulative_blame
 
-    def blame7():
-        """
-        did an agent take an action based on a false belief about the world that lead to a negative outcome?
-        """
-
-    def _extract_vars_from_psychim(self, world, agent, blamed_agent, debug):
-        # agent_action = agent.getState("__ACTION__")
-        agent_decision_key = list(debug[agent.name]["__decision__"])[0]
-        agent_action = debug[agent.name]["__decision__"][agent_decision_key]["action"]
-        agent_belief = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__beliefs__"]
-        agent_state = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__S__"]
-        cur_expected_utility = debug[agent.name]["__decision__"][agent_decision_key]["V"][agent_action]["__ER__"][0] #This is the expected reward for the current action
-        cur_utility = agent.reward()
-
-        # blamed_agent_action = blamed_agent.getState("__ACTION__")
-        blamed_agent_decision_key = list(debug[blamed_agent.name]["__decision__"])[0]
-        blamed_agent_action = debug[blamed_agent.name]["__decision__"][blamed_agent_decision_key]["action"]
-
-        believed_action = world.getFeature(f"{blamed_agent.name}'s __ACTION__", agent_belief, unique=True)
-        # if cur_utility < cur_expected_utility:
-        # For all agent actions that lead to a higher utility - could blamed_agent have done something different?
-
-        # get the possible actions in a nicer format
-        possible_actions = debug[agent.name]["__decision__"][agent_decision_key]["V"]
-        for action, value in possible_actions.items():
-            value["blamed_predicted_action"] = world.getFeature(f"{blamed_agent.name}'s __ACTION__", value["__S__"][0], unique=True)
-            value["blamed_predicted_utility"] = world.getFeature(f"{blamed_agent.name}'s __REWARD__", value["__S__"][0], unique=True)
-
-        # get the agent decisions
-        # agent_decision = debug[agent.name]["__decision__"][a_decision_key]
-
-        # get the max reward for the agent
-        agent_max_reward = agent.getState('__REWARD__').max()#TODO: why is this reward different to what is expected?
-
-        return dict(possible_actions=possible_actions,
-                    cur_utility=cur_utility,
-                    blamed_agent_action=blamed_agent_action,
-                    cur_expected_utility=cur_expected_utility,
-                    believed_action=believed_action,
-                    agent_max_reward=agent_max_reward)
 
     def control(self, control_params):
         """
@@ -334,12 +260,12 @@ class AppraisalDimensions:
             if action == params["blamed_agent_action"]:
                 # remove that action and exit with no control
                 self.actions_todo.pop(idx)
-                return False
+                return 0
             # Second, check to see if we have the capability of fixing the issue
             if action in params["possible_actions"]:
                 # we have the power to fix the issue we encountered before, therefore we have control
-                return True
-        return False
+                return 1
+        return 0
 
     def preControl(self, player_decision, player):
         """
@@ -389,14 +315,14 @@ class AppraisalDimensions:
         return math.exp(action_rank) / denom
 
 
-    def surprise(self, action, projected_action):
+    def surprise(self, params):
         """
         Compare an actual action taken by a player to a projected action as calculated by psychsim
         return: True if there is a difference, False if not
         """
-        if action == projected_action:
-            return False
-        return True
+        if params['blamed_agent_action'] == params['believed_action']:
+            return 0
+        return 1
 
     def desirability(self, params):
         """
@@ -409,12 +335,59 @@ class AppraisalDimensions:
             lost_utility = params["blamed_agent_possible_actions"][params["believed_action"]]["__EV__"]
         return -lost_utility
 
-    def get_appraisals_for_step_psychsim(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
-        """
-        Populate all appraisal dimensions for a specific step from psychsim data
-        """
 
-        # TODO: make the appraisals a dict / pandas dataframe for easy use in the GUI
+    def get_appraisals_for_step(self, params):
+        """
+        Calculate all the appraiasl dimensions for a particiular step
+        """
+        appraisals = PlayerAppraisalInfo()
+
+        # TODO: refactor all these so they only take in the params they need (pass the params from params object here)
+        appraisals.blame3 = self.blame3(params)
+        appraisals.desirability = self.desirability(params)
+        appraisals.general_control = self.control2(params)
+        appraisals.specific_control = self.control4(params)
+        appraisals.memory_control = self.control5(params)
+        appraisals.surprise = self.surprise(params)
+        appraisals.a_action = params["cur_action"]
+        appraisals.a_proj_action = params["projected_action"]
+        appraisals.a_expected_b = params["believed_action"]
+        appraisals.b_action = params["blamed_agent_action"]
+        appraisals.pre_utility = params["pre_utility"]
+        appraisals.cur_utility = params["cur_utility"]
+        appraisals.cur_expected_utility = params["cur_expected_utility"]
+        return appraisals
+
+    def get_appraisal_params_csv(self, csv_row):
+        """
+        get the params in an appropriate format for the appraisal functions from csv data
+        The csv format defines: agent_a = target agent, agent_b = blamed agent
+        """
+        # Add the blamed actions to the possible actions
+        csv_row['b_possible_actions'] = ast.literal_eval(csv_row['b_possible_actions'])
+        csv_row['a_possible_actions'] = ast.literal_eval(csv_row['a_possible_actions'])
+        for action, action_value in csv_row['b_possible_actions'].items():
+            action_value["blamed_predicted_action"] = csv_row['b_believed_other_agent_action']
+            action_value["blamed_predicted_utility"] = csv_row['b_expected_utility']
+
+        params = dict(cur_action=csv_row['a_action'],
+                      projected_action=csv_row['a_proj_action'],
+                      blamed_agent_possible_actions=csv_row['b_possible_actions'],
+                      possible_actions=csv_row['a_possible_actions'],
+                      cur_utility=float(csv_row['a_current_utility']),
+                      pre_utility=self.player_pre_utility,
+                      blamed_agent_action= csv_row['b_action'],
+                      cur_expected_utility= float(csv_row['a_expected_utility']),
+                      believed_action=csv_row['a_believed_other_agent_action'],
+                      agent_max_reward=float(csv_row['a_max_reward']))
+        # Update the pre utility
+        self.player_pre_utility = float(csv_row['a_current_utility'])
+        return params
+
+    def get_appraisal_params_psychsim(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
+        """
+        get the params in an appropriate format for the appraisal functions from psychsim data
+        """
         a_agent = world.agents[agent]
 
         b_agent = world.agents[blame_agent]
@@ -426,91 +399,65 @@ class AppraisalDimensions:
         cur_action = debug_dict[agent]["__decision__"][player_decision_key]["action"] # **This should be the actual action taken by the player
         proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"] # **This should be the action projected by psychsim
         cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
+        cur_expected_utility = debug_dict[agent]["__decision__"][player_decision_key]["V"][cur_action]["__ER__"][0]
+        agent_belief = debug_dict[agent]["__decision__"][player_decision_key]["V"][cur_action]["__beliefs__"]
+        agent_max_reward = a_agent.getState('__REWARD__').max()
+        believed_action = world.getFeature(f"{blame_agent}'s __ACTION__", agent_belief, unique=True)
+        possible_actions = debug_dict[agent]["__decision__"][player_decision_key]["V"]
+        for action, value in possible_actions.items():
+            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0], unique=True)
+            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0], unique=True)
 
-        params = self._extract_vars_from_psychim(world, a_agent, b_agent, debug_dict)
+        blamed_possible_actions = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["V"]
 
-        self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
-        self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
-        self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
-        self.step_appraisal_info['blame3'].append(self.blame3(params))
-        self.step_appraisal_info['blame4'].append(self.blame4(params))
-        self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
-        self.step_appraisal_info['control'].append(self.control(params))
-        self.step_appraisal_info['surprise'].append(self.surprise(cur_action, proj_action))
-
-        self.step_appraisal_info['b_action'].append(cur_blamed_action)
-        self.step_appraisal_info['a_action'].append(cur_action)
-        self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
-        self.step_appraisal_info['cur_utility'].append(player_cur_utility)
-
+        params = dict(cur_action=cur_action,
+                      projected_action=proj_action,
+                      blamed_agent_possible_actions=blamed_possible_actions,
+                      possible_actions=possible_actions,
+                      cur_utility=player_cur_utility,
+                      pre_utility=self.player_pre_utility,
+                      blamed_agent_action=cur_blamed_action,
+                      cur_expected_utility=cur_expected_utility,
+                      believed_action=believed_action,
+                      agent_max_reward=agent_max_reward)
+        # Update the pre utility
         self.player_pre_utility = player_cur_utility
+        return params
 
-    def get_appraisals_for_step_csv(self, csv_file):
+    def get_appraisals_from_csv(self, csv_file):
         """
-        Populate all appraisal dimensions for a specific step from a csv file
+        Get appraisals for each step in a csv file
         """
-        # TODO: refactor this (also for the psychsim based func) there are a few reused params going on...
-        # read csv for agents
-        csv_data = {}
+        # TODO: refactor this with psychsim function (maybe have flag for csv vs psychsim)
+        step_appraisals = []
         with open(csv_file, newline='') as csvfile:
             csv_reader = csv.DictReader(csvfile)
             for step, row in enumerate(csv_reader):
-                csv_data[step] = row
-                # Convert the possible_action strings to actual dict objects
-                csv_data[step]['b_possible_actions'] = ast.literal_eval(row['b_possible_actions'])
-                csv_data[step]['a_possible_actions'] = ast.literal_eval(row['a_possible_actions'])
-                cur_action = row['a_action'] # agent a is the target agent, b is the blamed agent
-                player_cur_utility = float(row['a_current_utility'])
-                player_cur_expected_utility = float(row['a_expected_utility'])
-                cur_blamed_action = row['b_action']
-                proj_action = row['a_proj_action']
+                # Get the params for calculating the appraisals
+                params = self.get_appraisal_params_csv(row)
+                # Calculate the appraisals for each step
+                appraisal = self.get_appraisals_for_step(params)
+                appraisal.step = step
+                step_appraisals.append(appraisal)
 
-                # Add the blamed actions to the possible actions
-                for action, action_value in csv_data[step]['b_possible_actions'].items():
-                    action_value["blamed_predicted_action"] = row['b_believed_other_agent_action']
-                    action_value["blamed_predicted_utility"] = row['b_expected_utility']
+        # Return the appraisals as a dataframe
+        return pd.DataFrame(step_appraisals).T
 
-                params = dict(blamed_agent_possible_actions=csv_data[step]['b_possible_actions'],
-                              possible_actions=csv_data[step]['a_possible_actions'],
-                              cur_utility=player_cur_utility,
-                              blamed_agent_action=cur_blamed_action,
-                              cur_expected_utility=player_cur_expected_utility,
-                              believed_action=row['a_believed_other_agent_action'],
-                              agent_max_reward=float(row['a_max_reward']))
-                # TODO: populate the blamed action in the possible actions from the believed action column
 
-                self.step_appraisal_info['step'].append(row['step'])
-
-                self.step_appraisal_info['a_expected_b'].append(row['a_believed_other_agent_action'])
-                # self.step_appraisal_info['b_expected_a'].append(row['b_believed_other_agent_action'])
-                self.step_appraisal_info['a_proj_action'].append(row['a_proj_action'])
-
-                # self.step_appraisal_info['relevance'].append(self.motivational_relevance(self.player_pre_utility, player_cur_utility))
-                # self.step_appraisal_info['congruence'].append(self.motivational_congruence(self.player_pre_utility, player_cur_utility))
-                # self.step_appraisal_info['blame'].append(self.blame(self.player_pre_utility, player_cur_utility))
-                # self.step_appraisal_info['intended_blame'].append(self.intended_blame(self.player_pre_utility, player_cur_utility, self.player_pre_utility, player_cur_utility))
-                # self.step_appraisal_info['blame2'].append(self.blame2(cur_action, debug_dict[agent]["__decision__"][player_decision_key]))
-                self.step_appraisal_info['a_blames_b'].append(self.blame3(params))
-                # self.step_appraisal_info['blame4'].append(self.blame4(params))
-                # self.step_appraisal_info['blame1_2'].append(self.blame1_2(params))
-                # self.step_appraisal_info['control'].append(self.control(params))
-                self.step_appraisal_info['a_surprised_at_b'].append(self.surprise(row['b_action'], row['a_believed_other_agent_action']))
-
-                self.step_appraisal_info['b_action'].append(cur_blamed_action)
-                self.step_appraisal_info['a_action'].append(cur_action)
-                self.step_appraisal_info['pre_utility'].append(self.player_pre_utility)
-                self.step_appraisal_info['cur_utility'].append(player_cur_utility)
-                self.step_appraisal_info['cur_expected_utility'].append(player_cur_expected_utility)
-                # self.step_appraisal_info['cur_action_desired'].append(self.desirability(cur_action, row['a_possible_actions'])[0])
-                self.step_appraisal_info['desirability'].append(self.desirability(params))
-                self.step_appraisal_info['general_control'].append(self.control2(params))
-                self.step_appraisal_info['specific_control'].append(self.control4(params))
-                self.step_appraisal_info['memory_control'].append(self.control5(params))
-
-                self.player_pre_utility = player_cur_utility
-
-        self.normalise_appraisals("a_blames_b")
-        pass
+    def get_appraisals_from_psychsim(self, psychsim_data, agent, blamed_agent):
+        """
+        Get appraisals for each step from psychsim
+        """
+        step_appraisals = []
+        for step, step_data in psychsim_data.items():
+            # Get params
+            params = self.get_appraisal_params_psychsim(agent, agent, step_data["WORLD"], step_data["AGENT_DEBUG"], step_data["AGENT_DEBUG"])
+            # Get appraisals for each step
+            appraisal = self.get_appraisals_for_step(params)
+            appraisal.step = step
+            step_appraisals.append(appraisal)
+        # Return the appraisals as a dataframe
+        return pd.DataFrame(step_appraisals).T
 
     def normalise_appraisals(self, appraisal_key):
         for i, value in enumerate(self.step_appraisal_info[appraisal_key]):
@@ -520,6 +467,7 @@ class AppraisalDimensions:
                 self.step_appraisal_info[appraisal_key][i] = -1
 
 def save_query_pickle(query):
+    # TODO: move this to helpers or somewhere (and refactor with functin in gui)
     dt_string, _ = pgh.get_time_stamp()
     output_directory = 'sim_output'
     if not os.path.exists(output_directory):
@@ -531,9 +479,9 @@ def save_query_pickle(query):
 if __name__ == "__main__":
     ad = AppraisalDimensions()
     csv_file = os.path.join("2agent_test_blame.csv")
-    ad.get_appraisals_for_step_csv(csv_file)
+    # ad.get_appraisals_for_step_csv(csv_file)
+    query_data = ad.get_appraisals_from_csv(csv_file)
     # convert to dict and save as query for GUI
-    query_data = pandas.DataFrame(ad.step_appraisal_info).T
     query = pgh.PsySimQuery(id="2agentTest", params=[], function="tset",
                         results=query_data, result_type="table")
     save_query_pickle(query)
