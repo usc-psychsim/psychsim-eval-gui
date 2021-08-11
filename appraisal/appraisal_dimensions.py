@@ -13,7 +13,6 @@ import pandas as pd
 import psychsim_gui_helpers as pgh
 
 # TODO: REFACTOR THIS (think about creating psychsim access functions)
-# TODO: get rid of appraisal dimensions that aren't used or broken
 
 
 @dataclass
@@ -296,10 +295,6 @@ class AppraisalDimensions:
         get the params in an appropriate format for the appraisal functions from psychsim data
         """
         a_agent = world.agents[agent]
-
-        b_agent = world.agents[blame_agent]
-        step_action = str(world.getFeature(f"{agent}'s __ACTION__")).split("\t")[1]
-
         player_decision_key = list(debug_dict[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
         blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
         player_cur_utility = a_agent.reward()
@@ -335,8 +330,6 @@ class AppraisalDimensions:
         """
         Get appraisals for each step in a csv file
         """
-        # TODO: refactor this with psychsim function (maybe have flag for csv vs psychsim)
-        # TODO: move specific csv test to another file for testing
         step_appraisals = []
         with open(csv_file, newline='') as csvfile:
             csv_reader = csv.DictReader(csvfile)
@@ -374,23 +367,13 @@ class AppraisalDimensions:
             elif isinstance(value, (int, float)) and  value < 0:
                 self.step_appraisal_info[appraisal_key][i] = -1
 
-def save_query_pickle(query):
-    # TODO: move this to helpers or somewhere (and refactor with functin in gui)
-    dt_string, _ = pgh.get_time_stamp()
-    output_directory = 'sim_output'
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-    output_path = os.path.join(output_directory, f"{query.id}_{dt_string}.pickle")
-    pickle.dump(query, open(output_path, "wb"))
-    print(f"{query.id} saved to: {output_path}")
 
 if __name__ == "__main__":
     ad = AppraisalDimensions()
     csv_file = os.path.join("2agent_test_blame.csv")
-    # ad.get_appraisals_for_step_csv(csv_file)
     query_data = ad.get_appraisals_from_csv(csv_file)
     # convert to dict and save as query for GUI
     query = pgh.PsySimQuery(id="2agentTest", params=[], function="tset",
                         results=query_data, result_type="table")
-    save_query_pickle(query)
+    pgh.save_query_pickle(query)
     pass

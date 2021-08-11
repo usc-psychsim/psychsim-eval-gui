@@ -174,6 +174,19 @@ def update_combo(combo_box, item_list, clear=False):
     dropdown_view = combo_box.view()
     dropdown_view.setMinimumWidth(dropdown_view.sizeHintForColumn(0))
 
+def save_query_pickle(query, output_directory="sim_output"):
+    """
+    Pickle a query and write it to file
+    query: PsySimQuery query
+    output_directory: directory to save the file
+    """
+    dt_string, _ = pgh.get_time_stamp()
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    output_path = os.path.join(output_directory, f"{query.id}_{dt_string}.pickle")
+    pickle.dump(query, open(output_path, "wb"))
+    print(f"{query.id} saved to: {output_path}")
+
 
 if __name__ == "__main__":
     df = pd.DataFrame()
