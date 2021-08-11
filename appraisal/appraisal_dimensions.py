@@ -32,8 +32,6 @@ class PlayerAppraisalInfo:
     motivational_congruence: float = None
     blame3: float = None
     blame1_2: float = None
-    novelty: float = None
-    consistency: float = None
     control: float = None
     surprise: bool = False
     desirability: float = None
@@ -94,7 +92,7 @@ class AppraisalDimensions:
             if blame_params["cur_utility"] <= cur_predicted_utility:
                 if blame_params["blamed_agent_action"] != p_action["blamed_predicted_action"]:
                     # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
-                    cumulative_blame = cumulative_blame + (blame_params["cur_expected_utility"] - blame_params["cur_utility"]) #TODO: make sure this bit actually makes sense
+                    cumulative_blame = cumulative_blame + (blame_params["cur_expected_utility"] - blame_params["cur_utility"]) 
         return cumulative_blame
 
 
@@ -197,29 +195,6 @@ class AppraisalDimensions:
                 # we have the power to fix the issue we encountered before, therefore we have control
                 return 1
         return 0
-
-
-    def novelty(self, num_possible_actions, action_rank):
-        """
-        how novel (unexpected) an action is compared to agent's beliefs
-        num_possible_actions: the number of possible actions that can be taken
-        action_rank: the rank of the action (actions are ranked from lowest to highest utility)
-        """
-        # TODO: fix this to take into account environment
-        return 1 - consistency(num_possible_actions, action_rank)
-
-
-    def consistency(self, num_possible_actions, action_rank):
-        """
-        How consistent (expected) an action is compared an agent's beliefs
-        num_possible_actions: the number of possible actions that can be taken
-        action_rank: the rank of the action (actions are ranked from lowest to highest utility)
-        """
-        # TODO: Question - what if actions are equally ranked? Should they just count as one action?
-        denom = 0
-        for i in range(num_possible_actions):
-            denom = denom + math.exp(i)
-        return math.exp(action_rank) / denom
 
     def surprise(self, params):
         """
