@@ -88,11 +88,11 @@ class AppraisalDimensions:
         """
         cumulative_blame = 0
         for k, p_action in blame_params["blamed_agent_possible_actions"].items():
-            cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
+            cur_predicted_utility = p_action["__ER__"][0]
             if blame_params["cur_utility"] <= cur_predicted_utility:
                 if blame_params["blamed_agent_action"] != p_action["blamed_predicted_action"]:
                     # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
-                    cumulative_blame = cumulative_blame + (blame_params["cur_expected_utility"] - blame_params["cur_utility"]) 
+                    cumulative_blame = cumulative_blame + (blame_params["cur_expected_utility"] - blame_params["cur_utility"])
         return cumulative_blame
 
 
@@ -103,11 +103,11 @@ class AppraisalDimensions:
         """
         cumulative_blame = 0
         for k, p_action in blame_params["possible_actions"].items():
-            cur_predicted_utility = p_action["__ER__"][0] #TODO: check that this is indeed the utility that they should get for this action (i.e. not the actions in the future that haven't taken place  yet)
+            cur_predicted_utility = p_action["__ER__"][0]
             if blame_params["cur_utility"] <= cur_predicted_utility:
                 if blame_params["blamed_agent_action"] != p_action["blamed_predicted_action"] and p_action["blamed_predicted_utility"] >= 0:
                     # blamed_agent is to blame because they could have taken a different action that would have resulted in better utility (according to agent)
-                    cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"]) #TODO: make sure this bit actually makes sense
+                    cumulative_blame = cumulative_blame + (blame_params["cur_utility"] - blame_params["cur_expected_utility"])
         return cumulative_blame
 
 
@@ -128,7 +128,6 @@ class AppraisalDimensions:
         """
         If something bad has happened (negatively unexpected utility), does the agent have an action to rectify it (i.e. have any positive effect on their utility)?
         """
-        # TODO: make sure all these params are relevant to one agent looking at another agent
         # are we in a 'bad' situation (we have less utility than we expected)
         control = 0
         if params["cur_utility"] < params["cur_expected_utility"]:
@@ -148,7 +147,7 @@ class AppraisalDimensions:
         if params["blamed_agent_action"] != params["believed_action"]:
             # are we in a 'bad' situation (we have less utility than we expected)?
             if params["cur_utility"] < params["cur_expected_utility"]:
-                for p_action_name, p_action in params["possible_actions"].items(): # TODO: (This should be our possible actions)
+                for p_action_name, p_action in params["possible_actions"].items():
                     if p_action_name == params["believed_action"]:
                         # We can do the action the other agent didn't do
                         control = True
@@ -167,7 +166,7 @@ class AppraisalDimensions:
         if params["blamed_agent_action"] != params["believed_action"]:
             # are we in a 'bad' situation (we have less utility than we expected)?
             if params["cur_utility"] < params["cur_expected_utility"]:
-                for p_action_name, p_action in params["possible_actions"].items(): # TODO: (This should be our possible actions)
+                for p_action_name, p_action in params["possible_actions"].items():
                     if p_action_name == params["believed_action"]:
                         # We can immediately do the action the other agent didn't do
                         control = True
