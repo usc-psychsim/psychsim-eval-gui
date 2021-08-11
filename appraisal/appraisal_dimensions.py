@@ -31,18 +31,11 @@ class PlayerAppraisalInfo:
     cur_expected_utility: float = None
     motivational_relevance: float = None
     motivational_congruence: float = None
-    coerced: bool = False
-    accountable: bool = False
-    blame: float = None
-    intended_blame: bool = False
-    blame2: bool = False
     blame3: float = None
     blame1_2: float = None
     novelty: float = None
     consistency: float = None
     control: float = None
-    preControl: float = None
-    postControl: float = None
     surprise: bool = False
     desirability: float = None
     general_control: float = None
@@ -78,67 +71,6 @@ class AppraisalDimensions:
         m_con = (cur_utility - pre_utility)
         return m_con
 
-
-    def blame(self, team_pre_utility, team_cur_utility):
-        """
-        Did the actor take an action that negatively impacted the team?
-        i.e. did the action that the actor took
-        return: scale of team utility difference
-
-        team_pre_utility: utility of team before action
-        team_cur_utility: utility of team after action
-        """
-        # If the actor did anything to negatively impact the team, they are to blame
-        return team_cur_utility - team_pre_utility
-
-
-    def intended_blame(self, actor_pre_utility, actor_cur_utility, team_pre_utility, team_cur_utility):
-        """
-        Did the agent take an agent that negatively impacted the team, but positively impacted themselves?
-        i.e. did the action that the actor took
-
-        actor_pre_utility: utility of actor before action
-        actor_cur_utility: utility of actor after action
-        team_pre_utility: utility of team before action
-        team_cur_utility: utility of team after action
-        """
-        # did the actor's action negatively affect the team?
-        if team_cur_utility < team_pre_utility:
-            # did the actor's action benefit the actor? - if so they are to blame
-            if actor_cur_utility > actor_pre_utility:
-                return True
-            # did the actor's action negatively benefit the actor? if so - they are not to blame
-            elif actor_cur_utility < actor_pre_utility:
-                return False
-        # if there was no change in utility then the actor isn't to blame
-        return False
-
-
-    def blame2(self, action, player_decision):
-        """
-        Did the actor take an action that wasn't the best (for the team - or for the actor who is asking)
-        TODO: fix this
-            for multi-player (the player_decision should be the belief about another player's decision) - this assumes the
-            '__EV__' here corresponds to the observing player's utility not the expected utility of the observed player
-
-        player_decision: decision object of the player from psychsim
-        """
-        # -- FOR USE WITH 'random' SELECTION
-        # actual_action = player_decision['action']
-        # actual_action_utility = player_decision['V'][actual_action]['__EV__']
-        # for action in player_decision['V']:
-        #     if action['__EV__'] > actual_action_utility: # the player could have taken a better option
-        #         return True
-        # return False
-
-        # -- FOR USE WITH 'distribution' SELECTION
-        actual_action_utility = player_decision['V'][action]['__EV__']
-        for k, v in player_decision['V'].items():
-            if v['__EV__'] > actual_action_utility:  # the player could have taken a better option
-                return True
-        return False
-
-    # FOR BLAME FUNCTIONS: what is the psychological model of blame?
     def blame1_2(self, blame_params):
         """
         Did the blamed_agent take an unexpected action that negatively affected the agent?
@@ -267,30 +199,6 @@ class AppraisalDimensions:
                 return 1
         return 0
 
-    def preControl(self, player_decision, player):
-        """
-        agent's sense they are in control BEFORE action
-        """
-        # TODO: make this a percentage
-        #TODO: Is this just the control of the next step?
-        player_control = 0
-        # for action, predictions in player_decision['V'].items():
-        #     if predictions['__EV__'] > 0:
-        #         player_control = player_control + 1
-        return player_control
-
-    def postControl(self, player_decision, player):
-        """
-        agent's sense they are in control AFTER action
-        similar to control1 but just number of leaves
-        """
-        # TODO: forget about post control for now
-        #TODO: look at Mei for this - . this needs to capture unexpected action of other agents
-        player_control = 0
-        for action, predictions in player_decision['V'].items():
-            if predictions['__EV__'] > 0:
-                player_control = player_control + 1
-        return player_control
 
     def novelty(self, num_possible_actions, action_rank):
         """
@@ -313,7 +221,6 @@ class AppraisalDimensions:
         for i in range(num_possible_actions):
             denom = denom + math.exp(i)
         return math.exp(action_rank) / denom
-
 
     def surprise(self, params):
         """
@@ -429,6 +336,7 @@ class AppraisalDimensions:
         Get appraisals for each step in a csv file
         """
         # TODO: refactor this with psychsim function (maybe have flag for csv vs psychsim)
+        # TODO: move specific csv test to another file for testing
         step_appraisals = []
         with open(csv_file, newline='') as csvfile:
             csv_reader = csv.DictReader(csvfile)
