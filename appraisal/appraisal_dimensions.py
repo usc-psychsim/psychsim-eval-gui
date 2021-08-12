@@ -41,6 +41,9 @@ class PlayerAppraisalInfo:
 
 
 class AppraisalDimensions:
+    """
+    Class with methods to calculate appraisal dimensions
+    """
     def __init__(self):
         self.player_pre_utility: float = 0.0
         self.actions_todo = []
@@ -242,6 +245,7 @@ class AppraisalDimensions:
         """
         get the params in an appropriate format for the appraisal functions from csv data
         The csv format defines: agent_a = target agent, agent_b = blamed agent
+
         """
         # Add the blamed actions to the possible actions
         csv_row['b_possible_actions'] = ast.literal_eval(csv_row['b_possible_actions'])
@@ -266,7 +270,8 @@ class AppraisalDimensions:
 
     def get_appraisal_params_psychsim(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
         """
-        get the params in an appropriate format for the appraisal functions from psychsim data
+        get the params in an appropriate format for the appraisal functions from psychsim data.
+        This helps to hide the messyness of extracting data from psychsim
         """
         a_agent = world.agents[agent]
         player_decision_key = list(debug_dict[agent]["__decision__"])[0] #This is because I don't knwo what the numbers appended to the player name are going to be
