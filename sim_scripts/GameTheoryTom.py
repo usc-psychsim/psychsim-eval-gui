@@ -56,7 +56,7 @@ def get_reward_tree(agent, my_dec, other_dec):
 
 class GameTheoryTom:
     def __init__(self):
-        self.sim_steps = 50
+        self.sim_steps = 5
         # sets up log to screen
         logging.basicConfig(format='%(message)s', level=logging.DEBUG if DEBUG else logging.INFO)
 
