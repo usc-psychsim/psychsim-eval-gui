@@ -371,7 +371,7 @@ class AppraisalDimensions:
     def get_appraisal_params_psychsim(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
         """
         get the params in an appropriate format for the appraisal functions from psychsim data.
-        This function helps to hide the messyness of extracting data from psychsim objects. 
+        This function helps to hide the messyness of extracting data from psychsim objects.
 
         :param agent: name of target agent
         :type agent: str
@@ -431,22 +431,6 @@ class AppraisalDimensions:
                 appraisal.step = step
                 step_appraisals.append(appraisal)
 
-        # Return the appraisals as a dataframe
-        return pd.DataFrame(step_appraisals).T
-
-
-    def get_appraisals_from_psychsim(self, psychsim_data, agent, blamed_agent):
-        """
-        Get appraisals for each step from psychsim
-        """
-        step_appraisals = []
-        for step, step_data in psychsim_data.items():
-            # Get params
-            params = self.get_appraisal_params_psychsim(agent, agent, step_data["WORLD"], step_data["AGENT_DEBUG"], step_data["AGENT_DEBUG"])
-            # Get appraisals for each step
-            appraisal = self.get_appraisals_for_step(params)
-            appraisal.step = step
-            step_appraisals.append(appraisal)
         # Return the appraisals as a dataframe
         return pd.DataFrame(step_appraisals).T
 
