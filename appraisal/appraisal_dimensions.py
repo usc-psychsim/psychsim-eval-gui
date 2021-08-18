@@ -396,11 +396,13 @@ class AppraisalDimensions:
         agent_max_reward = a_agent.getState('__REWARD__').max()
         believed_action = world.getFeature(f"{blame_agent}'s __ACTION__", agent_belief, unique=True)
         possible_actions = debug_dict[agent]["__decision__"][player_decision_key]["V"]
+        blamed_possible_actions = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["V"]
         for action, value in possible_actions.items():
             value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0], unique=True)
             value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0], unique=True)
-
-        blamed_possible_actions = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["V"]
+        for action, value in blamed_possible_actions.items():
+            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0], unique=True)
+            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0], unique=True)
 
         params = dict(cur_action=cur_action,
                       projected_action=proj_action,
