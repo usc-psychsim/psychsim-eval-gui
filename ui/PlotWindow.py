@@ -105,10 +105,12 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                         for group in data.T[self.group_combo.currentText()].unique().tolist():
                             group_data = data.T[data.T[self.group_combo.currentText()] == group].T
                             group_data = group_data.apply(pd.to_numeric, errors='coerce', axis=0)
+                            std_data = getattr(group_data.T.groupby(data.loc[self.x_combo.currentText()]), "std")().T
+                            std_data = std_data.loc[self.y_combo.currentText()].tolist()
                             group_data = getattr(group_data.T.groupby(group_data.loc[self.x_combo.currentText()]), stat)().T
                             group_data[self.x_combo.currentText()] = group_data.index
                             name = f"{self.y_combo.currentText()}_{stat}"
-                            fig = self.set_figure(group_data, fig, plot_type, name)
+                            fig = self.set_figure(group_data, fig, plot_type, name, std_data=std_data)
                 else:
                     if stat not in ["none"]:
                         # if there is no group but a stat
