@@ -109,7 +109,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                             std_data = std_data.loc[self.y_combo.currentText()].tolist()
                             group_data = getattr(group_data.T.groupby(group_data.loc[self.x_combo.currentText()]), stat)().T
                             group_data[self.x_combo.currentText()] = group_data.index
-                            name = f"{self.y_combo.currentText()}_{stat}"
+                            name = f"{group}_{stat}"
                             fig = self.set_figure(group_data, fig, plot_type, name, std_data=std_data)
                 else:
                     if stat not in ["none"]:
