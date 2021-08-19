@@ -204,3 +204,24 @@ def set_table_headers(table, data):
     table.setRowCount(data.shape[0])
     table.setHorizontalHeaderLabels(data.columns)
     table.setVerticalHeaderLabels(data.index.array)
+
+def create_plot_test_data():
+    """
+    Generate some test data for checking the plot functionality.
+    """
+    v1 = ["v1"] * 10
+    v1_data = [1, 2, 3, 5, 5, 0, -5, -5, 2, 0]
+    v_type = ["V"] * 10
+    v2 = ["v2"] * 10
+    v2_data = [5, 8, 10, 6, 5, 1, -10, 10, -4, -5]
+    r1 = ["r1"] * 10
+    r1_data = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    r_type = ["R"] * 10
+    step_data = [x for x in range(10)]
+    stat_test_data = pd.DataFrame(dict(
+        step=step_data * 3,
+        variable=v1 + v2 + r1,
+        value=v1_data + v2_data + r1_data,
+        type= v_type + v_type + r_type
+    )).T
+    return stat_test_data

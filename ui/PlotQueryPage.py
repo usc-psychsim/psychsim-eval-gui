@@ -70,13 +70,7 @@ class PlotQueryPage(QWidget, ui_plotQueryPage):
         Create queries from test data sets to enable test plotting
         """
         # Create test data for testing the plot stat functions
-        v1 = "v1"
-        v2 = "v2"
-        stat_test_data = pd.DataFrame(dict(
-            step=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            variable=[v1, v1, v1, v1, v1, v1, v1, v1, v1, v1, v2, v2, v2, v2, v2, v2, v2, v2, v2, v2],
-            value=[1, 2, 3, 5, 5, 0, -5, -5, 2, 0, 5, 8, 10, 6, 5, 1, -10, 10, -4, -5]
-        )).T
+        stat_test_data = pgh.create_plot_test_data()
         self.test_data_dict["stat_test"] = stat_test_data
 
         if self.test_check.isChecked():
