@@ -90,6 +90,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                 stat = self.stat_combo.currentText()
                 x_alias_source = self.x_alias_combo.currentText()
                 x_alias = None
+                std_data = None
                 if x_alias_source not in ["none"]:
                     x_alias = data.loc[self.x_alias_combo.currentText(), :].tolist()
 
@@ -112,12 +113,15 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                     if stat not in ["none"]:
                         # if there is no group but a stat
                         data = data.apply(pd.to_numeric, errors='coerce', axis=0)
+                        # First get the std for the errorbars
+                        std_data = getattr(data.T.groupby(data.loc[self.x_combo.currentText()]), "std")().T
+                        std_data = std_data.loc[self.y_combo.currentText()].tolist()
                         data = getattr(data.T.groupby(data.loc[self.x_combo.currentText()]), stat)().T
                         data[self.x_combo.currentText()] = data.index
                         name = f"{self.y_combo.currentText()}_{stat}"
                     else:
                         name = f"{self.y_combo.currentText()}"
-                    fig = self.set_figure(data, fig, plot_type, name)
+                    fig = self.set_figure(data, fig, plot_type, name, std_data=std_data)
 
                 self.update_class_plot_info(fig, plot_type)
                 x_name = self.x_combo.currentText()
@@ -129,7 +133,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
             tb = traceback.format_exc()
             print(tb)
 
-    def set_figure(self, data, fig, plot_type, name):
+    def set_figure(self, data, fig, plot_type, name, std_data=None):
         """
         Set a new figure based on selections and add it to the plot
         :param data: data to create plot from
@@ -142,7 +146,8 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         y_data = data.loc[self.y_combo.currentText(), :].tolist()
         return self.add_trace_to_plot(fig, plot_type, x_data, y_data, name, data=data,
                                       x_name=self.x_combo.currentText(),
-                                      y_name=self.y_combo.currentText())
+                                      y_name=self.y_combo.currentText(),
+                                      std_data=std_data)
 
     def update_class_plot_info(self, fig, plot_type):
         """
@@ -167,7 +172,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         # append the plot to the history
         self.plot_history[dt_string] = self.current_plot
 
-    def add_trace_to_plot(self, fig, plot_type, x_data, y_data, name, data=None, x_name="", y_name=""):
+    def add_trace_to_plot(self, fig, plot_type, x_data, y_data, name, data=None, x_name="", y_name="", std_data=None):
         """
         Add a plotly trace based on the user selected type
         This uses the plotly graph_object library
@@ -181,14 +186,21 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         :param y_name: y-axis name
         :return: figure with added traces
         """
+        error_dict = error_y=dict(
+            type='data',
+            array=std_data,
+            visible=True)
         if plot_type == "Scatter":
-            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='markers', name=name))
+            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='markers', name=name,
+                                                 error_y=error_dict))
         elif plot_type == "Line":
-            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='lines+markers', name=name))
+            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, mode='lines+markers', name=name,
+                                                 error_y=error_dict))
         elif plot_type == "Histogram":
             fig.add_trace(getattr(go, plot_type)(histfunc="count", y=y_data, x=x_data, name=name))
         elif plot_type == "Bar":
-            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, name=name))
+            fig.add_trace(getattr(go, plot_type)(x=x_data, y=y_data, name=name,
+                                                 error_y=error_dict))
         elif plot_type == "Violin":
             for x_unique in data.loc[x_name].unique():
                 fig.add_trace(go.Violin(x=data.loc[x_name][data.loc[x_name] == x_unique],
