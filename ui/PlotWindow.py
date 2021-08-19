@@ -105,8 +105,9 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                         for group in data.T[self.group_combo.currentText()].unique().tolist():
                             group_data = data.T[data.T[self.group_combo.currentText()] == group].T
                             group_data = group_data.apply(pd.to_numeric, errors='coerce', axis=0)
-                            std_data = getattr(group_data.T.groupby(data.loc[self.x_combo.currentText()]), "std")().T
-                            std_data = std_data.loc[self.y_combo.currentText()].tolist()
+                            if self.error_bars_checkBox.isChecked():
+                                std_data = getattr(group_data.T.groupby(data.loc[self.x_combo.currentText()]), "std")().T
+                                std_data = std_data.loc[self.y_combo.currentText()].tolist()
                             group_data = getattr(group_data.T.groupby(group_data.loc[self.x_combo.currentText()]), stat)().T
                             group_data[self.x_combo.currentText()] = group_data.index
                             name = f"{group}_{stat}"
@@ -116,8 +117,9 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                         # if there is no group but a stat
                         data = data.apply(pd.to_numeric, errors='coerce', axis=0)
                         # First get the std for the errorbars
-                        std_data = getattr(data.T.groupby(data.loc[self.x_combo.currentText()]), "std")().T
-                        std_data = std_data.loc[self.y_combo.currentText()].tolist()
+                        if self.error_bars_checkBox.isChecked():
+                            std_data = getattr(data.T.groupby(data.loc[self.x_combo.currentText()]), "std")().T
+                            std_data = std_data.loc[self.y_combo.currentText()].tolist()
                         data = getattr(data.T.groupby(data.loc[self.x_combo.currentText()]), stat)().T
                         data[self.x_combo.currentText()] = data.index
                         name = f"{self.y_combo.currentText()}_{stat}"
