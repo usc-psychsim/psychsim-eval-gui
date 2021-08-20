@@ -168,7 +168,47 @@ class PsychSimQueryFunctions2:
             all_steps = pd.concat(steps.values())
             all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
             all_steps = all_steps.set_index('step', drop=False).T
+
             return TABLE_TYPE, all_steps
+        except:
+            tb = traceback.format_exc()
+            print(tb)
+
+    def get_world_state_long(self,  data: pgh.PsychSimRun=None):
+        """
+        Get the world state across steps but in long format
+
+        :param data: Data from sim script
+        :return: world state at each step
+        """
+        try:
+            steps = {}
+            for step, step_data in data.data.items():
+                world = step_data["WORLD"]
+                steps[step] = pd.DataFrame(self.__extract_values_fromVectorDistributionSet(world.state, world))
+            all_steps = pd.concat(steps.values())
+            all_steps.insert(loc=0, column='step', value=pd.Series(list(steps.keys()), index=all_steps.index))
+            all_steps = all_steps.set_index('step', drop=False).T
+
+            # --- Get Long data ----
+            df1 = all_steps.T.melt(id_vars=['step'],
+                                   value_vars=["Agent A's __ACTION__", "Agent B's __ACTION__"],
+                                   var_name='Agent', value_name='Action')
+            df1["Agent"] = df1["Agent"].str.split("'", n = 1, expand = True)[0]
+            df1["Action"] = df1["Action"].map(str)
+            df2 = all_steps.T.melt(id_vars=['step'],
+                                   value_vars=["Agent A's __REWARD__", "Agent B's __REWARD__"],
+                                   var_name='Agent', value_name='Reward')
+            df2["Agent"] = df2["Agent"].str.split("'", n = 1, expand = True)[0]
+            df1 = df1.set_index(['step', df1.groupby(['step']).cumcount()])
+            df2 = df2.set_index(['step', df2.groupby(['step']).cumcount()])
+            df3 = (pd.concat([df1, df2],axis=1)
+                   .sort_index(level=1)
+                   .reset_index(level=1, drop=True)
+                   .reset_index())
+            df3 = df3.loc[:,~df3.columns.duplicated()]
+
+            return TABLE_TYPE, df3.T
         except:
             tb = traceback.format_exc()
             print(tb)
