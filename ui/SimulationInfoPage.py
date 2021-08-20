@@ -54,6 +54,9 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         # LOAD CONFIG
         self.config = self.load_config()
 
+        # LOAD THE SIM DEFINED IN CONFIG
+        self.load_sim()
+
     def setup_buttons(self):
         """
         Set up page buttons
@@ -62,7 +65,6 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         self.rename_run_button.setEnabled(False)
         self.save_run_input.setEnabled(False)
         self.select_sim.clicked.connect(lambda: self.set_file_path("sim_scripts"))
-        self.load_sim_button.clicked.connect(self.load_sim)
         self.run_sim_button.pressed.connect(self.start_sim_thread)
         self.stop_sim_button.pressed.connect(self.stop_thread)
         self.rename_run_button.clicked.connect(self.emit_rename_signal)
@@ -107,7 +109,8 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         new_path = pgh.get_file_path(path_label=self.sim_path_label, default_dir=default_dir)
         if new_path:
             self.sim_path = new_path
-            self.sim_loaded_state.setText("...")
+            self.load_sim()
+            # self.sim_loaded_state.setText("...")
 
     def load_sim(self):
         """
