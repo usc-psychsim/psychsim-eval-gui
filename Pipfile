@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pyqt5 = "==5.15.2"
+pyqt5 = "*"
 pandas = "*"
 pyqtwebengine = "*"
 plotly = "*"
@@ -13,6 +13,9 @@ matplotlib = "*"
 python-igraph = "*"
 pycairo = "*"
 sklearn = "*"
+ply = "*"
+tqdm = "*"
+pyqt5-stubs = "==5.15.2.0"
 
 [dev-packages]
 
