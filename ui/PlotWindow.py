@@ -7,6 +7,7 @@ import plotly
 import traceback
 import copy
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import pandas as pd
 
 import psychsim_gui_helpers as pgh
@@ -41,8 +42,11 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         self.type_combo.setToolTip('Select the plot type')
         self.group_combo.setToolTip('Select the variable to group the data by')
         self.stat_combo.setToolTip('Select the statistic to apply')
+        self.legend_comboBox.setToolTip('Set the position of the legend on the plot')
 
         self.current_fig = go.Figure()
+        # self.current_fig = make_subplots(specs=[[{"secondary_y": True}]])
+
         self.current_plot = None
         self.plot_history = dict()
 
@@ -60,6 +64,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         """
         pgh.update_combo(self.stat_combo, ["none", "mean", "median"], clear=True)
         pgh.update_combo(self.type_combo, ["Line", "Scatter", "Histogram", "Bar", "Violin"], clear=True)
+        pgh.update_combo(self.legend_comboBox, ["none", "top right", "middle right", "bottom right", "top center", "middle center", "bottom center", "top left", "middle left", "bottom left"], clear=True)
 
     def set_axis_dropdowns(self):
         """
@@ -252,6 +257,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         :param x_alias: labels to give to x_axis ticks
         :return: figure with updated layout
         """
+        showlegend, xy = self.get_legend_pos()
         layout = dict(
             margin=dict(
                 l=1,
@@ -260,14 +266,16 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                 t=25,
                 pad=4
             ),
-            # legend=dict(
-            #     x=0,
-            #     y=0.7,
-            #     traceorder='normal',
-            #     font=dict(
-            #         size=12,),
-            # ),
-            showlegend=True,
+            legend=dict(
+                yanchor="auto",
+                y=xy[1],
+                xanchor="auto",
+                x=xy[0],
+                traceorder='normal',
+                font=dict(
+                    size=12,),
+            ),
+            showlegend=showlegend,
             title=title,
             xaxis_title=x_name,
             yaxis_title=y_name,
@@ -347,6 +355,26 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                                 x_name="",
                                 y_name="")
 
+    def get_legend_pos(self):
+        """
+        get the legend position values from self.legend_combobox text
+        :return: showlegend, legend xy coordinates
+        """
+        showlegend = True
+        legend_pos = {"none": (0, 0),
+                      "top right": (1, 1),
+                      "middle right": (1, 0.5),
+                      "bottom right": (1, 0),
+                      "top center": (0.5, 1),
+                      "middle center": (0.5, 0.5),
+                      "bottom center": (0.5, 0),
+                      "top left": (0, 1),
+                      "middle left": (0, 0.5),
+                      "bottom left": (0, 0)}
+        if "none" in self.legend_comboBox.currentText():
+            return False, (0, 0)
+        legend_xy = legend_pos[self.legend_comboBox.currentText()]
+        return showlegend, legend_xy
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
