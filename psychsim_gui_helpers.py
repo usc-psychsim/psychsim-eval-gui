@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import *
 from dataclasses import dataclass, asdict
 import pandas as pd
 from datetime import datetime
+import os
+import pickle
 
 
 @dataclass
@@ -180,7 +182,7 @@ def save_query_pickle(query, output_directory="sim_output"):
     query: PsySimQuery query
     output_directory: directory to save the file
     """
-    dt_string, _ = pgh.get_time_stamp()
+    dt_string, _ = get_time_stamp()
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
     output_path = os.path.join(output_directory, f"{query.id}_{dt_string}.pickle")
