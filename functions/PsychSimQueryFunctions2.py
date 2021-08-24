@@ -94,7 +94,7 @@ class PsychSimQueryFunctions2:
         output_data = pd.DataFrame.from_dict(actions_dict)
         return TABLE_TYPE, output_data.T
 
-    def query_action(self, data: pgh.PsychSimRun=None, agent: str=None, action: str=None):
+    def get_action_choice(self, data: pgh.PsychSimRun=None, agent: str=None, action: str=None):
         """
          action specific query, which can be used to look at overall reasoning of a planning agent.
 
