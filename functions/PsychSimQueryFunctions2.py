@@ -213,7 +213,7 @@ class PsychSimQueryFunctions2:
             tb = traceback.format_exc()
             print(tb)
 
-    def get_appraisal_diemensions(self,  data: pgh.PsychSimRun=None, agent: str=None, blame_agent: str=None):
+    def get_appraisal_dimensions(self,  data: pgh.PsychSimRun=None, agent: str=None, blame_agent: str=None):
         """
         Get the appraisal dimensions
 
