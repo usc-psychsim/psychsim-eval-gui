@@ -47,34 +47,8 @@
       <item>
        <widget class="QLabel" name="info_label">
         <property name="text">
-         <string>Select Data or Query object</string>
+         <string>Select Query object</string>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QFrame" name="frame_2">
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QRadioButton" name="select_data_radio">
-           <property name="text">
-            <string>Select Data</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="select_query_radio">
-           <property name="text">
-            <string>Select Query</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </widget>
       </item>
       <item>

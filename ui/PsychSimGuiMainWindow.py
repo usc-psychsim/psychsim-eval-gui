@@ -97,6 +97,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.sim_data_dict[data_id] = data
         # pgh.update_combo(self.query_data_page.data_combo, self.sim_data_dict.keys())
         self.update_data_table()
+        self.query_data_page.function_combo.activated.emit(0)
 
     def select_and_load_config(self):
         """
