@@ -169,20 +169,6 @@
              <property name="bottomMargin">
               <number>0</number>
              </property>
-             <item>
-              <widget class="QRadioButton" name="axis_left_radioButton">
-               <property name="text">
-                <string>Left</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="radioButton_2">
-               <property name="text">
-                <string>Right</string>
-               </property>
-              </widget>
-             </item>
             </layout>
            </widget>
           </item>
