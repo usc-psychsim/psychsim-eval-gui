@@ -8,6 +8,12 @@ dict contatining the folloiwng:
                         "AGENTS": self.agents (list contianing agents)
 """
 
+# TODO:
+#  [ ]Make it so the params define the function which they should take a variable (e.g. action comes from get_action)
+#   -[ ]document this
+#   -[ ]test the whole structure still works when this isn't done (just by defining functions and setting variables from wherever)
+
+
 import pandas as pd
 import numpy as np
 import traceback
@@ -20,7 +26,7 @@ TREE_TYPE = 'tree'
 TABLE_TYPE = 'table'
 
 
-class PsychSimQueryFunctions2:
+class ASISTQueryFunctions:
     def __init__(self):
         pass
 

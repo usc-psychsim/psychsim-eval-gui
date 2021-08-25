@@ -9,7 +9,7 @@ sys.path.insert(1, "..")
 import logging
 import pandas as pd
 from appraisal import appraisal_dimensions as ad
-from functions import PsychSimQueryFunctions2 as qf
+from functions import ASISTQueryFunctions as qf
 import psychsim_gui_helpers as pgh
 from sim_scripts.ImperfectMentalModel3 import ImperfectMentalModel3
 
@@ -20,7 +20,7 @@ def get_appraisal_dimensions(data=None, agent=None, *args, **kwargs):
     """
     Get the appraisal dimensions
     """
-    query_functions = qf.PsychSimQueryFunctions2()
+    query_functions = qf.ASISTQueryFunctions()
     player_appraisals = query_functions.get_appraisal_diemensions(data, agent, agent)
 
     return player_appraisals
