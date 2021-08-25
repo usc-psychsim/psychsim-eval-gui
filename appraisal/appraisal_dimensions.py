@@ -37,7 +37,7 @@ class PlayerAppraisalInfo:
     control2: int = None
     general_control: float = None
     specific_control: int = None
-    surprise: bool = False
+    surprise: float = None
     desirability: float = None
     memory_control: float = None
 
@@ -95,7 +95,7 @@ class AppraisalDimensions:
             # Does the action that agent1 believes agent 2 would take match what action agent 2 actually took?
             if blamed_agent_action != believed_action:
                 # The agent to blame did not do what was expected so is to blame proportionally to utility loss
-                return cur_utility - cur_expected_utility
+                return abs(cur_utility - cur_expected_utility)
             pass
         return 0.0
 
@@ -442,14 +442,3 @@ class AppraisalDimensions:
                 self.step_appraisal_info[appraisal_key][i] = 1
             elif isinstance(value, (int, float)) and  value < 0:
                 self.step_appraisal_info[appraisal_key][i] = -1
-
-
-if __name__ == "__main__":
-    ad = AppraisalDimensions()
-    csv_file = os.path.join("2agent_test_blame.csv")
-    query_data = ad.get_appraisals_from_csv(csv_file)
-    # convert to dict and save as query for GUI
-    query = pgh.PsySimQuery(id="2agentTest", params=[], function="tset",
-                        results=query_data, result_type="table")
-    pgh.save_query_pickle(query)
-    pass
