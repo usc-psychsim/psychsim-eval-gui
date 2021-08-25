@@ -92,7 +92,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def execute_query(self):
         """
-        Execute the query with the given params. The query function is defined in functions/PsychSimQueryFunctions.py
+        Execute the query with the given params. The query function is defined in functions/ASISTQueryFunctions.py
         """
         params = {}
         for row in range(self.query_param_table.rowCount()):
@@ -107,8 +107,14 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.cache_table(query_function, self.query_param_table)
         try:
             query_result = getattr(self.psychsim_query, query_function)(**params)
-            result_type = query_result[0]
-            result = query_result[1]
+            if len(query_result) == 2:
+                result_type = query_result[0]
+                result = query_result[1]
+            elif len(query_result) == 1:
+                # if the result type isn't specified, then make it a table
+                result_type = "table"
+                result = query_result[1]
+
             # result = result.apply(pd.to_numeric,
             #                       errors='ignore')  # convert the resulting dataframe to numeric where possible
             self.print_query_output(f"results for {query_function}:")
@@ -477,7 +483,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def set_function_dropdown(self):
         """
-        Populate the query function dropdown with functions from functions/PsychSimQueryFunctions.py
+        Populate the query function dropdown with functions from functions/ASISTQueryFunctions.py
         """
         query_methods = [method_name for method_name in dir(self.psychsim_query)
                          if callable(getattr(self.psychsim_query, method_name))
@@ -495,72 +501,92 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
     def handle_params(self):
         """
-        Get the parameters from the function definitions in functions/PsychSimQueryFunctions.py
+        Get the parameters from the function definitions in functions/ASISTQueryFunctions.py
         :return:
         """
-        function_name = self.function_combo.currentText()
 
-        function = getattr(self.psychsim_query, function_name)
-        param_list = inspect.getfullargspec(function)
+        try:
+            function_name = self.function_combo.currentText()
 
-        # ---do the generic param stuff---
-        # clear the table
-        self.query_param_table.setRowCount(0)
+            function = getattr(self.psychsim_query, function_name)
+            param_list = inspect.getfullargspec(function)
 
-        # Set table cols
-        columns = ['name', 'set', 'expected type', 'received type', 'value']
-        self.query_param_table.setColumnCount(len(columns))
-        self.query_param_table.setHorizontalHeaderLabels(columns)
+            # ---do the generic param stuff---
+            # clear the table
+            self.query_param_table.setRowCount(0)
 
-        param_names = param_list.args
-        if 'self' in param_names:
-            param_names.remove('self')
+            # Set table cols
+            columns = ['name', 'set', 'expected type', 'received type', 'value']
+            self.query_param_table.setColumnCount(len(columns))
+            self.query_param_table.setHorizontalHeaderLabels(columns)
 
-        # if a cached table exists, use that, otherwise make a new one
-        if function_name in self._param_table_cache.keys() and self._param_table_cache[function_name]:
-            for row_number, row in enumerate(self._param_table_cache[function_name]):
-                # If the param is 'data', add a combo box and populate it with data objects
-                set_param_object = None
-                if row[0] == "data":
-                    set_param_object = QComboBox()
-                    pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
-                    set_param_object.activated.connect(partial(self.set_data_param, row_number))
-                else:
-                     set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
-                new_row = {'name': row[0],
-                           'set': set_param_object,
-                           'expected type': row[2],
-                           'received type': row[3],
-                           'value': row[4]}
-                self._add_row_to_table(self.query_param_table, new_row.values())
-                tab_item = self.query_param_table.item(row_number, 3)
-                self._color_table_params(row[3], row[2], tab_item)
-        else:
             param_names = param_list.args
             if 'self' in param_names:
                 param_names.remove('self')
 
-            for row_number, param in enumerate(param_names):
-                # If the param is 'data', add a combo box and populate it with data objects
-                set_param_object = None
-                if param == "data":
-                    set_param_object = QComboBox()
-                    pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
-                    set_param_object.activated.connect(partial(self.set_data_param, row_number))
-                else:
-                    set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
+            # if a cached table exists, use that, otherwise make a new one
+            if function_name in self._param_table_cache.keys() and self._param_table_cache[function_name]:
+                for row_number, row in enumerate(self._param_table_cache[function_name]):
+                    # If the param is 'data', add a combo box and populate it with data objects
+                    set_param_object = None
+                    if row[0] == "data":
+                        set_param_object = QComboBox()
+                        pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
+                        set_param_object.activated.connect(partial(self.set_data_param, row_number))
+                    else:
+                         set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
+                    new_row = {'name': row[0],
+                               'set': set_param_object,
+                               'expected type': row[2],
+                               'received type': row[3],
+                               'value': row[4]}
+                    self._add_row_to_table(self.query_param_table, new_row.values())
+                    tab_item = self.query_param_table.item(row_number, 3)
+                    self._color_table_params(row[3], row[2], tab_item)
+            else:
+                param_names = param_list.args
+                if 'self' in param_names:
+                    param_names.remove('self')
+
+                query_methods = [method_name for method_name in dir(self.psychsim_query)
+                                 if callable(getattr(self.psychsim_query, method_name))
+                                 and '__' not in method_name]
+
+                for row_number, param in enumerate(param_names):
+                    param_type = None
+                    if param in param_list.annotations:
+                        # Get the param type if defined
+                        param_type = param_list.annotations[param]
+
+                    # If the param is 'data', add a combo box and populate it with data objects
+                    set_param_object = None
+                    if param == "data":
+                        set_param_object = QComboBox()
+                        pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
+                        set_param_object.activated.connect(partial(self.set_data_param, row_number))
+                    # elif param_type and param_type[0].__name__ in query_methods:
+                    #     # the param attribute lists a query method so set the dropdown box with results from the executed query.
+                    #     set_param_object = QComboBox()
+                    #     # Get the results to populate the combo box with
+                    #     # results = param_type[0]() # TODO: fix this, or come up with a better way to do it
+                    else:
+                        set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
 
 
-                new_row = {'name': param,
-                           'set': set_param_object,
-                           'expected type': "...",
-                           'received type': "...",
-                           'value': "... "}
+                    new_row = {'name': param,
+                               'set': set_param_object,
+                               'expected type': "...",
+                               'received type': "...",
+                               'value': "... "}
 
-                if param in param_list.annotations:
-                    new_row["expected type"] = param_list.annotations[param].__name__
+                    # TODO: fix this
+                    # if param in param_list.annotations:
+                    #     new_row["expected type"] = param_list.annotations[param].__name__
 
-                self._add_row_to_table(self.query_param_table, new_row.values())
+                    self._add_row_to_table(self.query_param_table, new_row.values())
+        except:
+            tb = traceback.format_exc()
+            self.print_query_output(tb, "red")
 
     def _create_param_table_button(self, arg_val, button_label, button_function):
         """
@@ -735,6 +761,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         new_path = pgh.get_file_path(path_label=self.func_source_label, default_dir="functions")
         if new_path:
             self.func_source = new_path
+            self.reload_func_source()
             # self.func_source_label.setText(new_path)
 
     def reload_func_source(self):
