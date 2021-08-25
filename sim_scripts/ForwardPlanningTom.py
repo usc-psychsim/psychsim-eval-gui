@@ -64,7 +64,7 @@ def get_reward_tree(agent, my_dec, other_dec):
 
 class ForwardPlanningTom:
     def __init__(self):
-        self.sim_steps = 50
+        self.sim_steps = 1
         random.seed(0)
 
         # sets up log to screen
@@ -90,6 +90,8 @@ class ForwardPlanningTom:
             self.world.setFeature(dec, NOT_DECIDED)
             self.agents_dec.append(dec)
 
+        self.agents[0].setHorizon(2)
+        self.agents[1].setHorizon(2)
         # define agents' actions inspired on TIT-FOR-TAT: first decision is open, then retaliate non-cooperation.
         # as soon as one agent defects it will always defect from there on
         for i, agent in enumerate(self.agents):
@@ -146,17 +148,22 @@ if __name__ == "__main__":
     # sets up log to screen
     logging.basicConfig(format='%(message)s', level=logging.DEBUG if DEBUG else logging.INFO)
     sim = ForwardPlanningTom()
-
-    for h in range(MAX_HORIZON + 1):
+    result = []
+    # for h in range(MAX_HORIZON + 1):
+    #     logging.info('====================================')
+    #     logging.info(f'Horizon {h}')
+    #
+    #     # set horizon (also to the true model!) and reset decisions
+    #     for i in range(len(sim.agents)):
+    #         sim.agents[i].setHorizon(h)
+    #         sim.agents[i].setHorizon(h, sim.agents[i].get_true_model())
+    #         sim.world.setFeature(sim.agents_dec[i], NOT_DECIDED, recurse=True)
+    #         for step in range(4):
+    #             logging.info('====================================')
+    #             logging.info(f'Step {step}')
+    #             result.append(sim.run_step())
+    for step in range(4):
         logging.info('====================================')
-        logging.info(f'Horizon {h}')
-
-        # set horizon (also to the true model!) and reset decisions
-        for i in range(len(sim.agents)):
-            sim.agents[i].setHorizon(h)
-            sim.agents[i].setHorizon(h, sim.agents[i].get_true_model())
-            sim.world.setFeature(sim.agents_dec[i], NOT_DECIDED, recurse=True)
-            for step in range(4):
-                logging.info('====================================')
-                logging.info(f'Step {step}')
-                result = sim.run_step()
+        logging.info(f'Step {step}')
+        result.append(sim.run_step())
+    pass

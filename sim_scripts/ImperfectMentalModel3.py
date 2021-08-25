@@ -22,7 +22,7 @@ __description__ = 'Example of setting a incorrect belief over another agent\'s f
 
 # parameters
 # NUM_STEPS = 4
-HORIZON = 2
+HORIZON = 3
 
 DEBUG = False
 
@@ -107,7 +107,7 @@ class ImperfectMentalModel3:
 
     def run_step(self):
         #self.ag_producer.setBelief(self.var_half_cap, True, model='consumer_model')
-        result = {'Consumer': {}, 'Producer': {}}
+        result = {'Consumer': {'preserve_states': True}, 'Producer': {}}
         #self.world.printBeliefs('Consumer')
         #self.world.printBeliefs('Producer')
         step = self.world.step(debug=result)
@@ -126,6 +126,15 @@ class ImperfectMentalModel3:
         logging.info('Consumer reward:\t{}'.format(reward))
         self.total_rwd += reward
 
+        # logging.info('+++++++++++++++++++++++++')
+        # logging.info('CONSUMER LOOK AHEAD')
+        # for act in self.ag_consumer.actions:
+        #     logging.info(f'CONSUMER ACTION: {act}')
+        #     for h_step, h_state in enumerate(result['Consumer']['__decision__']['Consumer0']['V'][act]['__S__']):
+        #             logging.info('Consumer action:\t\t{}'.format(self.world.getFeature("Consumer's __ACTION__", h_state, unique=True)))
+        #             logging.info('Producer action:\t\t{}'.format(self.world.getFeature("Producer's __ACTION__", h_state, unique=True)))
+        #             logging.info('Consumer reward:\t\t{}'.format(self.world.getFeature("Consumer's __REWARD__", h_state, unique=True)))
+        # logging.info('+++++++++++++++++++++++++')
         testest = self.ag_consumer.getAttribute("Producer's __ACTION__", f'{self.ag_consumer.name}0')
 
         logging.info('____________________________________')

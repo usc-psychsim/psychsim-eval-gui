@@ -20,7 +20,7 @@ import numpy as np
 
 class GenericSim:
     def __init__(self):
-        self.sim_steps = 100
+        self.sim_steps = 101
         self.current_step = 0
         # self.output_data = dict(ch1=dict(x=[], y=[]), ch2=dict(x=[], y=[]), ch3=dict(x=[], y=[]))
         self.output_data = dict(ch1=dict(), ch2=dict(), ch3=dict())

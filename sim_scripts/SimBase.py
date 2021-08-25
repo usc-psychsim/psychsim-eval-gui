@@ -15,4 +15,4 @@ class SimBase:
 
 if __name__ == "__main__":
     sim = SimBase()
-    # sim.run_sim()
+    sim.run_step()
