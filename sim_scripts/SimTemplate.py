@@ -1,8 +1,8 @@
 """
-Base class for simulations to be used with psychsim-gui-qt
+Template class for simulations to be used with psychsim-gui-qt
 """
 
-class SimBase:
+class SimTemplate:
     def __init__(self):
         self.sim_steps = 20
 
@@ -14,5 +14,5 @@ class SimBase:
         pass
 
 if __name__ == "__main__":
-    sim = SimBase()
+    sim = SimTemplate()
     sim.run_step()

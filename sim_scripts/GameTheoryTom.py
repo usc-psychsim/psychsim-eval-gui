@@ -1,3 +1,6 @@
+"""
+This script is adapted directly from: https://github.com/usc-psychsim/psychsim/blob/0571996689c1d9c3d6f42a9f954b6f51a26b2c4b/psychsim/examples/game_theory_tom.py
+"""
 # -*- coding: utf-8 -*-
 
 # import sys

@@ -1,3 +1,7 @@
+"""
+This script is adapted from: https://github.com/usc-psychsim/psychsim/blob/0571996689c1d9c3d6f42a9f954b6f51a26b2c4b/psychsim/examples/forward_planning_tom.py
+"""
+
 import logging
 import random
 from psychsim.agent import Agent
