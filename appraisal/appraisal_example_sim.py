@@ -21,7 +21,7 @@ def get_appraisal_dimensions(data=None, agent=None, *args, **kwargs):
     Get the appraisal dimensions
     """
     query_functions = qf.ASISTQueryFunctions()
-    player_appraisals = query_functions.get_appraisal_diemensions(data, agent, agent)
+    player_appraisals = query_functions.get_appraisal_dimensions(data, agent, agent)
 
     return player_appraisals
 
