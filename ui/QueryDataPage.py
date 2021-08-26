@@ -580,8 +580,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                                'value': "... "}
 
                     # TODO: fix this
-                    # if param in param_list.annotations:
-                    #     new_row["expected type"] = param_list.annotations[param].__name__
+                    if param in param_list.annotations:
+                        new_row["expected type"] = param_list.annotations[param].__name__
 
                     self._add_row_to_table(self.query_param_table, new_row.values())
         except:
