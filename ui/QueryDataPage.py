@@ -69,12 +69,18 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.sample_query_combo.activated.connect(self.handle_sample_query_dropdown)
         self.select_query_sample_button.clicked.connect(self.show_sample_dialog)
 
-        self.function_info_button.setToolTip('Click for how to write custom query functions')
         self.query_doc_button.clicked.connect(self.get_query_doc)
         self.query_doc_button.clicked.connect(self.get_query_doc)
 
         self.set_func_source_button.clicked.connect(self.set_func_source)
         self.reload_func_source_button.clicked.connect(self.reload_func_source)
+
+        # Set tooltips
+        self.function_info_button.setToolTip('Click for how to write custom query functions')
+        self.execute_query_button.setToolTip('Click to execute selected function. NOTE: set parameters first!')
+        self.set_func_source_button.setToolTip('Select the path to the function definitions file')
+        self.reload_func_source_button.setToolTip('Reload the functions definition file')
+        self.function_combo.setToolTip('Reload the functions definition file')
 
         self.set_sample_function_dropdown(["range", "category"])
 
@@ -626,6 +632,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             # are_you_sure_dialog.query_name.setText(query_id)
             param_name = self.query_param_table.item(button_row, 0).text()
             function_name = self.function_combo.currentText()
+            set_param_dialog.sel_val_combo.setToolTip(
+                f'Select the value to use to pass as a parameter to {function_name}')
             set_param_dialog.set_title(function_name, param_name)
             result = set_param_dialog.exec_()
             if result:

@@ -57,9 +57,9 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="info_label">
            <property name="styleSheet">
-            <string notr="true">color: red</string>
+            <string notr="true">color: black</string>
            </property>
            <property name="text">
             <string>This dialog is used to set values for function parameters. Values are selected from pre-generated queries. Please first generate a query in order to select a value from it.</string>
@@ -83,7 +83,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="info_label">
+       <widget class="QLabel" name="select_query_label">
         <property name="styleSheet">
          <string notr="true"/>
         </property>

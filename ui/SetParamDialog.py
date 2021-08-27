@@ -26,6 +26,10 @@ class SetParamDialog(QDialog, ui_obj):
         self.sel_var_combo.activated.connect(self.get_value_from_variable)
         self.sel_val_combo.activated.connect(self.update_param_name)
 
+        self.select_value_combo.setToolTip('Select the query function that contains variables you want to use')
+        self.sel_var_combo.setToolTip('Select the variable that contains values you want to use')
+        self.sel_val_combo.setToolTip('Select the value to use to pass as a parameter to the function')
+
         self.selected_val = "test"
 
         self.data_dict = data_dict
@@ -36,6 +40,11 @@ class SetParamDialog(QDialog, ui_obj):
         self.param_name = None
 
         self.populate_combo()
+
+        # Set warning label if no queries
+        if len(query_dict) == 0:
+            self.info_label.setText("THERE ARE CURRENTLY NO QUERIRES SAVED. PLEASE FIRST GENERATE A QUERY IN ORDER TO SET A PARAM")
+            self.info_label.setStyleSheet("color: red")
 
     def populate_combo(self):
         self._set_query_interface_enable(True)
