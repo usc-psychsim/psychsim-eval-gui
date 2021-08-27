@@ -43,6 +43,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
         self.group_combo.setToolTip('Select the variable to group the data by')
         self.stat_combo.setToolTip('Select the statistic to apply')
         self.legend_comboBox.setToolTip('Set the position of the legend on the plot')
+        self.x_alias_combo.setToolTip('Set the x axis tick labels')
 
         self.current_fig = go.Figure()
         # self.current_fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -111,7 +112,7 @@ class PlotWindow(QMainWindow, ui_plotWindow):
                             group_data = data.T[data.T[self.group_combo.currentText()] == group].T
                             group_data = group_data.apply(pd.to_numeric, errors='coerce', axis=0)
                             if self.error_bars_checkBox.isChecked():
-                                std_data = getattr(group_data.T.groupby(data.loc[self.x_combo.currentText()]), "std")().T
+                                std_data = getattr(group_data.T.groupby(group_data.loc[self.x_combo.currentText()]), "std")().T
                                 std_data = std_data.loc[self.y_combo.currentText()].tolist()
                             group_data = getattr(group_data.T.groupby(group_data.loc[self.x_combo.currentText()]), stat)().T
                             group_data[self.x_combo.currentText()] = group_data.index
