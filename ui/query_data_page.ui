@@ -635,14 +635,14 @@
           <item row="1" column="0">
            <widget class="QLabel" name="label_17">
             <property name="text">
-             <string>Sample function</string>
+             <string>Sample by</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
            <widget class="QPushButton" name="select_query_sample_button">
             <property name="text">
-             <string>Select Sample</string>
+             <string>Filter Sample</string>
             </property>
            </widget>
           </item>
