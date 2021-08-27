@@ -39,6 +39,7 @@
     </property>
     <addaction name="actionrun_sim"/>
     <addaction name="actionLoad_config"/>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menudata">
     <property name="title">
@@ -143,6 +144,11 @@
   <action name="actionLoad_config">
    <property name="text">
     <string>Load config</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
    </property>
   </action>
  </widget>

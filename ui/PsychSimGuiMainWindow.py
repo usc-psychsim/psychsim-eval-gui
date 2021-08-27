@@ -75,6 +75,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         self.actionplot.triggered.connect(lambda: self.main_window_stack_widget.setCurrentIndex(2))
         self.actionmanual.triggered.connect(lambda: self.show_doc_window("index.html"))
         self.actionLoad_config.triggered.connect(self.select_and_load_config)
+        self.actionQuit.triggered.connect(self.quit)
 
         # help buttons
         self.sim_info_page.sim_info_button.clicked.connect(
@@ -87,6 +88,16 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.show_doc_window("manual/function_definitions.html"))
         self.plot_query_page.plot_help_button.clicked.connect(
             lambda: self.show_doc_window("manual/gui_functionality.html", "plot"))
+
+        # Disable close button so have to quit from file menu
+        self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+
+    def quit(self):
+        """
+        Close the program
+        """
+        self.close()
+
 
     def update_data_info(self, data_id, data):
         """
