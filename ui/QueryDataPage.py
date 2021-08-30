@@ -540,7 +540,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     if row[0] == "data":
                         set_param_object = QComboBox()
                         pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
-                        set_param_object.activated.connect(partial(self.set_data_param, row_number))
+                        set_param_object.activated.connect(partial(self.set_type_param, row_number, pgh.PsychSimRun.__name__))
+                    elif row[2] == "bool":
+                        set_param_object = QComboBox()
+                        pgh.update_combo(set_param_object, [False, True], clear=True)
+                        set_param_object.activated.connect(partial(self.set_type_param, row_number, "bool"))
                     else:
                          set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
                     new_row = {'name': row[0],
@@ -571,7 +575,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     if param == "data":
                         set_param_object = QComboBox()
                         pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
-                        set_param_object.activated.connect(partial(self.set_data_param, row_number))
+                        set_param_object.activated.connect(partial(self.set_type_param, row_number, pgh.PsychSimRun.__name__))
                     # elif param_type and param_type[0].__name__ in query_methods:
                     #     # the param attribute lists a query method so set the dropdown box with results from the executed query.
                     #     set_param_object = QComboBox()
@@ -580,7 +584,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     elif param_type == bool:
                         set_param_object = QComboBox()
                         pgh.update_combo(set_param_object, [False, True], clear=True)
-                        set_param_object.activated.connect(partial(self.set_bool_param, row_number))
+                        set_param_object.activated.connect(partial(self.set_type_param, row_number, "bool"))
 
                     else:
                         set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
@@ -658,10 +662,10 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def set_data_param(self, button_row):
+    def set_type_param(self, button_row, param_type):
         sender = self.sender()
         function_name = self.function_combo.currentText()
-        param_type = pgh.PsychSimRun.__name__
+        # param_type = pgh.PsychSimRun.__name__
         param_val = sender.currentText()
         name_item = QTableWidgetItem(param_type)  # create a new Item
         expected_type = self.query_param_table.item(button_row, 2).text()
@@ -671,18 +675,18 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_param_table.setItem(button_row, 4, name_item)
         self.cache_table(function_name, self.query_param_table)
 
-    def set_bool_param(self, button_row):
-        sender = self.sender()
-        function_name = self.function_combo.currentText()
-        param_type = "bool"
-        param_val = sender.currentText()
-        name_item = QTableWidgetItem(param_type)  # create a new Item
-        expected_type = self.query_param_table.item(button_row, 2).text()
-        self._color_table_params(param_type, expected_type, name_item)
-        self.query_param_table.setItem(button_row, 3, name_item)
-        name_item = QTableWidgetItem(param_val)  # create a new Item
-        self.query_param_table.setItem(button_row, 4, name_item)
-        self.cache_table(function_name, self.query_param_table)
+    # def set_bool_param(self, button_row):
+    #     sender = self.sender()
+    #     function_name = self.function_combo.currentText()
+    #     param_type = "bool"
+    #     param_val = sender.currentText()
+    #     name_item = QTableWidgetItem(param_type)  # create a new Item
+    #     expected_type = self.query_param_table.item(button_row, 2).text()
+    #     self._color_table_params(param_type, expected_type, name_item)
+    #     self.query_param_table.setItem(button_row, 3, name_item)
+    #     name_item = QTableWidgetItem(param_val)  # create a new Item
+    #     self.query_param_table.setItem(button_row, 4, name_item)
+    #     self.cache_table(function_name, self.query_param_table)
 
 
     def _color_table_params(self, param_type, expected_type, tab_item):
