@@ -219,7 +219,7 @@ class ASISTQueryFunctions:
             tb = traceback.format_exc()
             print(tb)
 
-    def get_appraisal_dimensions(self,  data: pgh.PsychSimRun=None, agent: str=None, blame_agent: str=None):
+    def get_appraisal_dimensions(self,  data: pgh.PsychSimRun=None, agent: str=None, blame_agent: str=None, normalise=False):
         """
         Get the appraisal dimensions
 
@@ -240,7 +240,7 @@ class ASISTQueryFunctions:
                                                                  debug_dict=step_data["AGENT_DEBUG"],
                                                                  debug_pred_dict=step_data["AGENT_DEBUG"])
                 # Get appraisals for each step
-                appraisal = player_ad.get_appraisals_for_step(params)
+                appraisal = player_ad.get_appraisals_for_step(params, normalise=normalise)
                 appraisal.step = step
                 step_appraisals.append(appraisal)
             # Return the appraisals as a dataframe

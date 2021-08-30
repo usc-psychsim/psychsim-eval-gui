@@ -1,18 +1,10 @@
 """
 Functions for appraisal dimensions
 """
-import math
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 import csv
-import os
 import ast
-import pickle
-
-import pandas
 import pandas as pd
-import psychsim_gui_helpers as pgh
-
-# TODO: REFACTOR THIS (think about creating psychsim access functions)
 
 
 @dataclass
@@ -294,7 +286,7 @@ class AppraisalDimensions:
         return -lost_utility
 
 
-    def get_appraisals_for_step(self, params):
+    def get_appraisals_for_step(self, params, normalise=False):
         """
         Calculate all the appraiasl dimensions for a particiular step
 
@@ -313,6 +305,15 @@ class AppraisalDimensions:
         appraisals.specific_control = self.control3(params["cur_utility"], params["cur_expected_utility"], params["blamed_agent_action"], params["possible_actions"], params["believed_action"])
         appraisals.memory_control = self.control5(params["blamed_agent_action"], params["possible_actions"])
         appraisals.surprise = self.surprise(params['blamed_agent_action'], params['believed_action'])
+
+        if normalise:
+            for field in appraisals.__dataclass_fields__:
+                value = getattr(appraisals, field)
+                if isinstance(value, (int, float)) and value > 0:
+                    setattr(appraisals, field, 1)
+                elif isinstance(value, (int, float)) and value < 0:
+                    setattr(appraisals, field, -1)
+
         appraisals.a_action = params["cur_action"]
         appraisals.a_proj_action = params["projected_action"]
         appraisals.a_expected_b = params["believed_action"]
@@ -320,6 +321,7 @@ class AppraisalDimensions:
         appraisals.pre_utility = params["pre_utility"]
         appraisals.cur_utility = params["cur_utility"]
         appraisals.cur_expected_utility = params["cur_expected_utility"]
+
         return appraisals
 
     def get_appraisal_params_csv(self, csv_row):
@@ -435,10 +437,3 @@ class AppraisalDimensions:
 
         # Return the appraisals as a dataframe
         return pd.DataFrame(step_appraisals).T
-
-    def normalise_appraisals(self, appraisal_key):
-        for i, value in enumerate(self.step_appraisal_info[appraisal_key]):
-            if isinstance(value, (int, float)) and value > 0:
-                self.step_appraisal_info[appraisal_key][i] = 1
-            elif isinstance(value, (int, float)) and  value < 0:
-                self.step_appraisal_info[appraisal_key][i] = -1
