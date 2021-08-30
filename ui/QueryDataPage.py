@@ -675,20 +675,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         self.query_param_table.setItem(button_row, 4, name_item)
         self.cache_table(function_name, self.query_param_table)
 
-    # def set_bool_param(self, button_row):
-    #     sender = self.sender()
-    #     function_name = self.function_combo.currentText()
-    #     param_type = "bool"
-    #     param_val = sender.currentText()
-    #     name_item = QTableWidgetItem(param_type)  # create a new Item
-    #     expected_type = self.query_param_table.item(button_row, 2).text()
-    #     self._color_table_params(param_type, expected_type, name_item)
-    #     self.query_param_table.setItem(button_row, 3, name_item)
-    #     name_item = QTableWidgetItem(param_val)  # create a new Item
-    #     self.query_param_table.setItem(button_row, 4, name_item)
-    #     self.cache_table(function_name, self.query_param_table)
-
-
     def _color_table_params(self, param_type, expected_type, tab_item):
         if param_type == expected_type:
             tab_item.setBackground(QtGui.QBrush(QtGui.QColor(0, 255, 0)))
