@@ -91,6 +91,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
     def _get_param_value(self, param_type, param_name):
         if param_type == "str":
             return param_name
+        elif param_type == "bool":
+            return eval(param_name)
         elif param_type == pgh.PsychSimRun.__name__:
             return self.sim_data_dict[param_name]
         elif param_type == pgh.PsySimQuery.__name__:
@@ -575,6 +577,11 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     #     set_param_object = QComboBox()
                     #     # Get the results to populate the combo box with
                     #     # results = param_type[0]() # TODO: fix this, or come up with a better way to do it
+                    elif param_type == bool:
+                        set_param_object = QComboBox()
+                        pgh.update_combo(set_param_object, [False, True], clear=True)
+                        set_param_object.activated.connect(partial(self.set_bool_param, row_number))
+
                     else:
                         set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
 
@@ -655,6 +662,19 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         sender = self.sender()
         function_name = self.function_combo.currentText()
         param_type = pgh.PsychSimRun.__name__
+        param_val = sender.currentText()
+        name_item = QTableWidgetItem(param_type)  # create a new Item
+        expected_type = self.query_param_table.item(button_row, 2).text()
+        self._color_table_params(param_type, expected_type, name_item)
+        self.query_param_table.setItem(button_row, 3, name_item)
+        name_item = QTableWidgetItem(param_val)  # create a new Item
+        self.query_param_table.setItem(button_row, 4, name_item)
+        self.cache_table(function_name, self.query_param_table)
+
+    def set_bool_param(self, button_row):
+        sender = self.sender()
+        function_name = self.function_combo.currentText()
+        param_type = "bool"
         param_val = sender.currentText()
         name_item = QTableWidgetItem(param_type)  # create a new Item
         expected_type = self.query_param_table.item(button_row, 2).text()

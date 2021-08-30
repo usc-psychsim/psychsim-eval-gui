@@ -30,7 +30,7 @@ class ASISTQueryFunctions:
     def __init__(self):
         pass
 
-    def demo_function(self, data: pgh.PsychSimRun=None, agent: str=None, action: str=None, *args, **kwargs) -> pd.DataFrame:
+    def demo_function(self, data: pgh.PsychSimRun=None, agent: str=None, action: str=None, rand_action: bool=False) -> pd.DataFrame:
         """
         This is a test function to illustrate how these functions work.
         If a param is present in the parameter list, it will enable the corresponding dropdown on the GUI
@@ -52,8 +52,13 @@ class ASISTQueryFunctions:
         NOTE: the index must be a string.
         NOTE: it is better to have 'step' on the x axis
         """
+        if rand_action:
+            action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)]
+        else:
+            action=[f"{action}_{i}" for i in range(1, 11)]
+
         results = dict(agent=[f"{agent}_{i}" for i in range(1, 11)],
-                       action=[f"{action}_{randint(0, 3)}" for i in range(1, 11)],
+                       action=action,
                        reward=[f"{randint(0, 3)}" for i in range(1, 11)])
         output = pd.DataFrame(results)
         output = output.set_index('agent')
@@ -219,7 +224,7 @@ class ASISTQueryFunctions:
             tb = traceback.format_exc()
             print(tb)
 
-    def get_appraisal_dimensions(self,  data: pgh.PsychSimRun=None, agent: str=None, blame_agent: str=None, normalise=False):
+    def get_appraisal_dimensions(self,  data: pgh.PsychSimRun=None, agent: str=None, blame_agent: str=None, normalise: bool=False):
         """
         Get the appraisal dimensions
 
