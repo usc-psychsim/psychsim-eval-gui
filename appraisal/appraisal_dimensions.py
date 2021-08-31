@@ -38,14 +38,17 @@ class AppraisalDimensions:
     """
     Class with methods to calculate appraisal dimensions
     """
+
     def __init__(self):
         self.player_pre_utility: float = 0.0
         self.actions_todo = []
 
     def motivational_relevance(self, pre_utility, cur_utility):
         """
-        Motivational relevance evaluates the extent to which an encounter touches upon personal goals"
-        Utility is essentially the agent's reward (from getReward). (utility = state*goals) -> goals = reward functions
+        Motivational relevance evaluates the extent to which an encounter touches upon personal goals" Utility is
+        essentially the agent's reward (from getReward). Where utility = state*goals, and goals = reward functions
+
+        Motivational relevance is the absolute change in utility after an event.
 
         :param pre_utility: utility before event has happened
         :param cur_utility: utility after event has happened
@@ -58,7 +61,9 @@ class AppraisalDimensions:
     def motivational_congruence(self, pre_utility, cur_utility):
         """
         Motivational congruence or incongruence measures the extent to which the encounter thwarts or facilitates
-        personal goals
+        personal goals.
+
+        Motivational congruence is the signed change in utility after an event.
 
         :param pre_utility: utility before event has happened
         :param cur_utility: utility after event has happened
@@ -71,6 +76,9 @@ class AppraisalDimensions:
     def blame1(self, cur_utility, cur_expected_utility, blamed_agent_action, believed_action):
         """
         Did the blamed_agent take an unexpected action that negatively affected the agent?
+
+        If there is less utility than expected after an action, blame another agent if they did not do the action
+        that was expected. Blame them proportionally to the loss in utility.
 
         :param cur_utility:  Utility after event has happened.
         :param cur_expected_utility:  Expected utility after event has happened.
@@ -91,9 +99,14 @@ class AppraisalDimensions:
 
     def blame2(self, cur_utility, cur_expected_utility, blamed_agent_action, blamed_agent_possible_actions):
         """
-        from perspective of one agent could different agent take action that was not negative for other agent but better
-        for perspective agent essentially this is the same as blame3 but with the added constraint that the action must
-        have a positive outcome for the blamed agent (or at least non negative)
+        from perspective of one agent could a different agent take action that was not negative for them, but better
+        for the perspective agent? Essentially, this is the same as blame3 but with the added constraint that the
+        action must have a positive outcome for the blamed agent (or at least non negative)
+
+        If there is less or equal utility than expected after an action, blame another agent if they had the option
+        to take another action that would have resulted in a positive utility. Blame increases proportional to loss
+        of utility for perspective agent for each action the other agent could have taken that resulted in a positive
+        utility.
 
         :param cur_utility:  Utility after event has happened.
         :param cur_expected_utility:  Expected utility after event has happened.
@@ -104,13 +117,13 @@ class AppraisalDimensions:
         """
 
         cumulative_blame = 0
-        for k, p_action in blamed_agent_possible_actions.items():
-            cur_predicted_utility = p_action["__ER__"][0]
-            if cur_utility <= cur_predicted_utility:
+        if cur_utility < cur_expected_utility:
+            #  Something has happened to result in less than expected utility. Is someone to blame?
+            for k, p_action in blamed_agent_possible_actions.items():
                 if blamed_agent_action != p_action["blamed_predicted_action"] and \
                         float(p_action["blamed_predicted_utility"]) >= 0.0:
                     # blamed_agent is to blame because they could have taken a different action that would have
-                    # resulted in better utility (according to agent)
+                    # resulted in better utility
                     cumulative_blame = cumulative_blame + (cur_utility - cur_expected_utility)
         return cumulative_blame
 
@@ -119,6 +132,10 @@ class AppraisalDimensions:
         from perspective of the target agent, could the blamed agent take better action
         i.e. Did the blamed_agent take an unexpected action that negatively affected the agent AND could the
         blamed_agent have done something different?
+
+        If there is less or equal utility than expected after an action, blame another agent if they had the option
+        to take another action. Blame increases proportional to loss of utility for perspective agent for each action
+        the other agent could have taken.
 
         :param cur_utility:  Utility after event has happened.
         :param cur_expected_utility:  Expected utility after event has happened.
@@ -129,18 +146,19 @@ class AppraisalDimensions:
         """
 
         cumulative_blame = 0.0
-        for k, p_action in blamed_agent_possible_actions.items():
-            cur_predicted_utility = p_action["__ER__"][0]
-            if cur_utility <= cur_predicted_utility:
+        if cur_utility < cur_expected_utility:
+            #  Something has happened to result in less than expected utility. Is someone to blame?
+            for k, p_action in blamed_agent_possible_actions.items():
                 if blamed_agent_action != p_action["blamed_predicted_action"]:
-                    # blamed_agent is to blame because they could have taken a different action that would have
-                    # resulted in better utility (according to agent)
+                    # blamed_agent is to blame because they could have taken a different action
                     cumulative_blame = cumulative_blame + (cur_expected_utility - cur_utility)
         return cumulative_blame
 
     def control(self, possible_actions, agent_max_reward):
         """
-        This is a probability. For each predicted action that delivers a positive utility change, sum the probabilities.
+        A player feels in control if they have alternate actions that deliver positive utility.
+
+        Control = sum of utility over each alternate action that delivers positive utility.
 
         :param possible_actions: Possible actions that the agent could take
         :param agent_max_reward: Max reward that the agent could get for their action
@@ -160,6 +178,8 @@ class AppraisalDimensions:
         If something bad has happened (negative, unexpected utility), does the agent have an action to rectify it
         (i.e. have any positive effect on their utility)?
 
+        This is the same as control1 but control is not directly related to utility.
+
         :param cur_utility: Utility after event has happened.
         :param cur_expected_utility:  Expected utility after event has happened.
         :param possible_actions:  Possible actions that the agent could take
@@ -167,7 +187,7 @@ class AppraisalDimensions:
         :rtype: int
         """
 
-        # are we in a 'bad' situation (we have less utility than we expected)
+        # Is the agent in a 'bad' situation (they have less utility than they expected)
         control = 0
         if cur_utility < cur_expected_utility:
             for k, p_action in possible_actions.items():
@@ -206,6 +226,11 @@ class AppraisalDimensions:
         it in their power to rectify the situation, that might come a few actions later. This is done by checking at
         each step if they need to resolve something, if another player does it, and if they can do it
 
+        If the other agent did something unexpected, and the utility of the perspective agent is less than expected,
+        the perspective agent feels in control if they have could possibly do the action they believed the blamed
+        agent would take. If they do not have this action available, the action is 'remembered' to see if they can do
+        it in the future.
+
         :param cur_utility: Utility after event has happened.
         :param cur_expected_utility:  Expected utility after event has happened.
         :param blamed_agent_action: Action that the other agent took.
@@ -225,13 +250,14 @@ class AppraisalDimensions:
                         control = 1
                     else:
                         # we need to remember to come back to this later
-                        self.actions_todo.append(believed_action)  # todo: make this also have a decay factor (priority might be in their reward function so don't worry bout it)
+                        self.actions_todo.append(
+                            believed_action)  # todo: make this also have a decay factor (priority might be in their reward function so don't worry bout it)
                         control = 0
         return control
 
     def control5(self, blamed_agent_action, possible_actions):
         """
-        This checks the 'memory' at each step to see if we now have control
+        This checks the 'memory' at each step to see if we now have control.
 
         :param blamed_agent_action: Action that the other agent took.
         :param possible_actions:  Possible actions that the agent could take
@@ -265,9 +291,14 @@ class AppraisalDimensions:
             return 0
         return 1
 
-    def desirability(self, cur_utility, cur_expected_utility, blamed_agent_action, blamed_agent_possible_actions, believed_action):
+    def desirability(self, cur_utility, cur_expected_utility, blamed_agent_action, blamed_agent_possible_actions,
+                     believed_action):
         """
-        This is a measure of how much utility has been lost by an unexpected negative action
+        This is a measure of how much utility has been lost by an unexpected negative action.
+
+        If another agent is blamed because they could have taken an alternate action (blame3), and they could have
+        done the action that was expected, desirability = the amount of utility that could have been gained if the
+        blamed agent did the predicted action.
 
         :param cur_utility: Utility after event has happened.
         :param cur_expected_utility:  Expected utility after event has happened.
@@ -280,13 +311,16 @@ class AppraisalDimensions:
         # If you blame the other agent (they did something bad for you but could have done something better)
         lost_utility = 0.0
         if self.blame3(cur_utility, cur_expected_utility, blamed_agent_action, blamed_agent_possible_actions):
-            # Calculate the difference in utility and what we should have gotten if the other agent did the right thing
-            lost_utility = blamed_agent_possible_actions[believed_action]["__EV__"]
+            # Check if it's possible for the blamed agent to do the expected action
+            if believed_action in blamed_agent_possible_actions.keys():
+                # Calculate the difference in utility and what we should have gotten if the other agent did the right thing
+                lost_utility = blamed_agent_possible_actions[believed_action]["__EV__"]
         return -lost_utility
 
     def get_appraisals_for_step(self, params, normalise=False):
         """
-        Calculate all the appraisal dimensions for a particular step
+        Calculate all the appraisal dimensions for a particular step. This function passes the params extracted from
+        psychsim debug and world objects to the appraisal functions
 
         :param normalise: Normalise the output appraisals between -1 and 1
         :param params: dictionary of params representing variables needed for appraisal calculations.
@@ -295,13 +329,21 @@ class AppraisalDimensions:
         """
         appraisals = PlayerAppraisalInfo()
 
-        appraisals.blame1 = self.blame1(params["cur_utility"], params["cur_expected_utility"], params["blamed_agent_action"], params["believed_action"])
-        appraisals.blame2 = self.blame2(params["cur_utility"], params["cur_expected_utility"], params["blamed_agent_action"], params["blamed_agent_possible_actions"])
-        appraisals.blame3 = self.blame3(params["cur_utility"], params["cur_expected_utility"], params["blamed_agent_action"], params["blamed_agent_possible_actions"])
-        appraisals.desirability = self.desirability(params["cur_utility"], params["cur_expected_utility"], params["blamed_agent_action"], params["blamed_agent_possible_actions"], params["believed_action"])
+        appraisals.blame1 = self.blame1(params["cur_utility"], params["cur_expected_utility"],
+                                        params["blamed_agent_action"], params["believed_action"])
+        appraisals.blame2 = self.blame2(params["cur_utility"], params["cur_expected_utility"],
+                                        params["blamed_agent_action"], params["blamed_agent_possible_actions"])
+        appraisals.blame3 = self.blame3(params["cur_utility"], params["cur_expected_utility"],
+                                        params["blamed_agent_action"], params["blamed_agent_possible_actions"])
+        appraisals.desirability = self.desirability(params["cur_utility"], params["cur_expected_utility"],
+                                                    params["blamed_agent_action"],
+                                                    params["blamed_agent_possible_actions"], params["believed_action"])
         appraisals.control = self.control(params["possible_actions"], params["agent_max_reward"])
-        appraisals.general_control = self.control2(params["cur_utility"], params["cur_expected_utility"], params["possible_actions"])
-        appraisals.specific_control = self.control3(params["cur_utility"], params["cur_expected_utility"], params["blamed_agent_action"], params["possible_actions"], params["believed_action"])
+        appraisals.control2 = self.control2(params["cur_utility"], params["cur_expected_utility"],
+                                                   params["possible_actions"])
+        appraisals.specific_control = self.control3(params["cur_utility"], params["cur_expected_utility"],
+                                                    params["blamed_agent_action"], params["possible_actions"],
+                                                    params["believed_action"])
         appraisals.memory_control = self.control5(params["blamed_agent_action"], params["possible_actions"])
         appraisals.surprise = self.surprise(params['blamed_agent_action'], params['believed_action'])
 
@@ -327,6 +369,7 @@ class AppraisalDimensions:
         """
         get the params in an appropriate format for the appraisal functions from csv data
         The csv format defines:
+
         step = current step number
         a_action = current action of target player (human)
         a_proj_action = current action or target agent as projected by psychsim
@@ -386,11 +429,14 @@ class AppraisalDimensions:
         :rtype: dict
         """
         a_agent = world.agents[agent]
-        player_decision_key = list(debug_dict[agent]["__decision__"])[0]  # This is because I don't know what the numbers appended to the player name are going to be
+        player_decision_key = list(debug_dict[agent]["__decision__"])[
+            0]  # This is because I don't know what the numbers appended to the player name are going to be
         blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
         player_cur_utility = a_agent.reward()
-        cur_action = debug_dict[agent]["__decision__"][player_decision_key]["action"]  # **This should be the actual action taken by the player
-        proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key]["action"]  # **This should be the action projected by psychsim
+        cur_action = debug_dict[agent]["__decision__"][player_decision_key][
+            "action"]  # **This should be the actual action taken by the player
+        proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key][
+            "action"]  # **This should be the action projected by psychsim
         cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
         cur_expected_utility = debug_dict[agent]["__decision__"][player_decision_key]["V"][cur_action]["__ER__"][0]
         agent_belief = debug_dict[agent]["__decision__"][player_decision_key]["V"][cur_action]["__beliefs__"]
@@ -399,11 +445,15 @@ class AppraisalDimensions:
         possible_actions = debug_dict[agent]["__decision__"][player_decision_key]["V"]
         blamed_possible_actions = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["V"]
         for action, value in possible_actions.items():
-            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0], unique=True)
-            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0], unique=True)
+            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0],
+                                                                unique=True)
+            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0],
+                                                                 unique=True)
         for action, value in blamed_possible_actions.items():
-            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0], unique=True)
-            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0], unique=True)
+            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0],
+                                                                unique=True)
+            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0],
+                                                                 unique=True)
 
         params = dict(cur_action=cur_action,
                       projected_action=proj_action,
@@ -422,6 +472,8 @@ class AppraisalDimensions:
     def get_appraisals_from_csv(self, csv_file):
         """
         Get appraisals for each step in a csv file
+
+        :param csv_file: csv file to calculate appraisals for
         """
         step_appraisals = []
         with open(csv_file, newline='') as csvfile:

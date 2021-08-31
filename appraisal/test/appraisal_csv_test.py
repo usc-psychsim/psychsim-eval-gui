@@ -1,7 +1,8 @@
 """
-CSV appraisal dimension test
-"""
-import csv
+CSV appraisal dimension test.
+
+This script reads in the test data in 2agent_test_blame.csv, calculates the appraisal dimensions, and saves the
+output in a format that can be displayed in PsychSimGui """
 import os
 
 import psychsim_gui_helpers as pgh
