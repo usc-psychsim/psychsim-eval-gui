@@ -1,7 +1,7 @@
 .. _simulation_script:
 
-Simulation Script
-*****************
+Simulation Scripts
+******************
 
 - Simulation scripts can contain any code, and output results in any type. The GUI will execute each step in a thread, saving the results of all steps in a data structure. Therefore, simulation scripts must adhere to some general rules:
 

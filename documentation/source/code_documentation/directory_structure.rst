@@ -1,16 +1,17 @@
+
 Directory Structure
 *******************
 
-The psychsim Gui is structured as follows:
+The psychsim Gui code is structured as follows:
 
 
-GUI
-===
+psychsim-eval-gui
+=================
 Contains top level scripts, config, files, and helpers
 
 * config.ini
 
-    config file to set directories for psychsim, psychsim model, and simulation file
+    config file to set directories needed for the gui to run
 
 * gui_threading.py
 
@@ -24,6 +25,10 @@ Contains top level scripts, config, files, and helpers
 
     helper functions used by the gui scripts
 
+* Pipfile & Pipfile.lock
+
+    dependency information required by pipenv to setup virtual environment
+
 
 Documentation
 =============
@@ -36,30 +41,32 @@ copy of the built documentation which is used by the gui to display these pages
 
 functions
 =========
-* query_functions.py
+* ASISTQueryFunctions.py
 
-    Query function definitions used by psychsim gui. Place functions within the PsychSimQuery class to extract data from simulation output.
-    Functions placed in this class will appear in the query function dropdown on the 'create new query' tab of the 'create new query from data' page of the gui.
+    Function definitions used to extract data from ASIST based psychsim scripts
 
-sim_output
-==========
-This is the default directory for data saved by the GUI. This can be either saved data from runs, or query results exported to csv.
+* DemoFunctions.py
+
+    Function definitions used to extract data from sim_scripts/DemoSim.py
+
 
 sim_scripts
 ===========
 This folder holds some example simulation scripts to run.
 
-* GuiTestSim<x>.py
+* DemoSim.py
 
-    search and rescue test simulations
+    An example simulation that creates three channels of sinusoid data with and without noise and two channels of randomly generated data.
 
-* GenericSim.py
-        an example simulation that creates three channels of sinusoid data with and without noise
-* SimBase.py
+* ForwardPlanningTom.py
+
+    Sim script implementing the forward example definied `here <https://github.com/usc-psychsim/psychsim/blob/0571996689c1d9c3d6f42a9f954b6f51a26b2c4b/psychsim/examples/forward_planning_tom.py>`_
+
+* SimTemplate.py
 
     a blank template example
 
 ui
 ==
-This folder contains all the pyqt5 designer (ui) files and corresponding python scripts
+This folder contains all the pyqt5 designer (ui) files and corresponding python scripts that control the various parts of the gui.
 

@@ -1,24 +1,25 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>USING THE GUI &#8212; Psychsim Gui  documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Appraisals" href="../appraisals.html" />
     <link rel="prev" title="Tutorial" href="../tutorial.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
@@ -28,19 +29,23 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
-  <div class="section" id="using-the-gui">
+  <section id="using-the-gui">
 <h1>USING THE GUI<a class="headerlink" href="#using-the-gui" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="demo-using-psychsim-search-and-rescue-simulation">
+<section id="demo-using-psychsim-search-and-rescue-simulation">
 <h2>Demo using psychsim search and rescue simulation<a class="headerlink" href="#demo-using-psychsim-search-and-rescue-simulation" title="Permalink to this headline">¶</a></h2>
+<p>TODO:
+<strong>*****************ADD LIST OF VIDEOS HERE INSTEAD OF TEXT BASED TUTORIAL*********************</strong></p>
 <p>This tutorial steps through the different functions of the GUI.</p>
 <ol class="arabic simple">
-<li>Set paths and run the sim</li>
+<li><p>Set paths and run the sim</p></li>
 </ol>
 <p>When we start up the GUI we are met with the following screen</p>
 <blockquote>
-<div><img alt="../_images/gui_startup1.png" src="../_images/gui_startup1.png" />
+<div><img alt="../_images/gui_startup.png" src="../_images/gui_startup.png" />
 </div></blockquote>
 <p>The PsychSim directory and Simulation model directory were automatically set by the config.ini.
 However, if these are wrong, we can navigate to the correct directories with the supplied buttons.</p>
@@ -68,7 +73,7 @@ Only this time, let’s stop it before it ends by clicking the <em>STOP</em> (it
 <div><img alt="../_images/sim_complete_renamed2.png" src="../_images/sim_complete_renamed2.png" />
 </div></blockquote>
 <ol class="arabic simple" start="2">
-<li>Saving and renaming the data</li>
+<li><p>Saving and renaming the data</p></li>
 </ol>
 <p>We are worried that we won’t get time to finish this tutorial immediately, so we want to save the data. Click on the
 <em>data&gt;view table of stored data</em> menu item to view the data we have</p>
@@ -79,7 +84,7 @@ Only this time, let’s stop it before it ends by clicking the <em>STOP</em> (it
 time through this screen. If you are also unhappy with the names you gave your data, you can rename them here.</p>
 <p>We’re happy so we’ll leave everything as it is. Close that window.</p>
 <ol class="arabic simple" start="3">
-<li>Querying the data</li>
+<li><p>Querying the data</p></li>
 </ol>
 <p>We’re now ready to extract some information from our data. Click on the <em>data&gt;create query from data</em> menu item.
 Since <em>myFirstSimData</em> had 50 runs, let’s look at that data. It should be automatically selected as the first item
@@ -114,7 +119,7 @@ triaging these two victims.</p>
 <div><img alt="../_images/triage_victim_1.png" src="../_images/triage_victim_1.png" />
 </div></blockquote>
 <ol class="arabic simple" start="4">
-<li>Viewing query results</li>
+<li><p>Viewing query results</p></li>
 </ol>
 <p>We have now created a few queries and want to look back at some of our results. Click on the <em>View saved queries</em> tab,
 select your first query and <em>view query data</em>.</p>
@@ -125,7 +130,7 @@ anymore, go ahead and change it.</p>
 can save the results to file with <em>Save query results as CSV</em>. This will save the csv to the <em>sim_output</em> directory
 (sorry, at the moment you can’t change where it goes)</p>
 <ol class="arabic simple" start="9">
-<li>Comparing query results.</li>
+<li><p>Comparing query results.</p></li>
 </ol>
 <p>One interesting thing to know is what the difference was between the decisions the agent made to triage the two victims.
 Go to the <em>Compare Saved query results</em> tab to do this.</p>
@@ -137,7 +142,7 @@ Go to the <em>Compare Saved query results</em> tab to do this.</p>
 be expected as they were different stages of the same actor’s journey.</p>
 <p>This tool can also be used for comparing different actors from different simulations.</p>
 <ol class="arabic simple" start="10">
-<li>Sampling</li>
+<li><p>Sampling</p></li>
 </ol>
 <p>We’re almost ready to plot the data. Specifically, we’ll plot some data from the agent’s beliefs. But before we do that,
 we want to trim our data a little by making some samples.</p>
@@ -154,7 +159,7 @@ half.</p>
 <p>This has saved a new query with <em>_step_range_0.0-25.0</em> appended to the name. You can view this, rename, and save as
 before from the <em>view query data</em> tab.</p>
 <ol class="arabic simple" start="11">
-<li>Plotting</li>
+<li><p>Plotting</p></li>
 </ol>
 <p>We are now ready to plot our sampled data.</p>
 <p>Go to the <em>plot&gt;plot query results</em> screen from the main menu items.</p>
@@ -181,14 +186,14 @@ to start from scratch.</p>
 <blockquote>
 <div><img alt="../_images/plot_list.png" src="../_images/plot_list.png" />
 </div></blockquote>
-</div>
-<div class="section" id="demonstrating-more-functionality-with-generic-simulation">
+</section>
+<section id="demonstrating-more-functionality-with-generic-simulation">
 <h2>Demonstrating more functionality with generic simulation<a class="headerlink" href="#demonstrating-more-functionality-with-generic-simulation" title="Permalink to this headline">¶</a></h2>
 <p>Unfortunately, the search and rescue sim doesn’t yet give a rich enough data to demonstrate all of the functionality.
 This will be demonstrated with the use of a generic sim (<a href="#id1"><span class="problematic" id="id2">*</span></a>sim_scripts/GenericSim.py).</p>
 <p>This simulation creates three channels of sin waves. Channel 1 has added noise.</p>
 <ol class="arabic simple">
-<li>Load and run the new sim.</li>
+<li><p>Load and run the new sim.</p></li>
 </ol>
 <p>Go back to the <em>simulation&gt;view simulation info</em> page and select this as the sim file. Don’t forget to load it!!
 then click <em>RUN SIM</em>.</p>
@@ -201,7 +206,7 @@ in the table).</p>
 <div><img alt="../_images/generic_data_table.png" src="../_images/generic_data_table.png" />
 </div></blockquote>
 <ol class="arabic simple" start="2">
-<li>Querying the data</li>
+<li><p>Querying the data</p></li>
 </ol>
 <p>make your way back to the <em>Create New Query</em> tab through the <em>data&gt;create query from data</em> dropdown menu.</p>
 <p>Select the <em>generic_output</em> data in the <em>Select Data/Sample</em> dropdown.</p>
@@ -214,13 +219,13 @@ function. Execute this (there should be no params active as you do not need any)
 <p>Select these two queries that you just created (one for <em>generic_output</em> and one for <em>generic_output2</em>) on the
 <em>compare saved query results tab</em> and diff the data.</p>
 <blockquote>
-<div><img alt="../_images/generic_diff_table1.png" src="../_images/generic_diff_table1.png" />
+<div><img alt="../_images/generic_diff_table.png" src="../_images/generic_diff_table.png" />
 </div></blockquote>
 <p>you can see that only channel 1 differs between the two queries. This is because channel 1 has noise so each time the
 simulation is run, it will generate different results. The other two channels are noiseless so they will be the same
 across runs.</p>
 <ol class="arabic simple" start="3">
-<li>Create a sample</li>
+<li><p>Create a sample</p></li>
 </ol>
 <p>We now want to only see the top half of one two of these sinusoid functions. Go to the <em>Create sample from qurey</em> tab
 and select one of the query results you just made for this generic data.</p>
@@ -228,13 +233,13 @@ and select one of the query results you just made for this generic data.</p>
 <p>Select <em>y</em> as we want to sample only the positive y values and select <em>range</em>.</p>
 <p>Select 0 as the minimum, and 3 as the maximum. This saves a new query that is a sample of the orignal.</p>
 <blockquote>
-<div><img alt="../_images/generic_range_select1.png" src="../_images/generic_range_select1.png" />
+<div><img alt="../_images/generic_range_select.png" src="../_images/generic_range_select.png" />
 </div></blockquote>
 <p>We are also only interested in channel 1 (with the noise) and channel3 (channel 2 is too boring).</p>
 <p>Select the newly created sample query, then select <em>channel</em> as the sample variable and <em>category</em> as the function.</p>
 <p>You can now select which channels you want to include in the sample. Choose Channel1 and 3.</p>
 <blockquote>
-<div><img alt="../_images/generic_category_select1.png" src="../_images/generic_category_select1.png" />
+<div><img alt="../_images/generic_category_select.png" src="../_images/generic_category_select.png" />
 </div></blockquote>
 <p>4. Plot
 We’re now ready to plot so head back to the plot screen and create a new plot window.</p>
@@ -254,7 +259,7 @@ We’re now ready to plot so head back to the plot screen and create a new plot 
 </div></blockquote>
 <p>Plot the original query (before sampling) to see all sin waves.</p>
 <blockquote>
-<div><img alt="../_images/generic_line_full1.png" src="../_images/generic_line_full1.png" />
+<div><img alt="../_images/generic_line_full.png" src="../_images/generic_line_full.png" />
 </div></blockquote>
 <p>Let’s try add some statistics. The mean will plot the mean over the x-axis. So in this case it will be the mean of all
 three signals.</p>
@@ -265,11 +270,12 @@ three signals.</p>
 <blockquote>
 <div><img alt="../_images/generic_violin.png" src="../_images/generic_violin.png" />
 </div></blockquote>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -284,7 +290,7 @@ three signals.</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code_documentation.html">Code Documentation</a></li>
@@ -296,6 +302,7 @@ three signals.</p>
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../appraisals.html">Appraisals</a></li>
 </ul>
 
 <div class="relations">
@@ -304,22 +311,29 @@ three signals.</p>
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../tutorial.html">Tutorial</a><ul>
       <li>Previous: <a href="../tutorial.html" title="previous chapter">Tutorial</a></li>
+      <li>Next: <a href="../appraisals.html" title="next chapter">Appraisals</a></li>
   </ul></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -328,8 +342,8 @@ three signals.</p>
       &copy;2020, Chris Turner.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/tutorial/gui_tutorial_full.rst.txt"

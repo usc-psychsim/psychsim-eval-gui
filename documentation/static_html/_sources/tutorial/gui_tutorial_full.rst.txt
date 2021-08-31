@@ -1,8 +1,16 @@
+
 USING THE GUI
 *************
 
 Demo using psychsim search and rescue simulation
 ------------------------------------------------
+
+TODO:
+*******************ADD LIST OF VIDEOS HERE INSTEAD OF TEXT BASED TUTORIAL***********************
+
+
+
+
 
 This tutorial steps through the different functions of the GUI.
 

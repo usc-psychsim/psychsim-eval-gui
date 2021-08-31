@@ -1,3 +1,4 @@
+
 Future Directions
 *****************
 
@@ -7,24 +8,6 @@ I also describe features that would be nice to have but that I haven't gotten ar
 Known Bugs/issues
 =================
 
-- Query functions
-    **Issue:**
-    Currently, the query functions lack some information about the actual simulation. Part of this problem is that the simulation isn't
-    completely defined / in a working state, or I didn't have enough information to complete the query funciton.
-
-    The main issue with this is when looking at the query results (for example beliefs, or predicted actions) there are
-    numerical values that don't have much meaning to the user. There should be some sort of mapping between these internal
-    PsychSim values and actual user-interpertable values that can be displayed.
-
-    **How to fix:**
-    Once the mapping information becomes available, the functions can be edited in *functions/query_functions.py*
-
-- Query info updating
-    **Issue:**
-    The 'View Query Data' button automatically changes the query info back to the first query after close
-
-    **How to fix:**
-    This should be fixed from the 'display_query' function in the ui/QueryDataPage.py file. I am not entirely sure how just yet but it probably is just a conditional somewhere.
 
 - Plot stats
     **Issue1:**
@@ -41,31 +24,39 @@ Known Bugs/issues
 
 
     A new function should be added somewhere that doesn't groupby the x_axis but calculates the stat across all x values
-    **Issue2:**
-    The stats on the plotting work over some cases (e.g. the following plot showing a scatter plot with the mean over the top).
-    However, i haven't tested it over all cases with psychsim data. Therefore it might end up not being the correct implementation.
-    .. image:: images/plot_stat_issue_example.png
 
-    **How to fix:**
-    This probably needs a specific use case to test on. If a use case is known, then the functionality can be amended.
 
 - Other plot functionality
     **Issue:**
-    Similar to the stats, there might be issues with other functionality. I haven't fully tested using other plot types and different combinations
-    such as using violin and histograms etc.
+    There might be issues with other functionality. I haven't fully tested using other plot types and different combinations
+    such as using violin and histograms etc. However, I haven't yet found a case it doesn't work on.
 
-- Sim load on initialisation
+
+- Query data as dialogs
     **Issue:**
-    Currently you need to click the "Load Simulation" button to load a sim before running it.
-    This functinoality is there so edits could be made to the sim, and it can be reloaded without having to re-search for the path (useful for debugging).
-    It would be good, however, if the sim in the config is loaded on initialisation.
+    Currently, query data is displayed as a dialog instead of a separate window. This is an issue becuase you cannot have more than one query results window open at any one time.
 
     **How to fix:**
-    Probably just a matter of calling the 'load_sim' function in the SimulationInfoPage on initialisation. This is something I thought of at the end and didn't get around to implementing and testing.
+    Currently, the dialogs are shown with the _exec() function in `show_query_dialog` function in `ui/QueryDataPage.py`. This is done to get a return value, but sets the dialog as modal (blocks other windows).
+    The show() function can be used but the dialog window code must be changed to get a return value (e.g. detecting if the `CANCEL`or `OK` buttons are clicked. Additionally, care must be taken as the dialog allows the query name to be changed. This could cause possibly issues in other parts of the GUI if not handled correctly.
+
+
+- Query param setting
+    **Issue:**
+    The Gui has been created to be generic and flexible. This allows any simulation scripts to be run and any functions to be used to create queries from the data. However, this results in a tradeoff with complexity for the user.
+    This means that setting params must be done in a specific order (e.g. to set the 'agent' param, a query must first be generated that has an 'agent'variable).
+    A new, creative way of handling this needs to be implemented.
 
 
 Nice To Haves
 =============
+- Deleting data
+    **Issue:**
+    Currently, it is not possible to remove datasets from the GUI. This could only be an issue if you create too many data sets that it is annoying to search for, and select the one you want.
+
+    **How to Fix:**
+    A new `Delete` button should be added to the table that shows datasets similar to how `RENAME` and `save` are in the `update_data_table` function in `ui/PsychSimMainWindow.py` file.
+
 - Diff variable selectinon
     **Issue:**
     Currently, the diff compares an entire results dataframe. It might be useful to just diff one variable of interest
@@ -87,3 +78,7 @@ Nice To Haves
     There needs to be an option to sample on the first step (or first of any continuous variable) that can be checked.
     The sample group would then need to be determined on that first step (or other first value) and the resulting group sampled over the whole dataset.
     Sampling is currently all done in the ui/QueryDataPage.py file in the 'sample_by_range' and 'sample_by_category' functions.
+
+- Scripting the gui
+    **Issue:**
+    It would be useful to be able to call gui functions from a script. This could help with things like running separate ASSIST code, then putting the results through the gui to create a query, and plot all from a script

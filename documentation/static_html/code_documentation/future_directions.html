@@ -1,25 +1,25 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Future Directions &#8212; Psychsim Gui  documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Tutorial" href="../tutorial.html" />
     <link rel="prev" title="Directory Structure" href="directory_structure.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
@@ -29,40 +29,19 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
-  <div class="section" id="future-directions">
+  <section id="future-directions">
 <h1>Future Directions<a class="headerlink" href="#future-directions" title="Permalink to this headline">¶</a></h1>
 <p>Here I describe known issues / bugs with the GUI and how to fix them.
 I also describe features that would be nice to have but that I haven’t gotten around to adding (and how to possibly implement them).</p>
-<div class="section" id="known-bugs-issues">
+<section id="known-bugs-issues">
 <h2>Known Bugs/issues<a class="headerlink" href="#known-bugs-issues" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><dl class="first docutils">
-<dt>Query functions</dt>
-<dd><p class="first"><strong>Issue:</strong>
-Currently, the query functions lack some information about the actual simulation. Part of this problem is that the simulation isn’t
-completely defined / in a working state, or I didn’t have enough information to complete the query funciton.</p>
-<p>The main issue with this is when looking at the query results (for example beliefs, or predicted actions) there are
-numerical values that don’t have much meaning to the user. There should be some sort of mapping between these internal
-PsychSim values and actual user-interpertable values that can be displayed.</p>
-<p class="last"><strong>How to fix:</strong>
-Once the mapping information becomes available, the functions can be edited in <em>functions/query_functions.py</em></p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Query info updating</dt>
-<dd><p class="first"><strong>Issue:</strong>
-The ‘View Query Data’ button automatically changes the query info back to the first query after close</p>
-<p class="last"><strong>How to fix:</strong>
-This should be fixed from the ‘display_query’ function in the ui/QueryDataPage.py file. I am not entirely sure how just yet but it probably is just a conditional somewhere.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Plot stats</dt>
-<dd><p class="first"><strong>Issue1:</strong>
+<li><dl>
+<dt>Plot stats</dt><dd><p><strong>Issue1:</strong>
 The stats are calculated for each value of the x-axis. and not across the x-axis. This means if you have multiple agents (or datapoints per x-axis)
 The mean function will avearage over them. It does not, however, average across the x-axis. So, if you want to find the mean of a single agent over all x-values (e.g. time)
 A new function needs to be implemented.</p>
@@ -71,72 +50,84 @@ Stats are applied in the <em>plot_data</em> function of <em>PlotWindow.py</em> i
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_combo</span><span class="o">.</span><span class="n">currentText</span><span class="p">()]),</span> <span class="n">stat</span><span class="p">)()</span>
 </pre></div>
 </div>
-<p>A new function should be added somewhere that doesn’t groupby the x_axis but calculates the stat across all x values
-<strong>Issue2:</strong>
-The stats on the plotting work over some cases (e.g. the following plot showing a scatter plot with the mean over the top).
-However, i haven’t tested it over all cases with psychsim data. Therefore it might end up not being the correct implementation.
-.. image:: images/plot_stat_issue_example.png</p>
-<p class="last"><strong>How to fix:</strong>
-This probably needs a specific use case to test on. If a use case is known, then the functionality can be amended.</p>
+<p>A new function should be added somewhere that doesn’t groupby the x_axis but calculates the stat across all x values</p>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Other plot functionality</dt>
-<dd><p class="first last"><strong>Issue:</strong>
-Similar to the stats, there might be issues with other functionality. I haven’t fully tested using other plot types and different combinations
-such as using violin and histograms etc.</p>
+<li><dl class="simple">
+<dt>Other plot functionality</dt><dd><p><strong>Issue:</strong>
+There might be issues with other functionality. I haven’t fully tested using other plot types and different combinations
+such as using violin and histograms etc. However, I haven’t yet found a case it doesn’t work on.</p>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Sim load on initialisation</dt>
-<dd><p class="first"><strong>Issue:</strong>
-Currently you need to click the “Load Simulation” button to load a sim before running it.
-This functinoality is there so edits could be made to the sim, and it can be reloaded without having to re-search for the path (useful for debugging).
-It would be good, however, if the sim in the config is loaded on initialisation.</p>
-<p class="last"><strong>How to fix:</strong>
-Probably just a matter of calling the ‘load_sim’ function in the SimulationInfoPage on initialisation. This is something I thought of at the end and didn’t get around to implementing and testing.</p>
+<li><dl>
+<dt>Query data as dialogs</dt><dd><p><strong>Issue:</strong>
+Currently, query data is displayed as a dialog instead of a separate window. This is an issue becuase you cannot have more than one query results window open at any one time.</p>
+<p><strong>How to fix:</strong>
+Currently, the dialogs are shown with the _exec() function in <cite>show_query_dialog</cite> function in <cite>ui/QueryDataPage.py</cite>. This is done to get a return value, but sets the dialog as modal (blocks other windows).
+The show() function can be used but the dialog window code must be changed to get a return value (e.g. detecting if the <cite>CANCEL`or `OK</cite> buttons are clicked. Additionally, care must be taken as the dialog allows the query name to be changed. This could cause possibly issues in other parts of the GUI if not handled correctly.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Query param setting</dt><dd><p><strong>Issue:</strong>
+The Gui has been created to be generic and flexible. This allows any simulation scripts to be run and any functions to be used to create queries from the data. However, this results in a tradeoff with complexity for the user.
+This means that setting params must be done in a specific order (e.g. to set the ‘agent’ param, a query must first be generated that has an ‘agent’variable).
+A new, creative way of handling this needs to be implemented.</p>
 </dd>
 </dl>
 </li>
 </ul>
-</div>
-<div class="section" id="nice-to-haves">
+</section>
+<section id="nice-to-haves">
 <h2>Nice To Haves<a class="headerlink" href="#nice-to-haves" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><dl class="first docutils">
-<dt>Diff variable selectinon</dt>
-<dd><p class="first"><strong>Issue:</strong>
+<li><dl>
+<dt>Deleting data</dt><dd><p><strong>Issue:</strong>
+Currently, it is not possible to remove datasets from the GUI. This could only be an issue if you create too many data sets that it is annoying to search for, and select the one you want.</p>
+<p><strong>How to Fix:</strong>
+A new <cite>Delete</cite> button should be added to the table that shows datasets similar to how <cite>RENAME</cite> and <cite>save</cite> are in the <cite>update_data_table</cite> function in <cite>ui/PsychSimMainWindow.py</cite> file.</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>Diff variable selectinon</dt><dd><p><strong>Issue:</strong>
 Currently, the diff compares an entire results dataframe. It might be useful to just diff one variable of interest</p>
-<p class="last"><strong>How to Fix:</strong>
+<p><strong>How to Fix:</strong>
 This would need a new dropdown to select the variable you want to compare. Then, only selecting that variable from the dataframe to diff and display
 The dropdown would be added to the ui/query_data_page.ui and corresponding button connections in the ui/QueryDataPage.py. The filtering of the data would probably be done
 here, and just passed to the ui/DiffRestulsWindow.py as is.</p>
 </dd>
 </dl>
 </li>
-<li><dl class="first docutils">
-<dt>Sampling on first day</dt>
-<dd><p class="first"><strong>Issue:</strong>
+<li><dl>
+<dt>Sampling on first day</dt><dd><p><strong>Issue:</strong>
 Currently, when you sample some query data, the sample is applied to the whole data set.
 This is an issue if you want to track how agents progress over time. For example, if you want to see how an ‘in danger’ or a ‘poor’ agent
 performs over time, you would want to create a sample that includes only these groups on the first day. They might change groups (become out of danger or rich)
 over time. If you sample over the whole dataset, you would not capture them. You may want to sample over the whole dataset for other purposes, however. And you might
 want to track over a different variable than time.</p>
-<p class="last"><strong>How to fix:</strong>
+<p><strong>How to fix:</strong>
 There needs to be an option to sample on the first step (or first of any continuous variable) that can be checked.
 The sample group would then need to be determined on that first step (or other first value) and the resulting group sampled over the whole dataset.
 Sampling is currently all done in the ui/QueryDataPage.py file in the ‘sample_by_range’ and ‘sample_by_category’ functions.</p>
 </dd>
 </dl>
 </li>
+<li><dl class="simple">
+<dt>Scripting the gui</dt><dd><p><strong>Issue:</strong>
+It would be useful to be able to call gui functions from a script. This could help with things like running separate ASSIST code, then putting the results through the gui to create a query, and plot all from a script</p>
+</dd>
+</dl>
+</li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -151,7 +142,7 @@ Sampling is currently all done in the ui/QueryDataPage.py file in the ‘sample_
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../code_documentation.html">Code Documentation</a><ul class="current">
@@ -164,6 +155,7 @@ Sampling is currently all done in the ui/QueryDataPage.py file in the ‘sample_
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appraisals.html">Appraisals</a></li>
 </ul>
 
 <div class="relations">
@@ -178,17 +170,23 @@ Sampling is currently all done in the ui/QueryDataPage.py file in the ‘sample_
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -197,8 +195,8 @@ Sampling is currently all done in the ui/QueryDataPage.py file in the ‘sample_
       &copy;2020, Chris Turner.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/code_documentation/future_directions.rst.txt"

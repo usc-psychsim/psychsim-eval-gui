@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>appraisal.appraisal_dimensions.AppraisalDimensions &#8212; Psychsim Gui  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="Appraisal Code" href="../appraisal_code.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="appraisal-appraisal-dimensions-appraisaldimensions">
+<h1>appraisal.appraisal_dimensions.AppraisalDimensions<a class="headerlink" href="#appraisal-appraisal-dimensions-appraisaldimensions" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="appraisal.appraisal_dimensions.AppraisalDimensions">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">appraisal.appraisal_dimensions.</span></span><span class="sig-name descname"><span class="pre">AppraisalDimensions</span></span><a class="headerlink" href="#appraisal.appraisal_dimensions.AppraisalDimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class with methods to calculate appraisal dimensions</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="appraisal.appraisal_dimensions.AppraisalDimensions.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#appraisal.appraisal_dimensions.AppraisalDimensions.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#appraisal.appraisal_dimensions.AppraisalDimensions.__init__" title="appraisal.appraisal_dimensions.AppraisalDimensions.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.blame1" title="appraisal.appraisal_dimensions.AppraisalDimensions.blame1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blame1</span></code></a>(cur_utility, cur_expected_utility, …)</p></td>
+<td><p>Did the blamed_agent take an unexpected action that negatively affected the agent?</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.blame2" title="appraisal.appraisal_dimensions.AppraisalDimensions.blame2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blame2</span></code></a>(cur_utility, cur_expected_utility, …)</p></td>
+<td><p>from perspective of one agent could a different agent take action that was not negative for them, but better for the perspective agent? Essentially, this is the same as blame3 but with the added constraint that the action must have a positive outcome for the blamed agent (or at least non negative)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.blame3" title="appraisal.appraisal_dimensions.AppraisalDimensions.blame3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">blame3</span></code></a>(cur_utility, cur_expected_utility, …)</p></td>
+<td><p>from perspective of the target agent, could the blamed agent take better action i.e. Did the blamed_agent take an unexpected action that negatively affected the agent AND could the blamed_agent have done something different?.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.control" title="appraisal.appraisal_dimensions.AppraisalDimensions.control"><code class="xref py py-obj docutils literal notranslate"><span class="pre">control</span></code></a>(possible_actions, agent_max_reward)</p></td>
+<td><p>A player feels in control if they have alternate actions that deliver positive utility.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.control2" title="appraisal.appraisal_dimensions.AppraisalDimensions.control2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">control2</span></code></a>(cur_utility, cur_expected_utility, …)</p></td>
+<td><p>If something bad has happened (negative, unexpected utility), does the agent have an action to rectify it (i.e.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.control3" title="appraisal.appraisal_dimensions.AppraisalDimensions.control3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">control3</span></code></a>(cur_utility, cur_expected_utility, …)</p></td>
+<td><p>A player has ‘memory’ so if they blame someone for a bad action, they will not feel in control until they have it in their power to rectify the situation, that might come a few actions later.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.control5" title="appraisal.appraisal_dimensions.AppraisalDimensions.control5"><code class="xref py py-obj docutils literal notranslate"><span class="pre">control5</span></code></a>(blamed_agent_action, possible_actions)</p></td>
+<td><p>This checks the ‘memory’ at each step to see if we now have control.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.desirability" title="appraisal.appraisal_dimensions.AppraisalDimensions.desirability"><code class="xref py py-obj docutils literal notranslate"><span class="pre">desirability</span></code></a>(cur_utility, …)</p></td>
+<td><p>This is a measure of how much utility has been lost by an unexpected negative action.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_csv" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisal_params_csv</span></code></a>(csv_row)</p></td>
+<td><p>get the params in an appropriate format for the appraisal functions from csv data The csv format defines:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisal_params_psychsim</span></code></a>(agent, …)</p></td>
+<td><p>get the params in an appropriate format for the appraisal functions from psychsim data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisals_for_step</span></code></a>(params[, normalise])</p></td>
+<td><p>Calculate all the appraisal dimensions for a particular step.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_from_csv" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_from_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisals_from_csv</span></code></a>(csv_file)</p></td>
+<td><p>Get appraisals for each step in a csv file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.motivational_congruence" title="appraisal.appraisal_dimensions.AppraisalDimensions.motivational_congruence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">motivational_congruence</span></code></a>(pre_utility, cur_utility)</p></td>
+<td><p>Motivational congruence or incongruence measures the extent to which the encounter thwarts or facilitates personal goals.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.motivational_relevance" title="appraisal.appraisal_dimensions.AppraisalDimensions.motivational_relevance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">motivational_relevance</span></code></a>(pre_utility, cur_utility)</p></td>
+<td><p>Motivational relevance evaluates the extent to which an encounter touches upon personal goals” Utility is essentially the agent’s reward (from getReward).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.surprise" title="appraisal.appraisal_dimensions.AppraisalDimensions.surprise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">surprise</span></code></a>(blamed_agent_action, believed_action)</p></td>
+<td><p>Compare an actual action taken by a player to a projected action as calculated by psychsim</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Psychsim Gui</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../manual.html">Manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code_documentation.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../appraisals.html">Appraisals</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../appraisal_how_to.html">Appraisal Dimensions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../appraisal_code.html">Appraisal Code</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">appraisal.appraisal_dimensions.AppraisalDimensions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../../appraisals.html">Appraisals</a><ul>
+  <li><a href="../appraisal_code.html">Appraisal Code</a><ul>
+      <li>Previous: <a href="../appraisal_code.html" title="previous chapter">Appraisal Code</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Turner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../../_sources/appraisals/_stubs/appraisal.appraisal_dimensions.AppraisalDimensions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
