@@ -5,5 +5,5 @@ Appraisals
    :maxdepth: 3
    :caption: Appraisals:
 
-   appraisals/appraisal_dimensions.rst
+   appraisals/appraisal_how_to.rst
    appraisals/appraisal_code.rst
