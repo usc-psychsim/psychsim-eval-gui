@@ -1,4 +1,6 @@
 
+.. _appraisal_code:
+
 Appraisal Code
 ==============
 .. autosummary::

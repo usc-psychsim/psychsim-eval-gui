@@ -1,4 +1,6 @@
 
+
+
 Directory Structure
 *******************
 
@@ -29,13 +31,31 @@ Contains top level scripts, config, files, and helpers
 
     dependency information required by pipenv to setup virtual environment
 
+.. _directory_structure:
+
+Appraisal
+=========
+Code relating to appraisal dimensions.
+
+* appraisal_dimensions.py
+
+    Code to calculate appraisal dimensions. Also contains interface code to extract appraisals from psych sim data
+
+* appraisal_example_sim.py
+
+    An example of how to calculate appraisal dimensions from a psychsim gui simulation script
+
+\test
+-----
+Contains code and 'fake' data in a .csv file to test the appraisal functionality
+
 
 Documentation
 =============
 Contains files and scripts to generate the documentation you are reading
 
-static_html
------------
+\static_html
+------------
 copy of the built documentation which is used by the gui to display these pages
 
 
