@@ -1,7 +1,6 @@
 *.pyc
 *~
 *.pickle
-*.csv
 build
 sim_output
 dist
