@@ -236,7 +236,8 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
         :param doc_section:
         :return:
         """
-        file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "static_html", f"{doc_file}"))
+        # file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "static_html", f"{doc_file}"))
+        file_path = os.path.abspath(os.path.join(os.getcwd(), "documentation", "build", "html", f"{doc_file}"))
         local_url = QUrl.fromLocalFile(file_path)
         local_url.setFragment(f"{doc_section}")
         doc_window = DocWindow(parent=self)

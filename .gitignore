@@ -1,7 +1,6 @@
 *.pyc
 *~
 *.pickle
-build
 sim_output
 dist
 *.egg-info

@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Directory Structure &#8212; Psychsim Gui  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Future Directions" href="future_directions.html" />
+    <link rel="prev" title="Code Documentation" href="../code_documentation.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="directory-structure">
+<h1>Directory Structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h1>
+<p>The psychsim Gui code is structured as follows:</p>
+<section id="psychsim-eval-gui">
+<h2>psychsim-eval-gui<a class="headerlink" href="#psychsim-eval-gui" title="Permalink to this headline">¶</a></h2>
+<p>Contains top level scripts, config, files, and helpers</p>
+<ul>
+<li><p>config.ini</p>
+<blockquote>
+<div><p>config file to set directories needed for the gui to run</p>
+</div></blockquote>
+</li>
+<li><p>gui_threading.py</p>
+<blockquote>
+<div><p>Threading functions used in the gui</p>
+</div></blockquote>
+</li>
+<li><p>PsychSimGui.py</p>
+<blockquote>
+<div><p>This is the main app. Execute this script to run the app</p>
+</div></blockquote>
+</li>
+<li><p>psychsim_gui_helpers.py</p>
+<blockquote>
+<div><p>helper functions used by the gui scripts</p>
+</div></blockquote>
+</li>
+<li><p>Pipfile &amp; Pipfile.lock</p>
+<blockquote>
+<div><p>dependency information required by pipenv to setup virtual environment</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="appraisal">
+<span id="id1"></span><h2>Appraisal<a class="headerlink" href="#appraisal" title="Permalink to this headline">¶</a></h2>
+<p>Code relating to appraisal dimensions.</p>
+<ul>
+<li><p>appraisal_dimensions.py</p>
+<blockquote>
+<div><p>Code to calculate appraisal dimensions. Also contains interface code to extract appraisals from psych sim data</p>
+</div></blockquote>
+</li>
+<li><p>appraisal_example_sim.py</p>
+<blockquote>
+<div><p>An example of how to calculate appraisal dimensions from a psychsim gui simulation script</p>
+</div></blockquote>
+</li>
+</ul>
+<section id="test">
+<h3>test<a class="headerlink" href="#test" title="Permalink to this headline">¶</a></h3>
+<p>Contains code and ‘fake’ data in a .csv file to test the appraisal functionality</p>
+</section>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>Contains files and scripts to generate the documentation you are reading</p>
+<section id="static-html">
+<h3>static_html<a class="headerlink" href="#static-html" title="Permalink to this headline">¶</a></h3>
+<p>copy of the built documentation which is used by the gui to display these pages</p>
+</section>
+</section>
+<section id="functions">
+<h2>functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>ASISTQueryFunctions.py</p>
+<blockquote>
+<div><p>Function definitions used to extract data from ASIST based psychsim scripts</p>
+</div></blockquote>
+</li>
+<li><p>DemoFunctions.py</p>
+<blockquote>
+<div><p>Function definitions used to extract data from sim_scripts/DemoSim.py</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="sim-scripts">
+<h2>sim_scripts<a class="headerlink" href="#sim-scripts" title="Permalink to this headline">¶</a></h2>
+<p>This folder holds some example simulation scripts to run.</p>
+<ul>
+<li><p>DemoSim.py</p>
+<blockquote>
+<div><p>An example simulation that creates three channels of sinusoid data with and without noise and two channels of randomly generated data.</p>
+</div></blockquote>
+</li>
+<li><p>ForwardPlanningTom.py</p>
+<blockquote>
+<div><p>Sim script implementing the forward example definied <a class="reference external" href="https://github.com/usc-psychsim/psychsim/blob/0571996689c1d9c3d6f42a9f954b6f51a26b2c4b/psychsim/examples/forward_planning_tom.py">here</a></p>
+</div></blockquote>
+</li>
+<li><p>SimTemplate.py</p>
+<blockquote>
+<div><p>a blank template example</p>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="ui">
+<h2>ui<a class="headerlink" href="#ui" title="Permalink to this headline">¶</a></h2>
+<p>This folder contains all the pyqt5 designer (ui) files and corresponding python scripts that control the various parts of the gui.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Psychsim Gui</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../code_documentation.html">Code Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Directory Structure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#psychsim-eval-gui">psychsim-eval-gui</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#appraisal">Appraisal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#functions">functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sim-scripts">sim_scripts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ui">ui</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="future_directions.html">Future Directions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../appraisals.html">Appraisals</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code_documentation.html">Code Documentation</a><ul>
+      <li>Previous: <a href="../code_documentation.html" title="previous chapter">Code Documentation</a></li>
+      <li>Next: <a href="future_directions.html" title="next chapter">Future Directions</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Chris Turner.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/code_documentation/directory_structure.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
