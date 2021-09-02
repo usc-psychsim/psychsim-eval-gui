@@ -16,6 +16,7 @@ sklearn = "*"
 ply = "*"
 tqdm = "*"
 pyqt5-stubs = "==5.15.2.0"
+sphinx = "*"
 
 [dev-packages]
 
