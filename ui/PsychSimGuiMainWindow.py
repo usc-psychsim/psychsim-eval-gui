@@ -34,6 +34,7 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
+
         self.setupUi(self)
 
         self.setWindowTitle("PyschSim GUI")
@@ -90,7 +91,10 @@ class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):
             lambda: self.show_doc_window("manual/gui_functionality.html", "plot"))
 
         # Disable close button so have to quit from file menu
+        self.setWindowFlag(Qt.CustomizeWindowHint, True)
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
+
+
 
     def quit(self):
         """
