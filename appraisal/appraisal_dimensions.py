@@ -355,13 +355,13 @@ class AppraisalDimensions:
                 elif isinstance(value, (int, float)) and value < 0:
                     setattr(appraisals, field, -1)
 
-        appraisals.a_action = params["cur_action"]
-        appraisals.a_proj_action = params["projected_action"]
-        appraisals.a_expected_b = params["believed_action"]
-        appraisals.b_action = params["blamed_agent_action"]
-        appraisals.pre_utility = params["pre_utility"]
-        appraisals.cur_utility = params["cur_utility"]
-        appraisals.cur_expected_utility = params["cur_expected_utility"]
+        appraisals.a_action = str(params["cur_action"])
+        appraisals.a_proj_action = str(params["projected_action"])
+        appraisals.a_expected_b = str(params["believed_action"])
+        appraisals.b_action = str(params["blamed_agent_action"])
+        appraisals.pre_utility = str(params["pre_utility"])
+        appraisals.cur_utility = str(params["cur_utility"])
+        appraisals.cur_expected_utility = str(params["cur_expected_utility"])
 
         return appraisals
 
