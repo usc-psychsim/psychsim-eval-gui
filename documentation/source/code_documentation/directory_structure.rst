@@ -45,7 +45,7 @@ Code relating to appraisal dimensions.
 
     An example of how to calculate appraisal dimensions from a psychsim gui simulation script
 
-\test
+\\test
 -----
 Contains code and 'fake' data in a .csv file to test the appraisal functionality
 
@@ -54,7 +54,7 @@ Documentation
 =============
 Contains files and scripts to generate the documentation you are reading
 
-\static_html
+\\static_html
 ------------
 copy of the built documentation which is used by the gui to display these pages
 

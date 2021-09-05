@@ -430,7 +430,7 @@ class AppraisalDimensions:
         """
         a_agent = world.agents[agent]
         player_decision_key = list(debug_dict[agent]["__decision__"])[
-            0]  # This is because I don't know what the numbers appended to the player name are going to be
+            0]  # This is because I don't know what the numbers appended to the player name are going to be # TODO: fix this to be the model when not using debug dict
         blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
         player_cur_utility = a_agent.reward()
         cur_action = debug_dict[agent]["__decision__"][player_decision_key][
@@ -457,6 +457,63 @@ class AppraisalDimensions:
 
         params = dict(cur_action=cur_action,
                       projected_action=proj_action,
+                      blamed_agent_possible_actions=blamed_possible_actions,
+                      possible_actions=possible_actions,
+                      cur_utility=player_cur_utility,
+                      pre_utility=self.player_pre_utility,
+                      blamed_agent_action=cur_blamed_action,
+                      cur_expected_utility=cur_expected_utility,
+                      believed_action=believed_action,
+                      agent_max_reward=agent_max_reward)
+        # Update the pre utility
+        self.player_pre_utility = player_cur_utility
+        return params
+
+    def get_appraisal_params_psychsim_model_inference(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
+        """
+        get the params in an appropriate format for the appraisal functions from psychsim data.
+        This function helps to hide the messiness of extracting data from psychsim objects.
+
+        :param agent: name of target agent
+        :type agent: str
+        :param blame_agent: name of other agent (agent to blame)
+        :type blame_agent: str
+        :param world: psychsim world
+        :type world: psychsim.world.World
+        :param debug_dict: debug dictionary from real data
+        :param debug_pred_dict: debug dictionary from psychsim projected step
+        :return: Params/ variables needed to calculate appraisal dimensions.
+        :rtype: dict
+        """
+        a_agent = world.agents[agent]
+        b_agent = world.agents[blame_agent]
+        player_decision_key = list(debug_dict[agent])[0]
+        blamed_decision_key = list(debug_dict[blame_agent])[0]
+        player_cur_utility = a_agent.reward()
+        # cur_action = debug_dict[agent][player_decision_key][ "action"]  # **This should be the actual action taken by the player
+        cur_action = a_agent.getState('__ACTION__')
+        # proj_action = debug_pred_dict[agent][player_decision_key]["action"]  # **This should be the action projected by psychsim
+        # cur_blamed_action = debug_dict[blame_agent][blamed_decision_key]["action"]
+        cur_blamed_action = b_agent.getState('__ACTION__')
+        cur_expected_utility = debug_dict[agent][player_decision_key]["V"][cur_action]["__ER__"][0]
+        agent_belief = debug_dict[agent][player_decision_key]["V"][cur_action]["__beliefs__"]
+        agent_max_reward = a_agent.getState('__REWARD__').max()
+        believed_action = world.getFeature(f"{blame_agent}'s __ACTION__", agent_belief, unique=True)
+        possible_actions = debug_dict[agent][player_decision_key]["V"]
+        blamed_possible_actions = debug_dict[blame_agent][blamed_decision_key]["V"]
+        for action, value in possible_actions.items():
+            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0],
+                                                                unique=True)
+            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0],
+                                                                 unique=True)
+        for action, value in blamed_possible_actions.items():
+            value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0],
+                                                                unique=True)
+            value["blamed_predicted_utility"] = world.getFeature(f"{blame_agent}'s __REWARD__", value["__S__"][0],
+                                                                 unique=True)
+
+        params = dict(cur_action=cur_action,
+                      projected_action=cur_action, # I don't know what this should be with the MI output
                       blamed_agent_possible_actions=blamed_possible_actions,
                       possible_actions=possible_actions,
                       cur_utility=player_cur_utility,

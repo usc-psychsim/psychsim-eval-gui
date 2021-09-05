@@ -7,7 +7,7 @@ Simulation
 
 Gui config
 ----------
-Paths to the psychsim and atomic repositories must be set in config.ini. Note: these repositories should be
+Paths to the psychsim and atomic repositories must be set in config.ini. Note: these repositories can be cloned from `github <https://github.com/usc-psychsim>`_ and should be
 cloned somewhere on your local machine. Custom config files can be loaded through the simulation>Load config dropdown.
 An example of a config file with paths set is below::
 
@@ -73,10 +73,10 @@ Create new query
 - **Execute function**: execute the function. This pops up the results dialog and saves the query for later viewing.
 - **Results Dialog**: allows you to rename the query
 
-Set param values
-""""""""""""""""
-Params called `data` and params of type `bool` are set with a dropdown box in the set params table. All other params are
-set by selecting values from pre-generated queries. For the example in the image below, to set the 'agent' param in `get_actions`, first we must
+Setting function parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Params which are named `data` and params of type `bool` are set with a dropdown box in the set params table. All other params are
+set by selecting values from pre-generated queries. For the example, in the image below, to set the 'agent' param in `get_actions`, first we must
 generate a query containing agents (for example using `get_agents`). Clicking on the 'SET' button opens the set dialog.
 This allows you to select a query, variables within the query, and values in the variables to set as a parameter.
 
@@ -108,7 +108,7 @@ Diff queries
 -   **Query 2**: Second query to compare
 -   **DIFF**: Execute the comparison
 
--   The diff window shows the two results side by side. Coloured text indicates a difference between the two
+-   The diff window below shows the two results side by side. Coloured text indicates a difference between the two
     queries. Black text indicates the row is the same.
 
 .. image:: ../tutorial/images/generic_diff_table.png
@@ -136,7 +136,7 @@ Create Sample from Query
 -   **Select query**: The query to create a sample from
 -   **Sample variable**: Variable within the query results to create the sample from
 -   **Sample function**: Either 'range' or 'category'
--   **Filter Sample**: Select the values to create the sample with (this will open a dialog)
+-   **Filter Sample**: Select the values to create the sample with (this will open the below dialogs)
 
 .. image:: ../tutorial/images/generic_range_select.png
 

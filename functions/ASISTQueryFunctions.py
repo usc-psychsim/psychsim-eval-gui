@@ -8,11 +8,6 @@ dict contatining the folloiwng:
                         "AGENTS": self.agents (list contianing agents)
 """
 
-# TODO:
-#  [ ]Make it so the params define the function which they should take a variable (e.g. action comes from get_action)
-#   -[ ]document this
-#   -[ ]test the whole structure still works when this isn't done (just by defining functions and setting variables from wherever)
-
 
 import pandas as pd
 import numpy as np
@@ -240,6 +235,37 @@ class ASISTQueryFunctions:
             for step, step_data in data.data.items():
                 # Get params
                 params = player_ad.get_appraisal_params_psychsim(agent=agent,
+                                                                 blame_agent=blame_agent,
+                                                                 world=step_data["WORLD"],
+                                                                 debug_dict=step_data["AGENT_DEBUG"],
+                                                                 debug_pred_dict=step_data["AGENT_DEBUG"])
+                # Get appraisals for each step
+                appraisal = player_ad.get_appraisals_for_step(params, normalise=normalise)
+                appraisal.step = step
+                step_appraisals.append(appraisal)
+            # Return the appraisals as a dataframe
+            return TABLE_TYPE, pd.DataFrame(step_appraisals).T
+        except:
+            tb = traceback.format_exc()
+            print(tb)
+
+    def get_appraisal_dimensions_mi(self,  data: pgh.PsychSimRun=None, agent: str=None, blame_agent: str=None, normalise: bool=False):
+        """
+        Get the appraisal dimensions for the ModelInference sim script
+
+        :param data: Data from sim script
+        :param agent: name of target agent
+        :type agent: str
+        :param blame_agent: name of other agent (agent to blame)
+        :return: player appraisals at each step
+        """
+        # TODO: Refactor this with the above get_appraisal_dimensions function
+        player_ad = ad.AppraisalDimensions()
+        try:
+            step_appraisals = []
+            for step, step_data in data.data.items():
+                # Get params
+                params = player_ad.get_appraisal_params_psychsim_model_inference(agent=agent,
                                                                  blame_agent=blame_agent,
                                                                  world=step_data["WORLD"],
                                                                  debug_dict=step_data["AGENT_DEBUG"],

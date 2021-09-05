@@ -83,19 +83,22 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisal_params_psychsim</span></code></a>(agent, …)</p></td>
 <td><p>get the params in an appropriate format for the appraisal functions from psychsim data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisals_for_step</span></code></a>(params[, normalise])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim_model_inference" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim_model_inference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisal_params_psychsim_model_inference</span></code></a>(…)</p></td>
+<td><p>get the params in an appropriate format for the appraisal functions from psychsim data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisals_for_step</span></code></a>(params[, normalise])</p></td>
 <td><p>Calculate all the appraisal dimensions for a particular step.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_from_csv" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_from_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisals_from_csv</span></code></a>(csv_file)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_from_csv" title="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_from_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_appraisals_from_csv</span></code></a>(csv_file)</p></td>
 <td><p>Get appraisals for each step in a csv file</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.motivational_congruence" title="appraisal.appraisal_dimensions.AppraisalDimensions.motivational_congruence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">motivational_congruence</span></code></a>(pre_utility, cur_utility)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.motivational_congruence" title="appraisal.appraisal_dimensions.AppraisalDimensions.motivational_congruence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">motivational_congruence</span></code></a>(pre_utility, cur_utility)</p></td>
 <td><p>Motivational congruence or incongruence measures the extent to which the encounter thwarts or facilitates personal goals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.motivational_relevance" title="appraisal.appraisal_dimensions.AppraisalDimensions.motivational_relevance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">motivational_relevance</span></code></a>(pre_utility, cur_utility)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.motivational_relevance" title="appraisal.appraisal_dimensions.AppraisalDimensions.motivational_relevance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">motivational_relevance</span></code></a>(pre_utility, cur_utility)</p></td>
 <td><p>Motivational relevance evaluates the extent to which an encounter touches upon personal goals” Utility is essentially the agent’s reward (from getReward).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.surprise" title="appraisal.appraisal_dimensions.AppraisalDimensions.surprise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">surprise</span></code></a>(blamed_agent_action, believed_action)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../appraisal_code.html#appraisal.appraisal_dimensions.AppraisalDimensions.surprise" title="appraisal.appraisal_dimensions.AppraisalDimensions.surprise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">surprise</span></code></a>(blamed_agent_action, believed_action)</p></td>
 <td><p>Compare an actual action taken by a player to a projected action as calculated by psychsim</p></td>
 </tr>
 </tbody>
@@ -126,6 +129,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../manual.html">Manual</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../code_documentation.html">Code Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interfacing_with_asist.html">Interfacing With ASIST code</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../appraisals.html">Appraisals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../appraisal_how_to.html">Appraisal Dimensions</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../appraisal_code.html">Appraisal Code</a><ul class="current">

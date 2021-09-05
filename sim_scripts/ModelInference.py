@@ -25,21 +25,14 @@ class ModelInference:
                     "--config",
                     CONFIGFILE]
         self.args = parse_replay_args(parser, arg_list=arg_list)
-        if self.args['clusters']:
-            import atomic.model_learning.linear.post_process.clustering as clustering
 
-            reward_weights, cluster_map, condition_map = mi.load_clusters(self.args['clusters'])
-            mi.AnalysisParseProcessor.condition_dist = condition_map
-            mi.apply_cluster_rewards(reward_weights)
-        elif self.args['reward_file']:
-            import atomic.model_learning.linear.post_process.clustering as clustering
+        self.replayer = mi.Analyzer(self.args['fname'], rddl_file=self.args['rddl'], action_file=self.args['actions'], aux_file=self.args['aux'], logger=logging)
 
-            mi.apply_cluster_rewards(clustering.load_cluster_reward_weights(self.args['reward_file']))
-        self.replayer = mi.Analyzer(self.args['fname'], rddl_file=self.args['rddl'], action_file=self.args['actions'], feature_output=self.args['feature_file'], aux_file=self.args['aux'], logger=logging)
-
-        self.replayer.parameterized_replay(self.args)
+        self.replayer.parameterized_replay(self.args, simulate=False)
 
         self.sim_steps = len(self.replayer.debug_data)
+        if self.args['number'] > 0:
+            self.sim_steps = self.args['number']
         self.current_step = 0
 
     def run_step(self):

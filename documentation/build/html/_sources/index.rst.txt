@@ -13,6 +13,7 @@ Welcome to psychsim GUI's documentation!
    manual.rst
    code_documentation.rst
    tutorial.rst
+   interfacing_with_asist.rst
    appraisals.rst
 
 

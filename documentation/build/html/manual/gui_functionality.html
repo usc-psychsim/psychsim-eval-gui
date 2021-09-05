@@ -39,7 +39,7 @@
 <h2>Simulation<a class="headerlink" href="#simulation" title="Permalink to this headline">¶</a></h2>
 <section id="gui-config">
 <h3>Gui config<a class="headerlink" href="#gui-config" title="Permalink to this headline">¶</a></h3>
-<p>Paths to the psychsim and atomic repositories must be set in config.ini. Note: these repositories should be
+<p>Paths to the psychsim and atomic repositories must be set in config.ini. Note: these repositories can be cloned from <a class="reference external" href="https://github.com/usc-psychsim">github</a> and should be
 cloned somewhere on your local machine. Custom config files can be loaded through the simulation&gt;Load config dropdown.
 An example of a config file with paths set is below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">PATHS</span><span class="p">]</span>
@@ -110,14 +110,14 @@ to extract desired information from simulation outputs. Different queries result
 <li><p><strong>Execute function</strong>: execute the function. This pops up the results dialog and saves the query for later viewing.</p></li>
 <li><p><strong>Results Dialog</strong>: allows you to rename the query</p></li>
 </ul>
-<section id="set-param-values">
-<h5>Set param values<a class="headerlink" href="#set-param-values" title="Permalink to this headline">¶</a></h5>
-<p>Params called <cite>data</cite> and params of type <cite>bool</cite> are set with a dropdown box in the set params table. All other params are
-set by selecting values from pre-generated queries. For the example in the image below, to set the ‘agent’ param in <cite>get_actions</cite>, first we must
+</section>
+<section id="setting-function-parameters">
+<h4>Setting function parameters<a class="headerlink" href="#setting-function-parameters" title="Permalink to this headline">¶</a></h4>
+<p>Params which are named <cite>data</cite> and params of type <cite>bool</cite> are set with a dropdown box in the set params table. All other params are
+set by selecting values from pre-generated queries. For the example, in the image below, to set the ‘agent’ param in <cite>get_actions</cite>, first we must
 generate a query containing agents (for example using <cite>get_agents</cite>). Clicking on the ‘SET’ button opens the set dialog.
 This allows you to select a query, variables within the query, and values in the variables to set as a parameter.</p>
 <img alt="../_images/set_param.png" src="../_images/set_param.png" />
-</section>
 </section>
 <section id="view-saved-queries">
 <h4>View saved queries<a class="headerlink" href="#view-saved-queries" title="Permalink to this headline">¶</a></h4>
@@ -147,7 +147,7 @@ This allows you to select a query, variables within the query, and values in the
 <li><p><strong>Query 1</strong>: First query to compare</p></li>
 <li><p><strong>Query 2</strong>: Second query to compare</p></li>
 <li><p><strong>DIFF</strong>: Execute the comparison</p></li>
-<li><p>The diff window shows the two results side by side. Coloured text indicates a difference between the two
+<li><p>The diff window below shows the two results side by side. Coloured text indicates a difference between the two
 queries. Black text indicates the row is the same.</p></li>
 </ul>
 <img alt="../_images/generic_diff_table.png" src="../_images/generic_diff_table.png" />
@@ -177,7 +177,7 @@ that meet that criteria across the entire query result data.</p>
 <li><p><strong>Select query</strong>: The query to create a sample from</p></li>
 <li><p><strong>Sample variable</strong>: Variable within the query results to create the sample from</p></li>
 <li><p><strong>Sample function</strong>: Either ‘range’ or ‘category’</p></li>
-<li><p><strong>Filter Sample</strong>: Select the values to create the sample with (this will open a dialog)</p></li>
+<li><p><strong>Filter Sample</strong>: Select the values to create the sample with (this will open the below dialogs)</p></li>
 </ul>
 <img alt="../_images/generic_range_select.png" src="../_images/generic_range_select.png" />
 <ul class="simple">
@@ -265,6 +265,7 @@ selected.</p></li>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../code_documentation.html">Code Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../interfacing_with_asist.html">Interfacing With ASIST code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../appraisals.html">Appraisals</a></li>
 </ul>
 

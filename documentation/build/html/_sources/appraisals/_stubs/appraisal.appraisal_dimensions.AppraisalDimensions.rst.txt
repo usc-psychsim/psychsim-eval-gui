@@ -24,6 +24,7 @@
       ~AppraisalDimensions.desirability
       ~AppraisalDimensions.get_appraisal_params_csv
       ~AppraisalDimensions.get_appraisal_params_psychsim
+      ~AppraisalDimensions.get_appraisal_params_psychsim_model_inference
       ~AppraisalDimensions.get_appraisals_for_step
       ~AppraisalDimensions.get_appraisals_from_csv
       ~AppraisalDimensions.motivational_congruence

@@ -68,7 +68,7 @@ Nice To Haves
     here, and just passed to the ui/DiffRestulsWindow.py as is.
 
 
-- Sampling on first day
+- Sampling on first time point
     **Issue:**
     Currently, when you sample some query data, the sample is applied to the whole data set.
     This is an issue if you want to track how agents progress over time. For example, if you want to see how an 'in danger' or a 'poor' agent

@@ -308,6 +308,30 @@ This function helps to hide the messiness of extracting data from psychsim objec
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim_model_inference">
+<span class="sig-name descname"><span class="pre">get_appraisal_params_psychsim_model_inference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blame_agent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_pred_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisal_params_psychsim_model_inference" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the params in an appropriate format for the appraisal functions from psychsim data.
+This function helps to hide the messiness of extracting data from psychsim objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent</strong> (<em>str</em>) – name of target agent</p></li>
+<li><p><strong>blame_agent</strong> (<em>str</em>) – name of other agent (agent to blame)</p></li>
+<li><p><strong>world</strong> (<em>psychsim.world.World</em>) – psychsim world</p></li>
+<li><p><strong>debug_dict</strong> – debug dictionary from real data</p></li>
+<li><p><strong>debug_pred_dict</strong> – debug dictionary from psychsim projected step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Params/ variables needed to calculate appraisal dimensions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step">
 <span class="sig-name descname"><span class="pre">get_appraisals_for_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#appraisal.appraisal_dimensions.AppraisalDimensions.get_appraisals_for_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate all the appraisal dimensions for a particular step. This function passes the params extracted from
@@ -536,6 +560,7 @@ essentially the agent’s reward (from getReward). Where utility = state*goals, 
 <li class="toctree-l1"><a class="reference internal" href="../manual.html">Manual</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code_documentation.html">Code Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../interfacing_with_asist.html">Interfacing With ASIST code</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../appraisals.html">Appraisals</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="appraisal_how_to.html">Appraisal Dimensions</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Appraisal Code</a><ul>

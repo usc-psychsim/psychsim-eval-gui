@@ -3,7 +3,7 @@ Introduction
 
 
 The workflow of the GUI is described in the flowchart below. First, a simulation is loaded and run.
-This will generate some 'run data'. The raw data can be queried using query functions. The results of these
+This will generate some 'run data'. This 'run data' can be queried using query functions. The results of these
 query functions can be compared to show differences. They can also be sampled to create a new query.
 The results of these query functions can also be plotted.
 
