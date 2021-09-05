@@ -8,7 +8,7 @@ NOTE: the psychsim path must be set in order to function
 import sys
 print(sys.path)
 sys.path.insert(1, "..")
-# sys.path.insert(1, "../../psychsim")  # Change this to the relevant paths
+sys.path.insert(1, "../../psychsim")  # Change this to the relevant paths
 
 import logging
 from functions import ASISTQueryFunctions as qf
