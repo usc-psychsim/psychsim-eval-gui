@@ -268,10 +268,10 @@ class ASISTQueryFunctions:
             for step, step_data in data.data.items():
                 # Get params
                 params = player_ad.get_appraisal_params_psychsim_model_inference(agent=agent,
-                                                                 blame_agent=blame_agent,
-                                                                 world=step_data["WORLD"],
-                                                                 debug_dict=step_data["AGENT_DEBUG"],
-                                                                 debug_pred_dict=step_data["AGENT_DEBUG"])
+                                                                                 action=step_data["AGENT_ACTIONS"][agent],
+                                                                                 blame_agent=blame_agent,
+                                                                                 world=step_data["WORLD"],
+                                                                                 debug_dict=step_data["AGENT_DEBUG"])
                 # Get appraisals for each step
                 appraisal = player_ad.get_appraisals_for_step(params, normalise=normalise)
                 appraisal.step = step

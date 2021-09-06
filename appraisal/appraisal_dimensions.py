@@ -4,6 +4,7 @@ Functions for appraisal dimensions
 from dataclasses import dataclass
 import csv
 import ast
+import math
 import pandas as pd
 
 
@@ -29,7 +30,8 @@ class PlayerAppraisalInfo:
     control2: int = None
     general_control: float = None
     specific_control: int = None
-    surprise: float = None
+    surprise: int = None
+    surprise2: float = None
     desirability: float = None
     memory_control: float = None
 
@@ -291,6 +293,22 @@ class AppraisalDimensions:
             return 0
         return 1
 
+    def surprise2(self, action_probabilities, taken_action):
+        """
+        Is the action taken by an agent surprising given the distribution of ossible actions?
+
+        :param taken_action: actual action taken by an agent
+        :param action_probabilities: distribution of possible actions that an agent could take
+        :return: measure of surprise
+        :rtype: float
+        """
+        print(f'ACTION PROBABILITIES: {action_probabilities}')
+        print(f'TAKEN ACTION: {taken_action}')
+        taken_action_prob = action_probabilities[taken_action]
+        surprise = -1 * taken_action_prob * math.log(taken_action_prob, 2)
+        return surprise
+
+
     def desirability(self, cur_utility, cur_expected_utility, blamed_agent_action, blamed_agent_possible_actions,
                      believed_action):
         """
@@ -346,6 +364,7 @@ class AppraisalDimensions:
                                                     params["believed_action"])
         appraisals.memory_control = self.control5(params["blamed_agent_action"], params["possible_actions"])
         appraisals.surprise = self.surprise(params['blamed_agent_action'], params['believed_action'])
+        appraisals.surprise2 = self.surprise2(params['action_probabilities'], params['cur_action'])
 
         if normalise:
             for field in appraisals.__dataclass_fields__:
@@ -446,6 +465,10 @@ class AppraisalDimensions:
         believed_action = world.getFeature(f"{blame_agent}'s __ACTION__", agent_belief, unique=True)
         possible_actions = player_decision_object[player_decision_key]["V"]
         blamed_possible_actions = blamed_decision_object[blamed_decision_key]["V"]
+        if len(player_decision_object[player_decision_key]["action"]) == 1:
+            action_probabilities = {player_decision_object[player_decision_key]["action"]: 1}
+        else:
+            action_probabilities = player_decision_object[player_decision_key]["action"]
         for action, value in possible_actions.items():
             value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0],
                                                                 unique=True)
@@ -460,6 +483,7 @@ class AppraisalDimensions:
         params = dict(cur_action=cur_action,
                       projected_action=proj_action,
                       blamed_agent_possible_actions=blamed_possible_actions,
+                      action_probabilities=action_probabilities,
                       possible_actions=possible_actions,
                       cur_utility=player_cur_utility,
                       pre_utility=self.player_pre_utility,
@@ -471,7 +495,7 @@ class AppraisalDimensions:
         self.player_pre_utility = player_cur_utility
         return params
 
-    def get_appraisal_params_psychsim_model_inference(self, agent, blame_agent, world, debug_dict, debug_pred_dict):
+    def get_appraisal_params_psychsim_model_inference(self, agent, action, blame_agent, world, debug_dict):
         """
         get the params in an appropriate format for the appraisal functions from psychsim data.
         This function helps to hide the messiness of extracting data from psychsim objects.
@@ -493,7 +517,7 @@ class AppraisalDimensions:
         blamed_decision_key = list(debug_dict[blame_agent])[0]
         player_cur_utility = a_agent.reward()
         # cur_action = debug_dict[agent][player_decision_key][ "action"]  # **This should be the actual action taken by the player
-        cur_action = a_agent.getState('__ACTION__')
+        cur_action = action
         # proj_action = debug_pred_dict[agent][player_decision_key]["action"]  # **This should be the action projected by psychsim
         # cur_blamed_action = debug_dict[blame_agent][blamed_decision_key]["action"]
         cur_blamed_action = b_agent.getState('__ACTION__')
@@ -503,6 +527,7 @@ class AppraisalDimensions:
         believed_action = world.getFeature(f"{blame_agent}'s __ACTION__", agent_belief, unique=True)
         possible_actions = debug_dict[agent][player_decision_key]["V"]
         blamed_possible_actions = debug_dict[blame_agent][blamed_decision_key]["V"]
+        action_probabilities = debug_dict[agent][player_decision_key]['action']
         for action, value in possible_actions.items():
             value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0],
                                                                 unique=True)
@@ -518,6 +543,7 @@ class AppraisalDimensions:
                       projected_action=cur_action, # I don't know what this should be with the MI output
                       blamed_agent_possible_actions=blamed_possible_actions,
                       possible_actions=possible_actions,
+                      action_probabilities=action_probabilities,
                       cur_utility=player_cur_utility,
                       pre_utility=self.player_pre_utility,
                       blamed_agent_action=cur_blamed_action,
