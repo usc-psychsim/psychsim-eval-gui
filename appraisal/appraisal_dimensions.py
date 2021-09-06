@@ -429,21 +429,23 @@ class AppraisalDimensions:
         :rtype: dict
         """
         a_agent = world.agents[agent]
-        player_decision_key = list(debug_dict[agent]["__decision__"])[
+        player_decision_object = debug_dict[agent]["__decision__"]
+        blamed_decision_object = debug_dict[blame_agent]["__decision__"]
+        player_decision_key = list(player_decision_object)[
             0]  # This is because I don't know what the numbers appended to the player name are going to be # TODO: fix this to be the model when not using debug dict
-        blamed_decision_key = list(debug_dict[blame_agent]["__decision__"])[0]
+        blamed_decision_key = list(blamed_decision_object)[0]
         player_cur_utility = a_agent.reward()
-        cur_action = debug_dict[agent]["__decision__"][player_decision_key][
+        cur_action = player_decision_object[player_decision_key][
             "action"]  # **This should be the actual action taken by the player
         proj_action = debug_pred_dict[agent]["__decision__"][player_decision_key][
             "action"]  # **This should be the action projected by psychsim
-        cur_blamed_action = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["action"]
-        cur_expected_utility = debug_dict[agent]["__decision__"][player_decision_key]["V"][cur_action]["__ER__"][0]
-        agent_belief = debug_dict[agent]["__decision__"][player_decision_key]["V"][cur_action]["__beliefs__"]
+        cur_blamed_action = blamed_decision_object[blamed_decision_key]["action"]
+        cur_expected_utility = player_decision_object[player_decision_key]["V"][cur_action]["__ER__"][0]
+        agent_belief = player_decision_object[player_decision_key]["V"][cur_action]["__beliefs__"]
         agent_max_reward = a_agent.getState('__REWARD__').max()
         believed_action = world.getFeature(f"{blame_agent}'s __ACTION__", agent_belief, unique=True)
-        possible_actions = debug_dict[agent]["__decision__"][player_decision_key]["V"]
-        blamed_possible_actions = debug_dict[blame_agent]["__decision__"][blamed_decision_key]["V"]
+        possible_actions = player_decision_object[player_decision_key]["V"]
+        blamed_possible_actions = blamed_decision_object[blamed_decision_key]["V"]
         for action, value in possible_actions.items():
             value["blamed_predicted_action"] = world.getFeature(f"{blame_agent}'s __ACTION__", value["__S__"][0],
                                                                 unique=True)
