@@ -39,20 +39,27 @@
 It also describes how to run this code and get appraisal dimensions through the GUI.</p>
 <section id="running-model-inference-py">
 <h2>Running model_inference.py<a class="headerlink" href="#running-model-inference-py" title="Permalink to this headline">¶</a></h2>
-<p>…brief description…
-- where the script is
-- what the comand line params are
-- where the config is</p>
-</section>
-<section id="running-through-the-gui">
-<h2>Running through the GUI<a class="headerlink" href="#running-through-the-gui" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p>where ModelInference.py is</p></li>
-<li><p>what ModelInference.py does (instantiate model_inference, pass command line params from script, etc)</p></li>
-<li><p>how it has to run through the whole sim first. Can specifiy number of steps in config</p></li>
+<li><p>model_inference.py is located in the <a class="reference external" href="https://github.com/usc-psychsim/atomic/blob/master/atomic/bin/model_inference.py">atomic github repository</a></p></li>
+<li><p>The script uses a config file such as <a class="reference external" href="https://github.com/usc-psychsim/atomic/blob/master/config/phase2.ini">phase2.ini</a> to set <em>domain</em>, <em>run</em>, and <em>model</em>, parameters.</p></li>
+<li><p>The number of steps that the script runs through is ste with the <em>steps</em> parameter in the <em>[run]</em> section of the config.</p></li>
+<li><p>The config and the path to the data file must be passed from the command line. For example:</p></li>
+</ul>
+<p><cite>python3 model_inference.py C:UsersChrisTurnerDocumentsGitHubasist_datastudy-2_2021.06_HSRData_TrialMessages_Trial-T000485_Team-TM000143_Member-na_CondBtwn-2_CondWin-SaturnA_Vers-4.metadata –config C:/Users/ChrisTurner/Documents/GitHub/atomic/config/phase2.ini</cite></p>
+</section>
+<section id="running-from-the-gui">
+<h2>Running from the GUI<a class="headerlink" href="#running-from-the-gui" title="Permalink to this headline">¶</a></h2>
+<p>The model_inference.py script has also been adapted to run through the GUI. The script is located in <a class="reference external" href="https://github.com/usc-psychsim/psychsim-eval-gui/blob/master/sim_scripts/ModelInference.py">sim_scripts/ModelInference.py</a>.
+and invokes the atomic script model_inference.py. This means changes to model_inference.py should be captured.</p>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>ModelInference.py has the commandline arguments for model_inference.py hardcoded. These should be changed within the script.</p></li>
+<li><p>The script must run through the whole simulation (or number specified in the <em>steps</em> paramter) first, then the data is collated for use in the GUI.</p></li>
+<li><p>It is run as any other sim script through the gui (loading the script, and clicking <em>RUN SIM</em>)</p></li>
 </ul>
 <section id="differences-with-getting-data-from-the-debug-dictionary">
 <h3>Differences with getting data from the debug dictionary<a class="headerlink" href="#differences-with-getting-data-from-the-debug-dictionary" title="Permalink to this headline">¶</a></h3>
+<p>There is one main difference with extracting data from model_inference.py than other PsychSim based sim scripts:</p>
 <ul class="simple">
 <li><p>model_inference.py accumulates decision objects explicitely instead of through the world.step debug output.</p></li>
 <li><p>this means that access to these values is different than other functions.</p></li>
@@ -86,7 +93,7 @@ It also describes how to run this code and get appraisal dimensions through the 
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Interfacing With ASIST code</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#running-model-inference-py">Running model_inference.py</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-through-the-gui">Running through the GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-from-the-gui">Running from the GUI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#differences-with-getting-data-from-the-debug-dictionary">Differences with getting data from the debug dictionary</a></li>
 </ul>
 </li>
