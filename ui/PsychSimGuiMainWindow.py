@@ -21,7 +21,6 @@ Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
 
 # TODO: add logging instead of all the print statements in all files
-# TODO: remove all functions that aren't used in all files
 
 
 class PsychSimGuiMainWindow(QMainWindow, Ui_MainWindow):

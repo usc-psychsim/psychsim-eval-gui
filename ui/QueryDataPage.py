@@ -596,7 +596,6 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                                'received type': "...",
                                'value': "... "}
 
-                    # TODO: fix this
                     if param in param_list.annotations:
                         new_row["expected type"] = param_list.annotations[param].__name__
 

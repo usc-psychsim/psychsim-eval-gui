@@ -1,11 +1,13 @@
 """
 Query function definitions used by psychsim gui
 
-TODO: fix this bit defining what the data should look like from the sim scripts
-dict contatining the folloiwng:
-                        "WORLD": self.world (psychsim world object)
-                        "AGENT_DEBUG": result (Debug dictionary from world.step)
-                        "AGENTS": self.agents (list contianing agents)
+These functions expect data to be output as a dictionary where each key is a step number and value is a dictionary with output_data from the sim:
+
+e.g. for three steps:  data = {0: output_data_step0, 1: output_data_step1, 2: output_data_step2}
+
+where output_data_stepX =   {"WORLD": self.world (psychsim world object)
+                            "AGENT_DEBUG": result (Debug dictionary from world.step)
+                            "AGENTS": self.agents (list contianing agents)}
 """
 
 
