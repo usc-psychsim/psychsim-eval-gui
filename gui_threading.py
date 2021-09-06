@@ -1,11 +1,12 @@
+"""
+# Example code from :
+# https://www.learnpyqt.com/courses/concurrent-execution/multithreading-pyqt-applications-qthreadpool/
+"""
 import sys
 import traceback
 
 from PyQt5.QtCore import *
 
-
-# Example code from :
-# https://www.learnpyqt.com/courses/concurrent-execution/multithreading-pyqt-applications-qthreadpool/
 
 class WorkerSignals(QObject):
     """
