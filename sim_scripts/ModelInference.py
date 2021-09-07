@@ -6,6 +6,7 @@ import logging
 from atomic.bin import model_inference as mi
 from atomic.parsing.replayer import replay_parser, parse_replay_args
 
+# EDIT THE BELOW TO POINT TO PATHS ON YOUR LOCAL MACHINE
 DATAFILE = "C:\\Users\Chris Turner\Documents\GitHub\\asist_data\study-2_2021.06_HSRData_TrialMessages_Trial-T000474_Team-TM000137_Member-na_CondBtwn-1_CondWin-SaturnA_Vers-4.metadata"
 CONFIGFILE = "C:/Users/Chris Turner/Documents/GitHub/atomic/config/phase2.ini"
 
