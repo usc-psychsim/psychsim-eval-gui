@@ -30,6 +30,7 @@
       ~AppraisalDimensions.motivational_congruence
       ~AppraisalDimensions.motivational_relevance
       ~AppraisalDimensions.surprise
+      ~AppraisalDimensions.surprise2
    
    
 
