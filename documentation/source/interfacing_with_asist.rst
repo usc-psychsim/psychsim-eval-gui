@@ -11,7 +11,7 @@ Running model_inference.py
 - The number of steps that the script runs through is set with the *steps* parameter in the *[run]* section of the config.
 - The config and the path to the data file must be passed from the command line. For example:
 
-`python3 model_inference.py C:\Users\ChrisTurner\Documents\GitHub\asist_data\study-2_2021.06_HSRData_TrialMessages_Trial-T000485_Team-TM000143_Member-na_CondBtwn-2_CondWin-SaturnA_Vers-4.metadata --config C:/Users/ChrisTurner/Documents/GitHub/atomic/config/phase2.ini`
+`python3 model_inference.py C:\\Users\\ChrisTurner\\Documents\\GitHub\\asist_data\\study-2_2021.06_HSRData_TrialMessages_Trial-T000485_Team-TM000143_Member-na_CondBtwn-2_CondWin-SaturnA_Vers-4.metadata --config C:/Users/ChrisTurner/Documents/GitHub/atomic/config/phase2.ini`
 
 Running from the GUI
 --------------------
