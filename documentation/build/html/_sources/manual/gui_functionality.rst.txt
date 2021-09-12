@@ -8,7 +8,7 @@ Simulation
 Gui config
 ----------
 Paths to the psychsim and atomic repositories must be set in config.ini. Note: these repositories can be cloned from `github <https://github.com/usc-psychsim>`_ and should be
-cloned somewhere on your local machine. Custom config files can be loaded through the simulation>Load config dropdown.
+cloned somewhere on your local machine. Custom config files can be loaded through the simulation>Load config dropdown. *NOTE:* to use ASIST code, some extra paths must be added (see: :ref:`interfacing_with_asist`.)
 An example of a config file with paths set is below::
 
     [PATHS]

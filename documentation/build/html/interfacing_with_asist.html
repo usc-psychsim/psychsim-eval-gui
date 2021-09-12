@@ -34,9 +34,23 @@
           <div class="body" role="main">
             
   <section id="interfacing-with-asist-code">
-<h1>Interfacing With ASIST code<a class="headerlink" href="#interfacing-with-asist-code" title="Permalink to this headline">¶</a></h1>
+<span id="interfacing-with-asist"></span><h1>Interfacing With ASIST code<a class="headerlink" href="#interfacing-with-asist-code" title="Permalink to this headline">¶</a></h1>
 <p>This page describes how to run the model_inference.py script for running through ASIST data files.
 It also describes how to run this code and get appraisal dimensions through the GUI.</p>
+<section id="gui-config-ini">
+<h2>Gui config.ini<a class="headerlink" href="#gui-config-ini" title="Permalink to this headline">¶</a></h2>
+<p>In order to use ASIST code, the <a class="reference external" href="https://github.com/usc-psychsim/rddl2psychsim">rddl2psychsim</a> and <a class="reference external" href="https://github.com/usc-psychsim/pyrddl">pyrddl</a> myst be cloned and paths added to the config so config.ini file looks like the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">PATHS</span><span class="p">]</span>
+<span class="n">psychsim</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GLASGOW</span><span class="o">-</span><span class="n">MARSELLA</span><span class="o">/</span><span class="n">psychsim</span>
+<span class="n">atomic</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GLASGOW</span><span class="o">-</span><span class="n">MARSELLA</span><span class="o">/</span><span class="n">atomic</span>
+<span class="n">model_learning</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GLASGOW_MARSELLA</span><span class="o">/</span><span class="n">model_learning</span>
+<span class="n">rddl2psychsim</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GitHub</span><span class="o">/</span><span class="n">rddl2psychsim</span>
+<span class="n">pyrddl</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GitHub</span><span class="o">/</span><span class="n">pyrddl</span>
+<span class="n">simulation</span><span class="p">:</span> <span class="o">./</span><span class="n">sim_scripts</span><span class="o">/</span><span class="n">ModelInference</span><span class="o">.</span><span class="n">py</span>
+<span class="n">function_source</span><span class="p">:</span> <span class="o">./</span><span class="n">functions</span><span class="o">/</span><span class="n">ASISTQueryFunctions</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
 <section id="running-model-inference-py">
 <h2>Running model_inference.py<a class="headerlink" href="#running-model-inference-py" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -92,6 +106,7 @@ and invokes the atomic script model_inference.py. This means changes to model_in
 <li class="toctree-l1"><a class="reference internal" href="code_documentation.html">Code Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Interfacing With ASIST code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#gui-config-ini">Gui config.ini</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-model-inference-py">Running model_inference.py</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-from-the-gui">Running from the GUI</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#differences-with-getting-data-from-the-debug-dictionary">Differences with getting data from the debug dictionary</a></li>
@@ -137,7 +152,7 @@ and invokes the atomic script model_inference.py. This means changes to model_in
       &copy;2020, Chris Turner.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

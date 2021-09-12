@@ -1,4 +1,6 @@
 
+.. _interfacing_with_asist:
+
 Interfacing With ASIST code
 ===========================
 This page describes how to run the model_inference.py script for running through ASIST data files.
