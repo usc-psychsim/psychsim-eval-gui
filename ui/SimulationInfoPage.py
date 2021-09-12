@@ -42,9 +42,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         # SET UP VARS
         self.thread_running = False
         self.run_sim = False
-        self.psychsim_path = ""
-        self.definitions_path = ""
-        self.model_learning_path = ""
+        self.libpaths = {}
         self.sim_path = ""
         self.sim_name = ""
 
@@ -85,16 +83,17 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
             config.read(path)
 
             # set the path variables
-            self.psychsim_path = config['PATHS']['psychsim']
-            self.definitions_path = config['PATHS']['atomic']
-            self.model_learning_path = config['PATHS']['model_learning']
+            self.libpaths["psychsim"] = config['PATHS']['psychsim']
+            self.libpaths["rddl2psychsim"] = config['PATHS']['rddl2psychsim']
+            self.libpaths["atomic"] = config['PATHS']['atomic']
+            self.libpaths["model_learning"] = config['PATHS']['model_learning']
+            self.libpaths["pyrddl"] = config['PATHS']['pyrddl']
             self.sim_path = config['PATHS']['simulation']
             # set the paths on the gui
             self.sim_path_label.setText(str(self.sim_path).split('/')[-1])
             self.print_sim_output("loading config .....", "green")
-            self.print_sim_output(f"psychsim path: {self.psychsim_path}", "green")
-            self.print_sim_output(f"definitions path: {self.definitions_path}", "green")
-            self.print_sim_output(f"model learning path: {self.model_learning_path}", "green")
+            for k, p in self.libpaths.items():
+                self.print_sim_output(f"{k} path: {p}", "green")
             self.print_sim_output(f"sim path: {self.sim_path}", "green")
             self.print_sim_output(f"config loaded {path}", "green")
             return config
@@ -117,7 +116,7 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         import the simulation script
         """
         self.add_psychsim_to_sys_path()
-        self.print_sim_output(f"psychsim loaded from: {self.psychsim_path}", "green")
+        self.print_sim_output(f"psychsim loaded from: {self.libpaths['psychsim']}", "green")
         try:
             # import the sim module
             self.sim_spec = importlib.util.spec_from_file_location(self.sim_name, self.sim_path)
@@ -138,9 +137,8 @@ class SimulationInfoPage(QWidget, ui_simInfoPage):
         This enables psychsim to be found by required elements of the gui
         """
         self.sim_name = re.split(r'[.,/]', self.sim_path)[-2]
-        sys.path.insert(1, self.psychsim_path)
-        sys.path.insert(1, self.definitions_path)
-        sys.path.insert(1, self.model_learning_path)
+        for k, p in self.libpaths.items():
+            sys.path.insert(1, p)
 
     def start_sim_thread(self):
         """
