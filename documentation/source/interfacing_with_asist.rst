@@ -4,6 +4,20 @@ Interfacing With ASIST code
 This page describes how to run the model_inference.py script for running through ASIST data files.
 It also describes how to run this code and get appraisal dimensions through the GUI.
 
+Gui config.ini
+--------------
+In order to use ASIST code, the `rddl2psychsim <https://github.com/usc-psychsim/rddl2psychsim>`_ and `pyrddl <https://github.com/usc-psychsim/pyrddl>`_ myst be cloned and paths added to the config so config.ini file looks like the following::
+
+    [PATHS]
+    psychsim: /Users/christopherturner/Documents/GLASGOW-MARSELLA/psychsim
+    atomic: /Users/christopherturner/Documents/GLASGOW-MARSELLA/atomic
+    model_learning: /Users/christopherturner/Documents/GLASGOW_MARSELLA/model_learning
+    rddl2psychsim: /Users/christopherturner/Documents/GitHub/rddl2psychsim
+    pyrddl: /Users/christopherturner/Documents/GitHub/pyrddl
+    simulation: ./sim_scripts/ModelInference.py
+    function_source: ./functions/ASISTQueryFunctions.py
+
+
 Running model_inference.py
 --------------------------
 - model_inference.py is located in the `atomic github repository <https://github.com/usc-psychsim/atomic/blob/master/atomic/bin/model_inference.py>`_
