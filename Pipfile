@@ -11,12 +11,11 @@ plotly = "*"
 statsmodels = "*"
 matplotlib = "*"
 python-igraph = "*"
-pycairo = "*"
 sklearn = "*"
 ply = "*"
 tqdm = "*"
 pyqt5-stubs = "==5.15.2.0"
-sphinx = "*"
+sphinx = "==4.2.0"
 
 [dev-packages]
 

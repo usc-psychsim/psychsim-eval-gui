@@ -17,7 +17,6 @@ TODO: add this part
 
 import pandas as pd
 import psychsim_gui_helpers as pgh
-import numpy as np
 
 
 TREE_TYPE = 'tree'
