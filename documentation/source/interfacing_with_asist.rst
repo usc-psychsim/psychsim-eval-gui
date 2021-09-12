@@ -8,7 +8,11 @@ It also describes how to run this code and get appraisal dimensions through the 
 
 Gui config.ini
 --------------
-In order to use ASIST code, the `rddl2psychsim <https://github.com/usc-psychsim/rddl2psychsim>`_ and `pyrddl <https://github.com/usc-psychsim/pyrddl>`_ myst be cloned and paths added to the config so config.ini file looks like the following::
+In order to use ASIST code, the `rddl2psychsim <https://github.com/usc-psychsim/rddl2psychsim>`_ and `pyrddl <https://github.com/usc-psychsim/pyrddl>`_ myst be cloned and paths added to the config.
+
+Further, paths to the *metadata* and *config* files to be used my `model_inference.py` must be added to the *[ASIST_PATHS]* section.
+
+The config.ini file should like the following::
 
     [PATHS]
     psychsim: /Users/christopherturner/Documents/GLASGOW-MARSELLA/psychsim
@@ -19,6 +23,9 @@ In order to use ASIST code, the `rddl2psychsim <https://github.com/usc-psychsim/
     simulation: ./sim_scripts/ModelInference.py
     function_source: ./functions/ASISTQueryFunctions.py
 
+    [ASIST_PATHS]
+    datafile = /Users/christopherturner/Documents/GLASGOW-MARSELLA/Data/asist_data/study-2_2021.06_HSRData_TrialMessages_Trial-T000474_Team-TM000137_Member-na_CondBtwn-1_CondWin-SaturnA_Vers-4.metadata
+    configfile = /Users/christopherturner/Documents/GLASGOW-MARSELLA/atomic/config/phase2.ini
 
 Running model_inference.py
 --------------------------
@@ -36,7 +43,7 @@ and invokes the atomic script model_inference.py. This means changes to model_in
 
 Notes:
 
-- ModelInference.py has the commandline arguments for model_inference.py hardcoded. These should be changed within the script.
+- ModelInference.py has the commandline arguments for model_inference.py hardcoded. These should be changed within *[ASIST_PATHS]* section of *config.ini* (see above).
 - The script must run through the whole simulation (or number specified in the *steps* parameter) first, then the data is collated for use in the GUI.
 - It is run as any other sim script through the gui (loading the script, and clicking *RUN SIM*)
 

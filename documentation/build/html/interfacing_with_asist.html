@@ -39,7 +39,9 @@
 It also describes how to run this code and get appraisal dimensions through the GUI.</p>
 <section id="gui-config-ini">
 <h2>Gui config.ini<a class="headerlink" href="#gui-config-ini" title="Permalink to this headline">¶</a></h2>
-<p>In order to use ASIST code, the <a class="reference external" href="https://github.com/usc-psychsim/rddl2psychsim">rddl2psychsim</a> and <a class="reference external" href="https://github.com/usc-psychsim/pyrddl">pyrddl</a> myst be cloned and paths added to the config so config.ini file looks like the following:</p>
+<p>In order to use ASIST code, the <a class="reference external" href="https://github.com/usc-psychsim/rddl2psychsim">rddl2psychsim</a> and <a class="reference external" href="https://github.com/usc-psychsim/pyrddl">pyrddl</a> myst be cloned and paths added to the config.</p>
+<p>Further, paths to the <em>metadata</em> and <em>config</em> files to be used my <cite>model_inference.py</cite> must be added to the <em>[ASIST_PATHS]</em> section.</p>
+<p>The config.ini file should like the following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">PATHS</span><span class="p">]</span>
 <span class="n">psychsim</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GLASGOW</span><span class="o">-</span><span class="n">MARSELLA</span><span class="o">/</span><span class="n">psychsim</span>
 <span class="n">atomic</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GLASGOW</span><span class="o">-</span><span class="n">MARSELLA</span><span class="o">/</span><span class="n">atomic</span>
@@ -48,6 +50,10 @@ It also describes how to run this code and get appraisal dimensions through the 
 <span class="n">pyrddl</span><span class="p">:</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GitHub</span><span class="o">/</span><span class="n">pyrddl</span>
 <span class="n">simulation</span><span class="p">:</span> <span class="o">./</span><span class="n">sim_scripts</span><span class="o">/</span><span class="n">ModelInference</span><span class="o">.</span><span class="n">py</span>
 <span class="n">function_source</span><span class="p">:</span> <span class="o">./</span><span class="n">functions</span><span class="o">/</span><span class="n">ASISTQueryFunctions</span><span class="o">.</span><span class="n">py</span>
+
+<span class="p">[</span><span class="n">ASIST_PATHS</span><span class="p">]</span>
+<span class="n">datafile</span> <span class="o">=</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GLASGOW</span><span class="o">-</span><span class="n">MARSELLA</span><span class="o">/</span><span class="n">Data</span><span class="o">/</span><span class="n">asist_data</span><span class="o">/</span><span class="n">study</span><span class="o">-</span><span class="mf">2_2021.06</span><span class="n">_HSRData_TrialMessages_Trial</span><span class="o">-</span><span class="n">T000474_Team</span><span class="o">-</span><span class="n">TM000137_Member</span><span class="o">-</span><span class="n">na_CondBtwn</span><span class="o">-</span><span class="mi">1</span><span class="n">_CondWin</span><span class="o">-</span><span class="n">SaturnA_Vers</span><span class="o">-</span><span class="mf">4.</span><span class="n">metadata</span>
+<span class="n">configfile</span> <span class="o">=</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">christopherturner</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">GLASGOW</span><span class="o">-</span><span class="n">MARSELLA</span><span class="o">/</span><span class="n">atomic</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">phase2</span><span class="o">.</span><span class="n">ini</span>
 </pre></div>
 </div>
 </section>
@@ -67,7 +73,7 @@ It also describes how to run this code and get appraisal dimensions through the 
 and invokes the atomic script model_inference.py. This means changes to model_inference.py should be captured.</p>
 <p>Notes:</p>
 <ul class="simple">
-<li><p>ModelInference.py has the commandline arguments for model_inference.py hardcoded. These should be changed within the script.</p></li>
+<li><p>ModelInference.py has the commandline arguments for model_inference.py hardcoded. These should be changed within <em>[ASIST_PATHS]</em> section of <em>config.ini</em> (see above).</p></li>
 <li><p>The script must run through the whole simulation (or number specified in the <em>steps</em> parameter) first, then the data is collated for use in the GUI.</p></li>
 <li><p>It is run as any other sim script through the gui (loading the script, and clicking <em>RUN SIM</em>)</p></li>
 </ul>
