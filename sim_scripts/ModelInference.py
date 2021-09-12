@@ -2,13 +2,11 @@
 ...
 """
 import logging
+import configparser
 
 from atomic.bin import model_inference as mi
 from atomic.parsing.replayer import replay_parser, parse_replay_args
 
-# EDIT THE BELOW TO POINT TO PATHS ON YOUR LOCAL MACHINE
-DATAFILE = "C:\\Users\Chris Turner\Documents\GitHub\\asist_data\study-2_2021.06_HSRData_TrialMessages_Trial-T000474_Team-TM000137_Member-na_CondBtwn-1_CondWin-SaturnA_Vers-4.metadata"
-CONFIGFILE = "C:/Users/Chris Turner/Documents/GitHub/atomic/config/phase2.ini"
 
 class ModelInference:
     def __init__(self):
@@ -18,13 +16,14 @@ class ModelInference:
         Due to how model_inference.py is written, the entire data is passed and stepped through and stored during init.
         The run_step method allows the PsychSimGui to step through this pre-stored data.
         """
+        datafile, configfile = self.get_paths()
 
         parser = replay_parser()
         parser.add_argument('--reward_file', help='Name of CSV file containing alternate reward functions')
         parser.add_argument('-c','--clusters', help='Name of CSV file containing reward clusters to use as basis for player models')
-        arg_list = [DATAFILE,
+        arg_list = [datafile,
                     "--config",
-                    CONFIGFILE]
+                    configfile]
         self.args = parse_replay_args(parser, arg_list=arg_list)
 
         self.replayer = mi.Analyzer(self.args['fname'], rddl_file=self.args['rddl'], action_file=self.args['actions'], aux_file=self.args['aux'], logger=logging)
@@ -35,6 +34,17 @@ class ModelInference:
         if self.args['number'] > 0:
             self.sim_steps = self.args['number']
         self.current_step = 0
+
+    def get_paths(self):
+        """
+        This gets the datafile and model_inference.py config file from the GUI config
+        """
+
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        datafile = config['ASIST_PATHS']['datafile']
+        configfile = config['ASIST_PATHS']['configfile']
+        return datafile, configfile
 
     def run_step(self):
         """
