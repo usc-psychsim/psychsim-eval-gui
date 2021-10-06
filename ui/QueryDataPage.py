@@ -31,6 +31,8 @@ from ui.SetParamDialog import SetParamDialog
 query_data_page_file = os.path.join("ui", "query_data_page.ui")
 ui_queryDataPage, QtBaseClass = uic.loadUiType(query_data_page_file)
 
+# whether to use asist specific functions to generate parameter dropdowns or not *CHANGE IF YOU WANT TO USE NON-ASIST FUNCTIONS*
+MODE = 'ASIST'  # GENERIC
 
 class QueryDataPage(QWidget, ui_queryDataPage):
     """
@@ -534,6 +536,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
 
             # if a cached table exists, use that, otherwise make a new one
             if function_name in self._param_table_cache.keys() and self._param_table_cache[function_name]:
+                data_name = ""
                 for row_number, row in enumerate(self._param_table_cache[function_name]):
                     # If the param is 'data', add a combo box and populate it with data objects
                     set_param_object = None
@@ -541,10 +544,21 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                         set_param_object = QComboBox()
                         pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
                         set_param_object.activated.connect(partial(self.set_type_param, row_number, pgh.PsychSimRun.__name__))
+                        if MODE == "ASIST":
+                            data_name = row[4]
                     elif row[2] == "bool":
                         set_param_object = QComboBox()
                         pgh.update_combo(set_param_object, [False, True], clear=True)
                         set_param_object.activated.connect(partial(self.set_type_param, row_number, "bool"))
+                    elif 'agent' in row[0].lower() and MODE == 'ASIST':
+                        # Run the 'get agent query' if 'agent' in the name and set as values for a dropbox
+                        set_param_object = QComboBox()
+                        get_agents_params = {}
+                        get_agents_params['data'] = self._get_param_value(pgh.PsychSimRun.__name__, data_name)
+                        agent_list = getattr(self.psychsim_query, "get_agents")(**get_agents_params)[1].loc["agent"].tolist()
+                        pgh.update_combo(set_param_object, agent_list, clear=True)
+                        set_param_object.activated.connect(partial(self.set_type_param, row_number, "str"))
+
                     else:
                          set_param_object = self._create_param_table_button(row_number, "SET", self.set_param)
                     new_row = {'name': row[0],
@@ -569,13 +583,19 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                     if param in param_list.annotations:
                         # Get the param type if defined
                         param_type = param_list.annotations[param]
-
                     # If the param is 'data', add a combo box and populate it with data objects
                     set_param_object = None
                     if param == "data":
                         set_param_object = QComboBox()
                         pgh.update_combo(set_param_object, self.sim_data_dict.keys(), clear=True)
                         set_param_object.activated.connect(partial(self.set_type_param, row_number, pgh.PsychSimRun.__name__))
+                    elif 'agent' in param.lower() and MODE == 'ASIST':
+                        # Run the 'get agent query' if 'agent' in the name and set as values for a dropbox
+                        set_param_object = QComboBox()
+                        agent_list = []
+                        pgh.update_combo(set_param_object, agent_list, clear=True)
+                        set_param_object.activated.connect(partial(self.set_type_param, row_number, ""))
+
                     # elif param_type and param_type[0].__name__ in query_methods:
                     #     # the param attribute lists a query method so set the dropdown box with results from the executed query.
                     #     set_param_object = QComboBox()
@@ -600,6 +620,8 @@ class QueryDataPage(QWidget, ui_queryDataPage):
                         new_row["expected type"] = param_list.annotations[param].__name__
 
                     self._add_row_to_table(self.query_param_table, new_row.values())
+                # if MODE == 'ASIST':
+                #     self.set_type_param(0, pgh.PsychSimRun.__name__, param_val=pgh.PsychSimRun.__name__)
         except:
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
@@ -616,13 +638,14 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         btn.clicked.connect(partial(button_function, arg_val))
         return btn
 
-    def _add_row_to_table(self, table, row):
+    def _add_row_to_table(self, table, row, row_position=None):
         """
         TODO: refactor this out to helpers (it is also in the LoadedDataWindow.py)
         Add a row to the data table
         :param row: list of items to add to table
         """
-        rowPosition = table.rowCount()
+        if not row_position:
+            rowPosition = table.rowCount()
         table.insertRow(rowPosition)
         index = 0
         for item in row:
@@ -661,7 +684,7 @@ class QueryDataPage(QWidget, ui_queryDataPage):
             tb = traceback.format_exc()
             self.print_query_output(tb, "red")
 
-    def set_type_param(self, button_row, param_type):
+    def set_type_param(self, button_row, param_type, param_val=None):
         sender = self.sender()
         function_name = self.function_combo.currentText()
         # param_type = pgh.PsychSimRun.__name__
@@ -673,6 +696,18 @@ class QueryDataPage(QWidget, ui_queryDataPage):
         name_item = QTableWidgetItem(param_val)  # create a new Item
         self.query_param_table.setItem(button_row, 4, name_item)
         self.cache_table(function_name, self.query_param_table)
+        self._reset_agent_params(button_row, function_name)
+
+    def _reset_agent_params(self, button_row, function_name):
+        variable_name = self.query_param_table.item(button_row, 0).text()
+        if variable_name == "data" and MODE == "ASIST":
+            # clear anything that was set in the 'agent' rows
+            for row_number, row in enumerate(self._param_table_cache[function_name]):
+                for item in row:
+                    if "agent" in item:
+                        self._param_table_cache[function_name][row_number] = [item, 'set_button', 'str', '...', '... ']
+            # update the table every time you change the data source
+            self.handle_params()
 
     def _color_table_params(self, param_type, expected_type, tab_item):
         if param_type == expected_type:
