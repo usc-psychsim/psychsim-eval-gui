@@ -18,15 +18,13 @@ class ModelInference:
         """
         datafile, configfile = self.get_paths()
 
-        parser = replay_parser()
-        parser.add_argument('--reward_file', help='Name of CSV file containing alternate reward functions')
-        parser.add_argument('-c','--clusters', help='Name of CSV file containing reward clusters to use as basis for player models')
+        parser = mi.model_cmd_parser()
         arg_list = [datafile,
                     "--config",
                     configfile]
         self.args = parse_replay_args(parser, arg_list=arg_list)
 
-        self.replayer = mi.Analyzer(self.args['fname'], rddl_file=self.args['rddl'], action_file=self.args['actions'], aux_file=self.args['aux'], logger=logging)
+        self.replayer = mi.Analyzer(self.args['fname'], self.args['trials'], self.args['config'], rddl_file=self.args['rddl'], action_file=self.args['actions'], aux_file=self.args['aux'], logger=logging, output=self.args['output'])
 
         self.replayer.parameterized_replay(self.args, simulate=False)
 
@@ -50,7 +48,8 @@ class ModelInference:
         """
         Extract the step result for the GUI at the current step.
         """
-        result = self.replayer.debug_data[self.current_step]
+        result = self.replayer.decisions[self.args['fname'][0]]
+        print(result)
         self.current_step += 1
         return result
 
