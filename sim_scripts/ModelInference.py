@@ -48,7 +48,8 @@ class ModelInference:
         """
         Extract the step result for the GUI at the current step.
         """
-        result = self.replayer.decisions[self.args['fname'][0]]
+        # result = self.replayer.decisions[self.args['fname'][0]]
+        result = self.replayer.debug_data[self.args['fname'][0]][self.current_step]
         print(result)
         self.current_step += 1
         return result
