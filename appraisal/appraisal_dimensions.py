@@ -520,7 +520,7 @@ class AppraisalDimensions:
         cur_action = action
         # proj_action = debug_pred_dict[agent][player_decision_key]["action"]  # **This should be the action projected by psychsim
         # cur_blamed_action = debug_dict[blame_agent][blamed_decision_key]["action"]
-        cur_blamed_action = b_agent.getState('__ACTION__')
+        cur_blamed_action = b_agent.getState('__ACTION__', unique=True)
         cur_expected_utility = debug_dict[agent][player_decision_key]["V"][cur_action]["__ER__"][0]
         agent_belief = debug_dict[agent][player_decision_key]["V"][cur_action]["__beliefs__"]
         agent_max_reward = a_agent.getState('__REWARD__').max()
